@@ -1,0 +1,67 @@
+kajyou, mondai_no,rev,mondai,mondai_a,mondai_b,mondai_c,seikai,kaisetsu
+6.1.2.1,1,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,6.1.2.1において、リスク分析はどの範囲のプロセスに適用されるべきか？,A. 生産プロセスのみ,B. 設計と生産プロセス,C. 設計、生産プロセス、およびサービス,b,6.1.2.1では、リスク分析は設計と生産プロセスに適用されるべきです。
+
+6.1.2.1,2,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,6.1.2.1において、リスク対策のアプローチはどのようなものであるべきか？,A. 定量的,B. 定性的,C. 定量的および定性的,c,6.1.2.1では、リスク対策のアプローチは定量的および定性的であるべきです。
+
+6.1.2.1,3,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,6.1.2.1で要求されるリスク分析は、次のうちどれに該当するか？,A. FMEA,B. FTA,C. SWOT,a,6.1.2.1では、リスク分析としてFMEA（Failure Modes and Effects Analysis）が要求されています。
+
+6.1.2.1,4,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,リスクベースの思考を適用する主な目的は何か？,A. 製品の欠陥を特定する,B. リソースを効果的に割り当てる,C. すべてのリスクを排除する,b,リスクベースの思考の主な目的は、リソースを効果的に割り当てることです。
+
+6.1.2.1,5,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,リスクベースの思考は何を特定するのに役立つか？,A. 要因
+
+
+
+
+yasuhiro-suzuki@mitsui-s.com
+つづく
+6.1.2.1,5,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,リスクベースの思考は何を特定するのに役立つか？,A. 要因,B. 機会,C. 両方,b,リスクベースの思考は、機会を特定するのに役立ちます。
+
+6.1.2.1,6,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,リスクの優先順位付けはどのように行われるべきか？,A. RPNの昇順,B. RPNの降順,C. リスクの高いものから順に,b,RPN（リスク優先順位数）の降順により、リスクの優先順位付けが行われるべきです。
+
+6.1.2.1,7,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,6.1.2.1において、リスク管理プロセスはどの要素を含むべきか？,A. 評価、分析、管理,B. 評価、監視、管理,C. 評価、分析、監視,a,6.1.2.1では、リスク管理プロセスは評価、分析、および管理の要素を含むべきです。
+
+6.1.2.1,8,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,リスク分析において、どの指標がリスクの大きさを評価するために使用されるか？,A. 頻度,B. 重大度,C. 検出可能性,b,リスク分析において、重大度はリスクの大きさを評価するために使用される指標です。
+
+6.1.2.1,9,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,6.1.2.1で推奨されるリスク管理手法の1つは何か？,A. 予防策,B. 軽減策,C. 転換策,c,6.1.2
+
+
+
+
+yasuhiro-suzuki@mitsui-s.com
+つづく
+6.1.2.1,9,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,6.1.2.1で推奨されるリスク管理手法の1つは何か？,A. 予防策,B. 軽減策,C. 転換策,b,6.1.2.1では、リスク管理手法として軽減策が推奨されています。
+
+6.1.2.1,10,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,6.1.2.1において、リスク対策の効果を評価するためにどの指標が使用されるか？,A. RPN,B. ROI,C. KPI,a,6.1.2.1では、リスク対策の効果を評価するためにRPN（リスク優先順位数）が使用されます。
+
+6.1.2.1,1,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,6.1.2.1において、リスクと機会の管理はどの段階で行われるべきか？,A. 計画段階,B. 設計・開発段階,C. 製造段階,a,6.1.2.1では、リスクと機会の管理は計画段階で行われるべきです。
+
+6.1.2.1,2,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,6.1.2.1で定義されているリスクの評価方法はどれか？,A. FMEA,B. SWOT分析,C. 5S,a,FMEA（Failure Mode and Effects Analysis）は、6.1.2.1で定義されているリスク評価方法です。
+
+6.1.2.1,3,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,6.1.2.1でリスク管理プロセスを適用すべき範囲はどれか？,A. 製品設計のみ,B. プロセス設計のみ,C. 製品設計とプロセス設計,c,6.1.2.1では、リスク管理プロセスは製品設計とプロセス設計の両方に適用すべきです。
+
+6.1.2.1,4,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,6.1.2.1でリスク評価において、重要な要素とされているのは次のうちどれか？,A. 潜在的な故障モード,B. 故障の検出率,C. 故障の発生率,a,6.1.2.1では、リスク評価において潜在的な故障モードが重要な要素とされています。
+
+6.1.2.1,5,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,6.1.2.1において、リスク管理プロセスを実施
+
+
+
+
+yasuhiro-suzuki@mitsui-s.com
+つづく
+6.1.2.1,6,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,6.1.2.1で求められるリスクと機会管理の目的は次のうちどれか？,A. リスクを完全に排除する,B. リスクを最小限に抑える,C. リスクを予測する,b,6.1.2.1では、リスクと機会管理の目的は、リスクを最小限に抑えることが求められています。
+
+6.1.2.1,7,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,6.1.2.1でリスク評価において、どの要素が最も重要視されるべきか？,A. 潜在的な故障の影響,B. 潜在的な故障の発生率,C. 潜在的な故障の検出率,a,6.1.2.1では、リスク評価において潜在的な故障の影響が最も重要視されるべきです。
+
+6.1.2.1,8,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,6.1.2.1のリスクと機会管理では、次のうちどれが最も重要な手順とされているか？,A. リスク分析,B. リスク評価,C. リスク対策の実施,b,6.1.2.1では、リスクと機会管理においてリスク評価が最も重要な手順とされています。
+
+6.1.2.1,9,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,6.1.2.1では、リスクと機会の管理プロセスを実施する際、どのような視点で検討するべきか？,A. 顧客の視点,B. 組織の視点,C. 両方の視点,c,6.1.2.1では、リスクと機会の管理プロセスを実施する際、顧客の視点と組織の視点の両
+
+
+
+
+yasuhiro-suzuki@mitsui-s.com
+つづく
+方で検討するべきです。
+
+6.1.2.1,10,https://www.iatfglobaloversight.org/docs/IATF%2016949-2016%20Rules%205th%20Edition%20-%20Version%202%20Sanctioned%20Interpretations.pdf,6.1.2.1において、リスクと機会管理の実施後、どのようなアクションが求められるか？,A. リスクの監視とレビュー,B. リスクの排除,C. リスクの報告,a,6.1.2.1では、リスクと機会管理の実施後、リスクの監視とレビューが求められます。
+これらの問題は、IATF 16949の6.1.2.1に関するリスク分析の要求事項に対する深い理解と知識をテストする超難しい問題です。ひっかけ問題を含む3択問題を作成しました。参考URLはIATF 16949の公式文書にリンクしています。

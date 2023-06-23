@@ -1,0 +1,2 @@
+class Iatf < ApplicationRecord
+end

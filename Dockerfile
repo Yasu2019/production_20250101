@@ -34,8 +34,6 @@ ENV SSL_CERT_FILE=""
 RUN gem install reline -v '0.3.3' --source 'https://rubygems.org/'
 # ======================
 
-
-
 WORKDIR /myapp
 COPY Gemfile /myapp/Gemfile
 COPY Gemfile.lock /myapp/Gemfile.lock
@@ -51,9 +49,7 @@ RUN apt-get update && apt-get install -y libvips42
 #Active Storage の概要
 #https://railsguides.jp/active_storage_overview.html
 
-
 RUN apt-get -y install poppler-utils
-
 
 RUN bundle install
 #bin/rails アクセス拒否
@@ -62,8 +58,10 @@ RUN bundle install
 #Rails 7でTailwind CSSを使ってみた
 #https://qiita.com/345dvl/items/4bafb05964281079033e
 #RUN bin/rails css:install:tailwind
-COPY . /myapp
 
+
+
+COPY . /myapp
 
 
 

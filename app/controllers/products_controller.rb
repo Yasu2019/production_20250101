@@ -315,12 +315,78 @@ class ProductsController < ApplicationController
 
   end
 
-  def process_design_download
-    response.headers["Content-Type"] = "application/excel"
-    response.headers["Content-Disposition"] = "attachment; filename=\"製造工程設計計画書／実績書.xls\""
-    @products = Product.where(partnumber:params[:partnumber])
-    render 'process_design_download.xls.erb'
+  #RailsでExcel出力しないといけなくなった時の対処法
+  #https://www.timedia.co.jp/tech/railsexcel/
+  #def process_design_download
+  #  response.headers["Content-Type"] = "application/excel"
+  #  response.headers["Content-Disposition"] = "attachment; filename=\"製造工程設計計画書／実績書.xls\""
+  #  @products = Product.where(partnumber:params[:partnumber])
+  #  render 'process_design_download.xls.erb'
+  #end
+
+#  def process_design_download
+#    response.headers["Content-Type"] = "application/excel"
+#    response.headers["Content-Disposition"] = "attachment; filename=\"製造工程設計計画書／実績書.xls\""
+#    @products = Product.where(partnumber: params[:partnumber])
+#    render 'products/process_design_download', formats: [:xls]
+#  end
+
+def process_design_download
+  require 'axlsx'
+  template_path = Rails.root.join('app', 'views', 'products', 'process_design_download.xlsx').to_s
+  # テンプレートファイルを読み込む
+  template = Axlsx::Package.new
+  workbook = template.workbook
+  workbook = workbook.open(template_path)
+  worksheet = workbook.worksheets.first
+
+  @products = Product.where(partnumber: params[:partnumber])
+
+  # データを挿入する行のインデックス
+  start_row = 2
+
+  # データを挿入する
+  @products.each_with_index do |product, index|
+    row = start_row + index
+    worksheet.add_row [
+      product.category,
+      product.created_at,
+      product.deadline_at,
+      product.description,
+      product.documentcategory,
+      product.documentname,
+      product.documentnumber,
+      product.documentrev,
+      product.documenttype,
+      product.end_at,
+      product.goal_attainment_level,
+      product.id,
+      product.materialcode,
+      product.object,
+      product.partnumber,
+      product.phase,
+      product.stage,
+      product.start_time,
+      product.status,
+      product.tasseido,
+      product.updated_at
+    ], row_offset: row
   end
+
+  # ダウンロード用の一時ファイルを作成
+  temp_file = Tempfile.new('process_design_download.xlsx')
+
+  # テンプレートを保存してダウンロードファイルを作成
+  template.serialize(temp_file.path)
+
+  # ダウンロードファイルを送信
+  send_file temp_file.path, filename: "製造工程設計計画書／実績書.xlsx"
+
+  # 一時ファイルを削除
+  temp_file.close
+  temp_file.unlink
+end
+
 
   def create
     @product = Product.new(product_params)

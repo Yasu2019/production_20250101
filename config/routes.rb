@@ -1,5 +1,9 @@
 Rails.application.routes.draw do
+  
 
+
+  get 'suppliers/index' => 'suppliers#index',                 as: 'index_suppliers' # サプライヤーのインデックスページ
+  resources :suppliers
   #get 'touan/new'
 
   #Rails7でDeviseを導入される方へ

@@ -114,15 +114,15 @@ xl	1280px	@media (min-width: 1280px) { ... }
 
 
 
-</div>  
-          
+</div>
+
 
 
 
 
 <p id="notice"><%= notice %></p>
 
-  <!-- Header -->
+<!-- Header -->
 <header class="sticky top-0 bg-white z-10">
   <!-- navbar and menu -->
   <nav class="shadow">
@@ -327,6 +327,14 @@ xl	1280px	@media (min-width: 1280px) { ... }
                     <%= form.submit "IATF評価テスト",class:"btn btn-secondary btn-sm" %>
                     <% end %>
                     </a></li>
+
+                    <li class="py-1 border-b-2"><a>
+                    <%= form_with(url: index_suppliers_path, method: :get, local: true) do|form| %>
+                    <%= form.submit "供給者リスト",class:"btn btn-secondary btn-sm" %>
+                    <% end %>
+                    </a></li>
+
+
 
       
                     <!--

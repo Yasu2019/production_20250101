@@ -191,3 +191,6 @@ gem 'rubocop-rails', require:false
 
 #https://stackoverflow.com/questions/41051423/how-do-i-auto-format-ruby-or-erb-files-in-vs-code
 gem 'erb-formatter'
+
+
+gem 'axlsx'

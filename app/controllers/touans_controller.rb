@@ -126,6 +126,7 @@ class TouansController < ApplicationController
   def index
     #@touans = Touan.all
 
+    
     @products = Product.all
     @touans = Touan.where(user_id:current_user)
     @user = current_user

@@ -298,11 +298,19 @@
 -->
               <section class=“container flex flex-col md:flex-row items-stretch justify-between”> 
                 <div class=“lg:inline-block w-full mx-4”>
-
+                
                         <% chart_kajyou_iatf_request = [] %>
+
                             <% @iatf_data.each do |iatf| %>
-                              <% chart_kajyou_iatf_request.push(iatf.no) %>
+                              <% @tes.each do |test| %>
+                                <% if test.kajyou == iatf.no %>
+                                  <% chart_kajyou_iatf_request.push(iatf.no) %>
+                                <% end %>
+                              <% end %>
                             <% end %>
+
+
+                              
                             <% chart_average_score_iatf_request = [] %>
                             <% @iatf_data.each do |iatf| %>
                               <% correct_count = 0 %>
@@ -434,6 +442,7 @@
 <!--
                 <div class="lg:inline-block w-1/2">
 -->
+
                 <div class=“lg:inline-block w-full mx-4”>
                     <table class="sticky_table table-striped table-hover border-separate border-spacing-1 border-2 border-blue-900 bg-gray-100">
                           <thead>
@@ -491,28 +500,16 @@
                                       <% @products.each do |doc_check| %>
                                                 <% if doc_check.documents.attached?%>
                                                   <% if doc_check.documentnumber==iatf.no %>
-                                                    <% doc_check.documents.each do |image| %> 
+                                                    <% doc_check.documents.each do |image| %>
                                                       <% fullfilename = rails_blob_path(image) %>
                                                       <% ext = File.extname(fullfilename).downcase %>
                                                       <td class="border-2 border-blue-900">
-                                                        <!--
-                                                        <%= link_to image.blob.filename  ,rails_blob_path(image)%> <br>
-                                                        -->
                                                         <%= render partial: "attached_file_touan", locals: { fullfilename:fullfilename,ext: ext,image:image }  %>
                                                       </td>
                                                     <% end %>
                                                   <% end %>
                                                 <% end %>
                                       <% end %>
-
-
-
-
-
-
-
-
-
                                     </tr>
                                   <% end %>
                     </table>
@@ -528,7 +525,11 @@
               <div class=“lg:inline-block w-full mx-4”>
                         <% chart_kajyou_iatf_request_sub = [] %>
                             <% @iatf_data_sub.each do |iatf| %>
-                              <% chart_kajyou_iatf_request_sub.push(iatf.no) %>
+                              <% @tes.each do |test| %>
+                                <% if test.kajyou == iatf.no %>
+                                  <% chart_kajyou_iatf_request_sub.push(iatf.no) %>
+                                <% end %>
+                              <% end %>
                             <% end %>
                             <% chart_average_score_iatf_request_sub = [] %>
                             <% @iatf_data_sub.each do |iatf| %>
@@ -554,11 +555,7 @@
                                 <% end %>
                               <% end %>
 
-                              
-
-
-
-                            <div class="chart flex-1 overflow-hidden rounded-lg shadow-lg ml-4" style="width: 1100px; height:1400px;">
+                            <div class="chart flex-1 overflow-hidden rounded-lg shadow-lg ml-4" style="width: 700px; height:800px;">
                             <div class="bg-neutral-50 py-3 px-5 dark:bg-neutral-700 dark:text-neutral-200">
                             評価結果レーダーチャート
                             </div>
@@ -665,7 +662,8 @@
                 </div>
 
 
-                <div class="lg:inline-block w-full">
+            
+                <div class=“lg:inline-block w-full mx-4”>
                     <table class="sticky_table table-striped table-hover border-separate border-spacing-1 border-2 border-blue-900 bg-gray-100">
                           <thead>
                             <tr>
@@ -754,7 +752,11 @@
 
                         <% chart_kajyou_iatf_request_audit = [] %>
                             <% @iatf_data_audit.each do |iatf| %>
-                              <% chart_kajyou_iatf_request_audit.push(iatf.no) %>
+                              <% @tes.each do |test| %>
+                                  <% if test.kajyou == iatf.no %>
+                                    <% chart_kajyou_iatf_request_audit.push(iatf.no) %>
+                                  <% end %>
+                              <% end %>
                             <% end %>
                             <% chart_average_score_iatf_request_audit = [] %>
                             <% @iatf_data_audit.each do |iatf| %>
@@ -970,12 +972,15 @@
               <section class="container flex items-stretch justify-between">
                 <div class="lg:inline-block w-1/2 mx-4">
 -->
-              <section class=“container flex flex-col md:flex-row items-stretch justify-between”> 
+              <section class=“container flex flex-col md:flex-row items-stretch justify-between”>
                 <div class=“lg:inline-block w-full mx-4”>
-              
                         <% chart_kajyou_iatf_request_audit_sub = [] %>
                             <% @iatf_data_audit_sub.each do |iatf| %>
-                              <% chart_kajyou_iatf_request_audit_sub.push(iatf.no) %>
+                              <% @tes.each do |test| %>
+                                <% if test.kajyou == iatf.no %>
+                                  <% chart_kajyou_iatf_request_audit_sub.push(iatf.no) %>
+                                <% end %>
+                              <% end %>
                             <% end %>
                             <% chart_average_score_iatf_request_audit_sub = [] %>
                             <% @iatf_data_audit_sub.each do |iatf| %>
@@ -1007,7 +1012,7 @@
                               <canvas class="p-10" id="chartRadar_iatf_request_audit_sub"></canvas>
                             </div>
 
-                            <!-- Required chart.js 
+                            <!-- Required chart.js
                             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                             -->
                                 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1"></script>

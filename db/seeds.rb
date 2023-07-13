@@ -48,9 +48,38 @@ CSV.foreach('db/record/login.csv') do |row|
 end
 
 
-CSV.foreach('db/record/suppliers.csv') do |row|
-  Supplier.create(:no => row[0],:supplier_name => row[1], :manufacturer_name => row[2], :iso_existence => row[3], :target => row[4], :qms => row[5],:second_party_audit => row[6],:supplier_development => row[7],:automotive_related => row[8],:departments  => row[9],:transaction_details => row[10],:address1 => row[11],:address2 => row[12],:postal_code => row[13],:tel => row[14],:fax => row[15])
+#CSV.foreach('db/record/suppliers.csv') do |row|
+#  Supplier.create(:no => row[0],:supplier_name => row[1], :manufacturer_name => row[2], :iso_existence => row[3], :target => row[4], :qms => row[5],:second_party_audit => row[6],:supplier_development => row[7],:automotive_related => row[8],:departments  => row[9],:transaction_details => row[10],:address1 => row[11],:address2 => row[12],:postal_code => row[13],:tel => row[14],:fax => row[15])
+#end
+
+CSV.foreach(Rails.root.join("db/record/suppliers.csv"), headers: true) do |row|
+  supplier = Supplier.create(:no => row[0], :supplier_name => row[1], :manufacturer_name => row[2], :iso_existence => row[3], :target => row[4], :qms => row[5], :second_party_audit => row[6], :supplier_development => row[7], :automotive_related => row[8], :departments  => row[9], :transaction_details => row[10], :address1 => row[11], :address2 => row[12], :postal_code => row[13], :tel => row[14], :fax => row[15], :filename => row[16], :document_name => row[17], :issue_date => row[18], :feedback_date => row[19])
+
+  if row["filename"].present? && row["document_name"].present?
+    # Split the filenames and document_names by comma and remove any leading/trailing white space
+    filenames = row["filename"].split(',').map(&:strip)
+    document_names = row["document_name"].split(',').map(&:strip)
+
+    # Create and attach a blob for each filename
+filenames.zip(document_names).each do |filename, document_name|
+  file_path = Rails.root.join("db/documents/#{filename}")
+  if File.file?(file_path)
+    blob = ActiveStorage::Blob.create_and_upload!(io: File.open(file_path), filename: filename)
+    supplier.documents.attach(blob)
+    supplier.document_name = document_name  # Update the supplier's document_name
+  else
+    puts "File not found: #{file_path}"
+  end
 end
+  else
+    puts "Filename and/or Document Name is empty"
+  end
+  
+  supplier.save
+end
+
+
+
 
 CSV.foreach('db/record/iatf_request_list.csv') do |row|
   Iatf.create(:no => row[0],:name => row[1], :sales => row[2], :process_design => row[3], :production => row[4], :inspection => row[5],:release => row[6],:procurement => row[7],:equipment => row[8],:measurement => row[9],:policy => row[10],:satisfaction => row[11],:audit => row[12],:corrective_action => row[13])

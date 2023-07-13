@@ -124,6 +124,10 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_10_125502) do
     t.string "postal_code"
     t.string "tel"
     t.string "fax"
+    t.string "filename"
+    t.string "document_name"
+    t.datetime "issue_date"
+    t.datetime "feedback_date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

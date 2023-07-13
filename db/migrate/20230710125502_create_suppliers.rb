@@ -19,8 +19,16 @@ class CreateSuppliers < ActiveRecord::Migration[7.0]
       t.string :postal_code
       t.string :tel
       t.string :fax
+      t.string :filename
+      t.string :document_name
+      t.datetime :issue_date
+      t.datetime :feedback_date
+
 
       t.timestamps
     end
   end
 end
+
+
+

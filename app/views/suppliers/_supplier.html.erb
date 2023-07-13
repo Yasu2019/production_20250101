@@ -1,5 +1,7 @@
 <div id="<%= dom_id supplier %>">
 
+
+
 <ul class="flex space-x-4 items-center">
   <li><div class="my-5">
     <strong class="block font-medium mb-1">ID:</strong>
@@ -83,11 +85,19 @@
     <%= supplier.fax %>
   </div></li>
 
-</ul>
 
+  
   <% if action_name != "show" %>
+  
     <%= link_to "Show this supplier", supplier, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
     <%= link_to 'Edit this supplier', edit_supplier_path(supplier), class: "rounded-lg py-3 ml-2 px-5 bg-gray-100 inline-block font-medium" %>
     <hr class="mt-6">
+    
   <% end %>
+  
+
+</ul>
+
 </div>
+
+

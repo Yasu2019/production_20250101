@@ -296,9 +296,8 @@
               <section class="container flex items-stretch justify-between">
                 <div class="lg:inline-block w-1/2 mx-4">
 -->
-              <section class=“container flex flex-col md:flex-row items-stretch justify-between”> 
+              <section class=“container flex flex-col md:flex-row items-stretch justify-between”>
                 <div class=“lg:inline-block w-full mx-4”>
-                
                         <% chart_kajyou_iatf_request = [] %>
 
                             <% @iatf_data.each do |iatf| %>
@@ -309,8 +308,6 @@
                               <% end %>
                             <% end %>
 
-
-                              
                             <% chart_average_score_iatf_request = [] %>
                             <% @iatf_data.each do |iatf| %>
                               <% correct_count = 0 %>
@@ -521,7 +518,7 @@
 <!-- -------------------------------Panel3----------------------------------------------- -->
 
   		<div id="panel3" class="tab_panel">
-          <section class=“container flex flex-col md:flex-row items-stretch justify-between”> 
+          <section class=“container flex flex-col md:flex-row items-stretch justify-between”>
               <div class=“lg:inline-block w-full mx-4”>
                         <% chart_kajyou_iatf_request_sub = [] %>
                             <% @iatf_data_sub.each do |iatf| %>
@@ -662,7 +659,7 @@
                 </div>
 
 
-            
+
                 <div class=“lg:inline-block w-full mx-4”>
                     <table class="sticky_table table-striped table-hover border-separate border-spacing-1 border-2 border-blue-900 bg-gray-100">
                           <thead>

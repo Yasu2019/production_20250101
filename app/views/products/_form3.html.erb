@@ -6,9 +6,9 @@ https://tailwindcss.com/docs/border-spacing
 
 <table class="border-separate border-spacing-x-1 border border-slate-400">
 
-  <thead>
-      <% jyunban=[] %>
-      <% sta=[] %>
+<thead>
+    <% jyunban=[] %>
+    <% sta=[] %>
         <tr>
           <th class="border border-slate-300"> <%="図番"%></th>
           <% koumoku.each do |koumo| %>
@@ -38,15 +38,15 @@ https://tailwindcss.com/docs/border-spacing
                       <% if jyun==koumo && s=="完了" %>
                           <% input_ari=1 %>
                           <td class="border border-slate-300"> <center><font size="4" color="blue"> <%=  @mark_complate  %> </font></center></td>
-                          <% throw :out %>  
+                          <% throw :out %>
                       <% end %>
                       <% if jyun==koumo && s=="仕掛中" %>
                           <% input_ari=1 %>
                           <td class="border border-slate-300"> <center><font size="3" color="magenta"> <%=  @mark_WIP  %> </font></center></td>
-                          <% throw :out %>  
+                          <% throw :out %>
                       <% end %>
                   <% end %>
-                      <% if input_ari=0 && partnumber!="" %> 
+                      <% if input_ari=0 && partnumber!="" %>
                           <td class="border border-slate-300"><strong><center><font size="4" color="red"> <%= "━" %> </font></center></strong></td>
                       <% end %>
               <% end %>

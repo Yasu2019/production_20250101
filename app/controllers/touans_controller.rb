@@ -143,39 +143,51 @@ class TouansController < ApplicationController
     when 'sales'
       @iatf_data = Iatf.where(sales: "2")
       @iatf_data_sub = Iatf.where(sales: "1")
+      @process_name = "営業プロセス"
     when 'process_design'
       @iatf_data = Iatf.where(process_design: "2")
       @iatf_data_sub = Iatf.where(process_design: "1")
+      @process_name = "製造工程設計プロセス"
     when 'production'
       @iatf_data = Iatf.where(production: "2")
       @iatf_data_sub = Iatf.where(production: "1")
+      @process_name = "製造プロセス"
     when 'inspection'
       @iatf_data = Iatf.where(inspection: "2")
       @iatf_data_sub = Iatf.where(inspection: "1")
+      @process_name = "製品検査プロセス"
     when 'release'
       @iatf_data = Iatf.where(release: "2")
       @iatf_data_sub = Iatf.where(release: "1")
+      @process_name = "引渡しプロセス"
     when 'procurement'
       @iatf_data = Iatf.where(procurement: "2")
       @iatf_data_sub = Iatf.where(procurement: "1")
+      @process_name = "購買プロセス"
     when 'equipment'
       @iatf_data = Iatf.where(equipment: "2")
       @iatf_data_sub = Iatf.where(equipment: "1")
+      @process_name = "設備管理プロセス"
     when 'measurement'
       @iatf_data = Iatf.where(measurement: "2")
       @iatf_data_sub = Iatf.where(measurement: "1")
+      @process_name = "測定機器管理プロセス"
     when 'policy'
       @iatf_data = Iatf.where(policy: "2")
       @iatf_data_sub = Iatf.where(policy: "1")
+      @process_name = "方針プロセス"
     when 'satisfaction'
       @iatf_data = Iatf.where(satisfaction: "2")
       @iatf_data_sub = Iatf.where(satisfaction: "1")
+      @process_name = "顧客満足プロセス"
     when 'audit'
       @iatf_data = Iatf.where(audit: "2")
       @iatf_data_sub = Iatf.where(audit: "1")
+      @process_name = "内部監査プロセス"
     when 'corrective_action'
       @iatf_data = Iatf.where(corrective_action: "2")
       @iatf_data_sub = Iatf.where(corrective_action: "1")
+      @process_name = "改善プロセス"
     end
   end
 

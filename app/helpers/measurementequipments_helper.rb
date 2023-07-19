@@ -1,0 +1,2 @@
+module MeasurementequipmentsHelper
+end

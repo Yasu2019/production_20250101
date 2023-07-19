@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_07_10_125502) do
+ActiveRecord::Schema[7.0].define(version: 2023_07_17_072656) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -71,6 +71,25 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_10_125502) do
     t.string "satisfaction"
     t.string "audit"
     t.string "corrective_action"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "measurementequipments", force: :cascade do |t|
+    t.string "categories"
+    t.string "scope_of_internal_testing_laboratories"
+    t.string "product_measurement_item"
+    t.string "measuring_range"
+    t.string "measuring_instrument_test_equipment"
+    t.string "manufacturer"
+    t.string "equipment_model_name"
+    t.string "control_no"
+    t.string "measurement_accuracy"
+    t.string "reference_document_no"
+    t.string "calibration_in_house_external"
+    t.string "laboratory_environmental_conditions"
+    t.string "external_calibration_laboratory"
+    t.string "remarks"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

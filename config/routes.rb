@@ -1,4 +1,9 @@
 Rails.application.routes.draw do
+
+  get 'products/export_to_excel', to: 'products#export_to_excel',  as: 'export_to_excel_product' # IATF要求事項説明ページ
+  
+  get 'measurementequipments/index' => 'measurementequipments#index',                 as: 'index_measurementequipments' # サプライヤーのインデックスページ
+  resources :measurementequipments
   
 
 

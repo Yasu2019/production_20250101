@@ -1,4 +1,5 @@
-
+require 'open3'
+require 'json'
 
 class ProductsController < ApplicationController
   require 'csv'
@@ -6,14 +7,71 @@ class ProductsController < ApplicationController
   before_action :phase, only: %i[ graph calendar new edit show index index2 index3 index8 index9 download xlsx generate_xlsx]
 
 
-  #  @touan = Touan.find(params[:id])
-  #  @touan.kaito = params[:touan][:kaito]
-  #  if @touan.save
-  #    redirect_to product_path, notice: '登録しました。'
-  #  else
-  #    render :test
-  #  end
-  #end
+
+  
+
+  def export_to_excel
+    @products = Product.all
+  
+    # Convert the products to a hash, with each cell as a key and its value as a value
+    cell_values = @products.each_with_index.map do |product, i|
+      [
+        ["A#{i+2}", product.partnumber],
+        ["B#{i+2}", product.description],
+        ["C#{i+2}", product.phase]
+      ]
+    end.flatten(1).to_h
+  
+    # Convert the cell_values to JSON
+    json_data = cell_values.to_json
+  
+    file_path = nil # Initialize file_path
+    exit_status = nil # Initialize exit_status
+  
+    # Use Open3.popen3 to execute the Python script
+    Open3.popen3("python3 /app/python/to_excel.py") do |stdin, stdout, stderr, wait_thr|
+      # Write the JSON data to the Python script's stdin
+      stdin.write(json_data)
+      stdin.close
+  
+      # Get the path of the generated Excel file from the Python script's stdout
+      file_path = stdout.read.strip
+  
+      # Print any errors
+      error = stderr.read
+      puts "Python script error: #{error}" unless error.empty?
+  
+      # Print the exit status of the Python script
+      exit_status = wait_thr.value
+      puts "Python script exit status: #{exit_status}"
+    end
+  
+    puts "Generated Excel file path: #{file_path}"
+  
+    # Debugging lines - print to Rails log
+    Rails.logger.info "File exists: #{File.exist?(file_path)}"
+    Rails.logger.info "File is readable: #{File.readable?(file_path)}"
+    Rails.logger.info "Python script executed successfully." if exit_status.success?
+
+    # Send the generated Excel file to the user
+    puts "Sending file: #{file_path}"
+    send_file file_path, filename: 'Products.xlsx', type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+end
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+
+
 
 
 
@@ -430,44 +488,72 @@ end
       end
   end
 
+#  def update
+#    #Rails7で画像の保存にActiveStorage使ってみよう(導入からリサイズまで)
+#    #https://qiita.com/asasigure/items/311473d25fb3ec97f126
+#
+#    #ActiveStorage で画像を複数枚削除する方法
+#    #https://h-piiice16.hatenablog.com/entry/2018/09/24/141510#
+#
+#    #Active Storageを使用して添付ファイル(アップロード)を簡単に管理する
+#    #https://www.petitmonte.com/ruby/rails_attachment.html
+#
+#    #@product = Product.find(params[:id])
+#    #@product.update params.require(:product).permit(:partnumber, documents: []) # POINT
+#    #redirect_to @product
+#
+#
+#    product = Product.find(params[:id])
+#    #if params[:product][:detouch]=='1'
+#    if params[:product][:detouch]
+#       params[:product][:detouch].each do |image_id|
+#       #image = product.files.find(image_id)
+#        image = @product.documents.find(image_id)
+#        image.purge
+#       end
+#    end
+#   #【rails】update_attributes→updateを使う
+#   #update_attributesはrails6.1から削除されたそうです。
+#   #https://qiita.com/yuka_nari/items/b04c872d4eb2e5347fdb
+#
+#   if product.update(product_params)
+#     flash[:success] = "編集しました"
+#    redirect_to @product
+#   else
+#    render :edit
+#   end
+#  end
+
+
+
+#ChatGPT修正版
   def update
-    #Rails7で画像の保存にActiveStorage使ってみよう(導入からリサイズまで)
-    #https://qiita.com/asasigure/items/311473d25fb3ec97f126
-
-    #ActiveStorage で画像を複数枚削除する方法
-    #https://h-piiice16.hatenablog.com/entry/2018/09/24/141510
-
-    #Active Storageを使用して添付ファイル(アップロード)を簡単に管理する
-    #https://www.petitmonte.com/ruby/rails_attachment.html
-
-    #@product = Product.find(params[:id])
-    #@product.update params.require(:product).permit(:partnumber, documents: []) # POINT
-    #redirect_to @product
-
-
     product = Product.find(params[:id])
-    #if params[:product][:detouch]=='1'
+  
     if params[:product][:detouch]
-       params[:product][:detouch].each do |image_id|
-        #image = product.files.find(image_id)
+      params[:product][:detouch].each do |image_id|
         image = @product.documents.find(image_id)
         image.purge
-       end
+      end
     end
-   #【rails】update_attributes→updateを使う
-   #update_attributesはrails6.1から削除されたそうです。
-   #https://qiita.com/yuka_nari/items/b04c872d4eb2e5347fdb
-
-   if product.update(product_params)
-     flash[:success] = "編集しました"
-    redirect_to @product
-   else
-    render :edit
-   end
-
-
-
+  
+    if params[:product][:documents].nil?
+      if product.update(product_params.except(:documents))
+        flash[:success] = "編集しました"
+        redirect_to @product
+      else
+        render :edit
+      end
+    else
+      if product.update(product_params)
+        flash[:success] = "編集しました"
+        redirect_to @product
+      else
+        render :edit
+      end
+    end
   end
+  
 
   def destroy
     #@product = Product.find(params[:id])

@@ -16,6 +16,8 @@
                   <%= @user.name %> <br>
                   <%= "識別　　　　 ：" %>
                   <%= @user.role %> <br>
+                  <%= "プロセス名　 ：" %>
+                  <%= @process_name %> <br>
                 </div>
             </div></li>
 
@@ -85,7 +87,7 @@
 
 	</div>
 	  <div class="panel_area">
-	  	  <div id="panel1" class="tab_panel">
+	  	    <div id="panel1" class="tab_panel">
 
             <section class="container flex items-stretch justify-between">
                 <div class="sm:inline-block w-3/5 mx-4">
@@ -291,7 +293,7 @@
 
 <!-- ----------------------------------Panel2-------------------------------------------- -->
 
-  		<div id="panel2" class="tab_panel">
+  	      <div id="panel2" class="tab_panel">
 <!--
               <section class="container flex items-stretch justify-between">
                 <div class="lg:inline-block w-1/2 mx-4">
@@ -494,19 +496,23 @@
                                           <td class="border-2 border-blue-900"><%= safe_join(h(c.csr_content).split("*"), tag(:br)) %></td>
                                         <% end %>
                                       <% end %>
+
                                       <% @products.each do |doc_check| %>
-                                                <% if doc_check.documents.attached?%>
-                                                  <% if doc_check.documentnumber==iatf.no %>
-                                                    <% doc_check.documents.each do |image| %>
-                                                      <% fullfilename = rails_blob_path(image) %>
-                                                      <% ext = File.extname(fullfilename).downcase %>
-                                                      <td class="border-2 border-blue-900">
-                                                        <%= render partial: "attached_file_touan", locals: { fullfilename:fullfilename,ext: ext,image:image }  %>
-                                                      </td>
-                                                    <% end %>
-                                                  <% end %>
-                                                <% end %>
-                                      <% end %>
+                                        <% if doc_check.documents.attached?%>
+                                          <% if doc_check.documentnumber==iatf.no %>
+                                          <%= doc_check.documentnumber %>
+                                          <%= iatf.no %>
+                                            <% doc_check.documents.each do |image| %>
+                                              <% fullfilename = rails_blob_path(image) %>
+                                              <% ext = File.extname(fullfilename).downcase %>
+                                              <td>
+                                                <%= render partial: "attached_file_touan", locals: { fullfilename:fullfilename,ext: ext,image:image }  %>
+                                              </td>
+                                            <% end %>
+                                          <% end %>
+                                        <% end %>
+                                      <% end %>                          
+                                      
                                     </tr>
                                   <% end %>
                     </table>
@@ -721,7 +727,7 @@
                                                     <% doc_check.documents.each do |image| %> 
                                                       <% fullfilename = rails_blob_path(image) %>
                                                       <% ext = File.extname(fullfilename).downcase %>
-                                                      <td class="border-2 border-blue-900">
+                                                      <td>
                                                         <%= render partial: "attached_file_touan", locals: { fullfilename:fullfilename,ext: ext,image:image }  %>
                                                       </td>
                                                     <% end %>
@@ -947,7 +953,7 @@
                                                     <% doc_check.documents.each do |image| %> 
                                                       <% fullfilename = rails_blob_path(image) %>
                                                       <% ext = File.extname(fullfilename).downcase %>
-                                                      <td class="border-2 border-blue-900">
+                                                      <td>
                                                         <%= render partial: "attached_file_touan", locals: { fullfilename:fullfilename,ext: ext,image:image }  %>
                                                       </td>
                                                     <% end %>
@@ -1174,7 +1180,7 @@
                                                     <% doc_check.documents.each do |image| %> 
                                                       <% fullfilename = rails_blob_path(image) %>
                                                       <% ext = File.extname(fullfilename).downcase %>
-                                                      <td class="border-2 border-blue-900">
+                                                      <td>
                                                         <%= render partial: "attached_file_touan", locals: { fullfilename:fullfilename,ext: ext,image:image }  %>
                                                       </td>
                                                     <% end %>
@@ -1265,12 +1271,6 @@ input[type="radio"]{display:none;}
 #tab6:checked ~ .tab_area .tab6_label{background:#fff; color:#000;}
 #tab6:checked ~ .panel_area #panel6{display:block;}
 </style>
-
-
-
-
-
-
 
 
 

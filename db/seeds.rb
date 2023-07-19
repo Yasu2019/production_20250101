@@ -47,6 +47,12 @@ CSV.foreach('db/record/login.csv') do |row|
   User.create(:id => row[0], :email => row[1], :password => row[2], :name => row[3], :role => row[4],:owner => row[5],:auditor => row[6])
 end
 
+CSV.foreach('db/record/measurement_equipment.csv') do |row|
+  Measurementequipment.create(:categories => row[0],:scope_of_internal_testing_laboratories => row[1], :product_measurement_item => row[2], :measuring_range => row[3], :measuring_instrument_test_equipment => row[4], :manufacturer => row[5],:equipment_model_name => row[6],:control_no => row[7],:measurement_accuracy => row[8],:reference_document_no  => row[9],:calibration_in_house_external => row[10],:laboratory_environmental_conditions => row[11],:external_calibration_laboratory => row[12],:remarks => row[13])
+end
+
+#csvファイルからヘッダー省略した
+#categories,scope_of_internal_testing_laboratories,product_measurement_item,measuring_range,measuring_instrument_test_equipment,manufacturer,equipment_model_name,control_no,measurement_accuracy,reference_document_no,calibration_in_house_external,laboratory_environmental_conditions,external_calibration_laboratory,remarks
 
 #CSV.foreach('db/record/suppliers.csv') do |row|
 #  Supplier.create(:no => row[0],:supplier_name => row[1], :manufacturer_name => row[2], :iso_existence => row[3], :target => row[4], :qms => row[5],:second_party_audit => row[6],:supplier_development => row[7],:automotive_related => row[8],:departments  => row[9],:transaction_details => row[10],:address1 => row[11],:address2 => row[12],:postal_code => row[13],:tel => row[14],:fax => row[15])

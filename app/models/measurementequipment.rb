@@ -1,0 +1,2 @@
+class Measurementequipment < ApplicationRecord
+end

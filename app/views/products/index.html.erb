@@ -329,6 +329,12 @@ xl	1280px	@media (min-width: 1280px) { ... }
                     </a></li>
 
                     <li class="py-1 border-b-2"><a>
+                    <%= form_with(url: index_suppliers_path, method: :get, local: true) do|form| %>
+                    <%= form.submit "供給者リスト",class:"btn btn-secondary btn-sm" %>
+                    <% end %>
+                    </a></li>
+
+                    <li class="py-1 border-b-2"><a>
                     <%= form_with(url: index_measurementequipments_path, method: :get, local: true) do|form| %>
                     <%= form.submit "測定機器リスト",class:"btn btn-secondary btn-sm" %>
                     <% end %>
@@ -391,7 +397,6 @@ xl	1280px	@media (min-width: 1280px) { ... }
                   <th class="border-2 border-blue-900"><%= sort_link(@q, :status, "ステイタス") %></th>
                   <th colspan="3"></th>
                   <th>アイコン</th>
-               
               </tr>
         </thead>
   

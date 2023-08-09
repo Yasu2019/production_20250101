@@ -1,77 +1,44 @@
-require 'open3'
-require 'json'
+
+#下記Requireがないと、rubyXLが動かない
+#revise 
+require 'roo'
+require 'rubyXL/convenience_methods'
+require 'rubyXL/convenience_methods/worksheet'
+require 'rubyXL/convenience_methods/cell'
+require 'csv'
 
 class ProductsController < ApplicationController
-  require 'csv'
   before_action :set_product, only: %i[ show edit update destroy ]
-  before_action :phase, only: %i[ graph calendar new edit show index index2 index3 index8 index9 download xlsx generate_xlsx]
+  before_action :phase, only: %i[ process_design_plan_report graph calendar new edit show index index2 index3 index8 index9 download xlsx generate_xlsx]
 
 
 
+
+  include ExcelTemplateHelper
+
+  #Railsで既存のエクセルファイルをテンプレートにできる魔法のヘルパー
+  #https://qiita.com/m-kubo/items/6b5beaaf2a59c0d75bcc#:~:text=Rails%E3%81%A7%E6%97%A2%E5%AD%98%E3%81%AE%E3%82%A8%E3%82%AF%E3%82%BB%E3%83%AB%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%92%E3%83%86%E3%83%B3%E3%83%97%E3%83%AC%E3%83%BC%E3%83%88%E3%81%AB%E3%81%A7%E3%81%8D%E3%82%8B%E9%AD%94%E6%B3%95%E3%81%AE%E3%83%98%E3%83%AB%E3%83%91%E3%83%BC%201%20%E3%81%AF%E3%81%98%E3%82%81%E3%81%AB%20%E4%BB%8A%E5%9B%9E%E3%81%AE%E3%82%B3%E3%83%BC%E3%83%89%E3%81%AF%E3%80%81%E4%BB%A5%E4%B8%8B%E3%81%AE%E7%92%B0%E5%A2%83%E3%81%A7%E5%8B%95%E4%BD%9C%E7%A2%BA%E8%AA%8D%E3%81%97%E3%81%A6%E3%81%84%E3%81%BE%E3%81%99%E3%80%82%20...%202%201.%20rubyXL,7%206.%20%E3%81%8A%E3%81%BE%E3%81%91%20...%208%20%E7%B5%82%E3%82%8F%E3%82%8A%E3%81%AB%20%E4%BB%A5%E4%B8%8A%E3%80%81%E3%81%A9%E3%81%93%E3%81%8B%E3%81%AE%E6%A1%88%E4%BB%B6%E3%81%A7%E6%9B%B8%E3%81%84%E3%81%9F%E3%82%B3%E3%83%BC%E3%83%89%E3%81%AE%E7%B4%B9%E4%BB%8B%E3%81%A7%E3%81%97%E3%81%9F%E3%80%82%20
+
+
+
+  def process_design_plan_report
+    @products = Product.where(partnumber:params[:partnumber])           #link_to用
+    @all_products = Product.all
+    puts "params: #{params.inspect}"  # 追加
+    #@products = Product.where(partnumber: params[:product][:partnumber]) #form_to用
+ 
+    create_data
+    send_data(
+      excel_render('lib/excel_templates/process_design_plan_report.xlsx').stream.string,
+      type: 'application/vnd.ms-excel',
+      filename: "#{@datetime.strftime("%Y%m%d")}_#{@partnumber}_製造工程設計計画／実績書.xlsx"
+    )
+
+
+  end
+
+  #kここにあった
   
-
-  def export_to_excel
-    @products = Product.all
-  
-    # Convert the products to a hash, with each cell as a key and its value as a value
-    cell_values = @products.each_with_index.map do |product, i|
-      [
-        ["A#{i+2}", product.partnumber],
-        ["B#{i+2}", product.description],
-        ["C#{i+2}", product.phase]
-      ]
-    end.flatten(1).to_h
-  
-    # Convert the cell_values to JSON
-    json_data = cell_values.to_json
-  
-    file_path = nil # Initialize file_path
-    exit_status = nil # Initialize exit_status
-  
-    # Use Open3.popen3 to execute the Python script
-    Open3.popen3("python3 /app/python/to_excel.py") do |stdin, stdout, stderr, wait_thr|
-      # Write the JSON data to the Python script's stdin
-      stdin.write(json_data)
-      stdin.close
-  
-      # Get the path of the generated Excel file from the Python script's stdout
-      file_path = stdout.read.strip
-  
-      # Print any errors
-      error = stderr.read
-      puts "Python script error: #{error}" unless error.empty?
-  
-      # Print the exit status of the Python script
-      exit_status = wait_thr.value
-      puts "Python script exit status: #{exit_status}"
-    end
-  
-    puts "Generated Excel file path: #{file_path}"
-  
-    # Debugging lines - print to Rails log
-    Rails.logger.info "File exists: #{File.exist?(file_path)}"
-    Rails.logger.info "File is readable: #{File.readable?(file_path)}"
-    Rails.logger.info "Python script executed successfully." if exit_status.success?
-
-    # Send the generated Excel file to the user
-    puts "Sending file: #{file_path}"
-    send_file file_path, filename: 'Products.xlsx', type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-end
-
-
-
-
-
-
-  
-
-  
-
-  
-
-
-
-
 
 
 
@@ -527,32 +494,35 @@ end
 
 
 #ChatGPT修正版
-  def update
-    product = Product.find(params[:id])
-  
-    if params[:product][:detouch]
-      params[:product][:detouch].each do |image_id|
-        image = @product.documents.find(image_id)
-        image.purge
-      end
-    end
-  
-    if params[:product][:documents].nil?
-      if product.update(product_params.except(:documents))
-        flash[:success] = "編集しました"
-        redirect_to @product
-      else
-        render :edit
-      end
-    else
-      if product.update(product_params)
-        flash[:success] = "編集しました"
-        redirect_to @product
-      else
-        render :edit
-      end
+def update
+  @product = Product.find_by(id: params[:id])
+
+  if @product.nil?
+    flash[:error] = "Product not found"
+    redirect_to root_path # Or wherever you want to redirect
+    return
+  end
+
+  if params[:product][:detouch]
+    params[:product][:detouch].each do |image_id|
+      image = @product.documents.find(image_id)
+      image.purge
     end
   end
+
+  if params[:product][:documents]
+    @product.documents.attach(params[:product][:documents])
+  end
+
+  if @product.update(product_params.except(:documents))
+    flash[:success] = "編集しました"
+    redirect_to @product
+  else
+    render :edit
+  end
+end
+
+
   
 
   def destroy
@@ -565,6 +535,429 @@ end
   end
 
   private
+
+  #Railsで既存のエクセルファイルをテンプレートにできる魔法のヘルパー
+  #https://qiita.com/m-kubo/items/6b5beaaf2a59c0d75bcc#:~:text=Rails%E3%81%A7%E6%97%A2%E5%AD%98%E3%81%AE%E3%82%A8%E3%82%AF%E3%82%BB%E3%83%AB%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%92%E3%83%86%E3%83%B3%E3%83%97%E3%83%AC%E3%83%BC%E3%83%88%E3%81%AB%E3%81%A7%E3%81%8D%E3%82%8B%E9%AD%94%E6%B3%95%E3%81%AE%E3%83%98%E3%83%AB%E3%83%91%E3%83%BC%201%20%E3%81%AF%E3%81%98%E3%82%81%E3%81%AB%20%E4%BB%8A%E5%9B%9E%E3%81%AE%E3%82%B3%E3%83%BC%E3%83%89%E3%81%AF%E3%80%81%E4%BB%A5%E4%B8%8B%E3%81%AE%E7%92%B0%E5%A2%83%E3%81%A7%E5%8B%95%E4%BD%9C%E7%A2%BA%E8%AA%8D%E3%81%97%E3%81%A6%E3%81%84%E3%81%BE%E3%81%99%E3%80%82%20...%202%201.%20rubyXL,7%206.%20%E3%81%8A%E3%81%BE%E3%81%91%20...%208%20%E7%B5%82%E3%82%8F%E3%82%8A%E3%81%AB%20%E4%BB%A5%E4%B8%8A%E3%80%81%E3%81%A9%E3%81%93%E3%81%8B%E3%81%AE%E6%A1%88%E4%BB%B6%E3%81%A7%E6%9B%B8%E3%81%84%E3%81%9F%E3%82%B3%E3%83%BC%E3%83%89%E3%81%AE%E7%B4%B9%E4%BB%8B%E3%81%A7%E3%81%97%E3%81%9F%E3%80%82%20
+  def create_data
+    @datetime = Time.now
+    @name = 'm-kubo'
+    @multi_lines_text = "Remember kids,\nthe magic is with in you.\nI'm princess m-kubo."
+    @cp_check="☐"
+    @datou_check="☐"
+    @scr_check="☐"
+    @pfmea_check="☐"
+    @dr_check="☐"
+    @msa_check="☐"
+    @cpk_check="☐"
+    @shisaku_check="☐"
+    @kanagata_check="☐"
+    @dr_setsubi_check="☐"
+    @grr_check="☐"
+    @feasibility_check="☐"
+    @kataken_check="☐"
+    @crosstab_check="☐"
+  
+
+    @products.each do |pro|
+      @partnumber=pro.partnumber
+      Rails.logger.info "@partnumber= #{@partnumber}"  # 追加
+      @materialcode=pro.materialcode
+      Rails.logger.info "@pro.stage= #{@dropdownlist[pro.stage.to_i]}"
+      stage=@dropdownlist[pro.stage.to_i]
+      Rails.logger.info "pro.stage(number)= #{pro.stage}"
+ 
+      if stage=="量産コントロールプラン" || stage=="試作コントロールプラン"
+        @controlplan_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @controlplan_kanryou=pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @cp_check="☑"
+        else
+          @cp_check="☐"
+        end
+      end
+
+      if stage=="妥当性確認記録_金型設計"
+        @datou_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @datou_kanryou=pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @datou_check="☑"
+        else
+          @datou_check="☐"
+        end
+      end
+
+      if stage=="顧客要求事項検討会議事録_営業"
+        @scr_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @scr_kanryou=pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @scr_check="☑"
+        else
+          @scr_check="☐"
+        end
+      end
+
+      if stage=="製造実現可能性検討書"
+        @scr_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @scr_kanryou=pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @feasibility_check="☑"
+        else
+          @feasibility_check="☐"
+        end
+      end
+
+      if stage=="プロセスFMEA"
+        @pfmea_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @pfmea_kanryou=pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @pfmea_check="☑"
+        else
+          @pfmea_check="☐"
+        end
+      end
+
+      if stage=="DR会議議事録_金型設計"
+        @dr_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @dr_kanryou=pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          # 変数の設定
+          partnumber = pro.partnumber  # ここには実際の値を設定してください
+          # パスとファイル名のパターンを作成
+          pattern = "/myapp/db/documents/*#{partnumber}*D.R会議議事録*"
+          Rails.logger.info "Path= #{pattern}"
+          # パターンに一致するファイルを取得
+          files = Dir.glob(pattern)
+          # 各ファイルに対して処理を行う
+          files.each do |file|
+            # Excelファイルを開く
+            if File.extname(file) == '.xlsx'
+              workbook = Roo::Excelx.new(file) #xlsxの場合はこちらを使用
+            elsif File.extname(file) == '.xls'
+              workbook = Roo::Excel.new(file) #xlsの場合はこちらを使用
+            end
+
+            # 最初のシートを取得
+            worksheet = workbook.sheet(0)
+
+            # i4のセルの値を取得
+            
+            #@dr_kanagata_shiteki = worksheet.cell(12, 1).nil? ? "" : worksheet.cell(12, 1).to_s + worksheet.cell(13, 1).to_s
+            @dr_kanagata_shiteki = (12..28).map { |row| worksheet.cell(row, 1)&.to_s}.compact.join("\n")
+          end
+
+          @dr_check="☑"
+        else
+          @dr_check="☐"
+        end
+      end
+
+      if stage=="測定システム解析（MSA)"
+        @msa_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @msa_kanryou=pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @msa_check="☑"
+        else
+          @msa_check="☐"
+        end
+      end
+
+      if stage=="寸法測定結果" #型検
+        @kataken_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @kataken_kanryou=pro.end_at.strftime('%y/%m/%d')
+      end
+
+      if stage=="初期工程調査結果"
+        @cpk_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @cpk_kanryou=pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          # 変数の設定
+          partnumber = pro.partnumber  # ここには実際の値を設定してください
+          # パスとファイル名のパターンを作成
+          pattern = "/myapp/db/documents/*#{partnumber}*工程能力(Ppk)調査表*"
+          Rails.logger.info "Path= #{pattern}"
+          # パターンに一致するファイルを取得
+          files = Dir.glob(pattern)
+          # 各ファイルに対して処理を行う
+          files.each do |file|
+            # Excelファイルを開く
+            if File.extname(file) == '.xlsx'
+              workbook = Roo::Excelx.new(file) #xlsxの場合はこちらを使用
+            elsif File.extname(file) == '.xls'
+              workbook = Roo::Excel.new(file) #xlsの場合はこちらを使用
+            end
+
+            # 最初のシートを取得
+            worksheet = workbook.sheet(0)
+
+            # i4のセルの値を取得
+            @cpk_person_in_charge = worksheet.cell(50, 71)
+            @cpk_manager = worksheet.cell(50, 76)
+
+            def cell_address_to_position(cell_address)
+              col = cell_address.gsub(/\d/, '')
+              row = cell_address.gsub(/\D/, '').to_i
+            
+              col_index = col.chars.map { |char| char.ord - 'A'.ord + 1 }.reduce(0) { |acc, val| acc * 26 + val }
+              [row, col_index]
+            end
+            
+            satisfied = "工程能力は満足している"
+            not_satisfied = "工程能力は不足している"
+            
+            # チェックするセルの位置
+            check_addresses = ["E", "N", "W", "AF", "AO", "AX", "BG", "BP", "BY"].map { |col| "#{col}44" }
+            
+            # 初期値
+            satisfied_count = 0
+            not_satisfied_count = 0
+            
+            # すべてのシートをループ
+            workbook.sheets.each do |sheet_name|
+              worksheet = workbook.sheet(sheet_name)
+              
+              check_addresses.each do |cell_address|
+                row, col = cell_address_to_position(cell_address)
+                cell_value = worksheet.cell(row, col)
+                
+                satisfied_count += 1 if cell_value == satisfied
+                not_satisfied_count += 1 if cell_value == not_satisfied
+              end
+            end
+            
+            # 結果の設定
+            if not_satisfied_count > 0
+              @cpk_result = not_satisfied
+            elsif satisfied_count > 0
+              @cpk_result = satisfied
+            else
+              @cpk_result = "結果なし"  # この行は必要に応じて変更または削除してください
+            end
+            
+            @cpk_person_in_charge  =worksheet.cell(50,76) #担当者名
+
+            if worksheet.cell(3, 59) != nil
+              @cpk_yotei  =worksheet.cell(3,59)
+              @cpk_kanryou=worksheet.cell(3,59)
+            end
+          end
+            @cpk_check="☑"
+        else
+            @cpk_check="☐"
+        end
+      end
+      
+      if stage=="試作製造指示書_営業"
+        @shisaku_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @shisaku_kanryou=pro.end_at.strftime('%y/%m/%d')
+      end
+
+      if stage=="金型製造指示書_営業"
+        @kanagata_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @kanagata_kanryou=pro.end_at.strftime('%y/%m/%d')
+      end
+
+      if stage=="設計計画書_金型設計"
+        @plan_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @plan_kanryou=pro.end_at.strftime('%y/%m/%d')
+          if pro.documents.attached?
+            # 変数の設定
+            partnumber = pro.partnumber  # ここには実際の値を設定してください
+            # パスとファイル名のパターンを作成
+            pattern = "/myapp/db/documents/*#{partnumber}*設計計画書*"
+            #pattern = "/myapp/db/documents/NT2394-P43_PM81EB_設計計画書.xls"
+            Rails.logger.info "Path= #{pattern}"
+            # パターンに一致するファイルを取得
+            files = Dir.glob(pattern)
+            # 各ファイルに対して処理を行う
+            files.each do |file|
+              # Excelファイルを開く
+              if File.extname(file) == '.xlsx'
+                workbook = Roo::Excelx.new(file) #xlsxの場合はこちらを使用
+              elsif File.extname(file) == '.xls'
+                workbook = Roo::Excel.new(file) #xlsの場合はこちらを使用
+              end
+
+              # 最初のシートを取得
+              worksheet = workbook.sheet(0)
+
+              # i4のセルの値を取得
+              @plan_designer = worksheet.cell(4, 9)
+              @plan_manager = worksheet.cell(5, 9)
+              @plan_customer = worksheet.cell(6, 3)
+              @plan_risk = worksheet.cell(40, 4).nil? ? "" : worksheet.cell(40, 4).to_s + worksheet.cell(40, 4).to_s
+              @plan_opportunity = worksheet.cell(41, 4).nil? ? "" : worksheet.cell(41, 4).to_s + worksheet.cell(41, 4).to_s
+              
+              if worksheet.cell(10, 4) != nil
+                @plan_yotei  =worksheet.cell(11, 4)
+                @plan_kanryou=worksheet.cell(11, 6)
+              end
+            end
+          end
+      end
+
+      if stage=="DR構想検討会議議事録_生産技術"
+        @dr_setsubi_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @dr_setsubi_kanryou=pro.end_at.strftime('%y/%m/%d')
+          if pro.documents.attached?
+            # 変数の設定
+            partnumber = pro.partnumber  # ここには実際の値を設定してください
+            # パスとファイル名のパターンを作成
+            pattern = "/myapp/db/documents/*#{partnumber}*DR構想検討会議議事録*"
+            Rails.logger.info "Path= #{pattern}"
+            # パターンに一致するファイルを取得
+            files = Dir.glob(pattern)
+            # 各ファイルに対して処理を行う
+            files.each do |file|
+              # Excelファイルを開く
+              if File.extname(file) == '.xlsx'
+                workbook = Roo::Excelx.new(file) #xlsxの場合はこちらを使用
+              elsif File.extname(file) == '.xls'
+                workbook = Roo::Excel.new(file) #xlsの場合はこちらを使用
+              end
+
+              # 最初のシートを取得
+              worksheet = workbook.sheet(0)
+
+              # i4のセルの値を取得
+              @dr_setsubi_designer = worksheet.cell(2, 17)
+              @dr_setsubi_manager = worksheet.cell(2, 16)
+              @dr_setsubi_equipment_name = worksheet.cell(5, 11) #K5    
+              
+              #@dr_setsubi_shiteki = worksheet.cell(11, 1)
+              @dr_setsubi_shiteki = (11..25).map { |row| worksheet.cell(row, 1)&.to_s}.compact.join("\n")
+
+              if worksheet.cell(10, 4) != nil
+                @dr_setsubi_yotei  =worksheet.cell(5, 15)
+                @dr_setsubi_kanryou=worksheet.cell(27,12)
+              end
+            end
+              @dr_setsubi_check="☑"
+          else
+              @dr_setsubi_check="☐"
+          end
+      end
+
+      if stage=="進捗管理票_生産技術"
+        @dr_seigi_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @dr_seigi_plan_kanryou=pro.end_at.strftime('%y/%m/%d')
+          if pro.documents.attached?
+            # 変数の設定
+            partnumber = pro.partnumber  # ここには実際の値を設定してください
+            # パスとファイル名のパターンを作成
+            pattern = "/myapp/db/documents/*#{partnumber}*進捗管理票*"
+            #pattern = "/myapp/db/documents/NT2394-P43_PM81EB_設計計画書.xls"
+            Rails.logger.info "Path= #{pattern}"
+            # パターンに一致するファイルを取得
+            files = Dir.glob(pattern)
+            # 各ファイルに対して処理を行う
+            files.each do |file|
+              # Excelファイルを開く
+              if File.extname(file) == '.xlsx'
+                workbook = Roo::Excelx.new(file) #xlsxの場合はこちらを使用
+              elsif File.extname(file) == '.xls'
+                workbook = Roo::Excel.new(file) #xlsの場合はこちらを使用
+              end
+
+              # 最初のシートを取得
+              worksheet = workbook.sheet(0)
+
+              #すみません、混乱を招いてしまったようで。Roo gemはExcelの日付をシリアル日付として読み込む場合があります。
+              #Excelでは、日付は1900年1月1日からの日数として保存されます。
+              #したがって、数値をRubyのDateオブジェクトに変換するために、Excelの日付のオフセット（1900年1月1日から数えた日数）
+              #を使用する必要があります。
+              #次の関数は、Excelのシリアル日付を日付文字列に変換します：
+
+              def convert_excel_date(serial_date)
+                # Excelの日付は1900年1月1日から数えた日数として保存されている
+                base_date = Date.new(1899,12,30)
+                # シリアル日付を日付に変換
+                date = base_date + serial_date.to_i
+                # 日付を文字列に変換
+                date.strftime('%Y/%m/%d')
+              end
+              
+              @progress_management_seigi_design_name = worksheet.cell(14, 8)           #H13 設計担当者名
+              @progress_management_seigi_design_yotei = convert_excel_date(worksheet.cell(12, 6)) #F12 設計予定日
+              @progress_management_seigi_design_kanryou = convert_excel_date(worksheet.cell(12, 7)) #G12 設計完了日
+              
+              @progress_management_seigi_assembly_name = worksheet.cell(27, 8)         #H27 組立担当者名
+              @progress_management_seigi_assembly_yotei = convert_excel_date(worksheet.cell(26, 6)) #F26 組立予定日
+              @progress_management_seigi_assembly_kanryou = convert_excel_date(worksheet.cell(26, 7)) #G26 組立完了日
+              
+              @progress_management_seigi_wiring_name = worksheet.cell(30, 8)           #H30 配線担当者名
+              @progress_management_seigi_wiring_yotei = convert_excel_date(worksheet.cell(29, 6)) #F29 配線予定日
+              @progress_management_seigi_wiring_kanryou = convert_excel_date(worksheet.cell(29, 7)) #G29 配線完了日
+              
+              @progress_management_seigi_program_name = worksheet.cell(34, 8)          #H34 プログラム担当者名
+              @progress_management_seigi_program_yotei = convert_excel_date(worksheet.cell(33, 6)) #F33 プログラム予定日
+              @progress_management_seigi_program_kanryou = convert_excel_date(worksheet.cell(33, 7)) #G33 プログラム完了日
+               
+          
+
+              if worksheet.cell(10, 4) != nil
+                @dr_seigi_yotei  =worksheet.cell(33, 6) #F33　プログラム予定日
+                @dr_seigi_kanryou=worksheet.cell(33, 7) #G33 プログラム完了日
+              end
+            end
+          end
+      end
+
+      if stage=="初期流動検査記録"
+        @shoki_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @shoki_kanryou=pro.end_at.strftime('%y/%m/%d')
+      end
+
+      if stage=="プロセス指示書"
+        @wi_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @wi_kanryou=pro.end_at.strftime('%y/%m/%d')
+      end
+      
+    end
+
+    @all_products.each do |all|
+      stage = @dropdownlist[all.stage.to_i]
+      if stage == "金型製作記録"
+        Rails.logger.info "金型製作記録(添付資料確認前)"
+        if all.documents.attached?
+          pattern = "/myapp/db/documents/**/*.{xls,xlsx}"
+          Rails.logger.info "Path= #{pattern}"
+          # ディレクトリ内のExcelファイルを走査
+          Dir.glob(pattern) do |file|
+            # '金型製作記録'を含むファイルだけを対象に
+            next unless file.include?('金型製作記録')
+            Rails.logger.info "金型製作記録(添付資料確認後)"
+            # ファイル形式に応じて適切なRooクラスを使用
+            workbook = case File.extname(file)
+                      when '.xlsx'
+                        Roo::Excelx.new(file)
+                      when '.xls'
+                        Roo::Excel.new(file)
+                      end
+            workbook.sheets.each do |sheet|
+              worksheet = workbook.sheet(sheet)
+              # 最終行がnilの場合は、このシートの処理をスキップ
+              next if worksheet.last_row.nil?
+    
+              # 各行を走査
+              (1..worksheet.last_row).each do |i|
+                row = worksheet.row(i)
+                # E列がpartnumberと一致する場合、L列の値を@dieset_personに代入
+                if row[4] == @partnumber
+                  @dieset_person = row[11]
+                  @kanagata_yotei        = row[9]
+                  @kanagata_kanryou      = row[10]
+                  @kanagata_katagouzou   = row[8]
+                  @kanagata_remark       = row[12]
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+    
+  end
+
 
   #RailsでAxlsxを使ってxlsxを生成
   #https://qiita.com/necojackarc/items/0dbd672b2888c30c5a38

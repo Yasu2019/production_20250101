@@ -39,6 +39,8 @@ resources :touans, only: [:index, :new, :create, :destroy] do
 end
 # 追加ここまで
 
+  get 'products/process_design_plan_report' => 'products#process_design_plan_report',           as: 'rubyxl_product' # IATF要求事項説明ページ
+
   get 'products/iot' => 'products#iot',                   as: 'iot_product' # IATF要求事項説明ページ
   get 'products/graph' => 'products#graph',               as: 'graph_product'
   get 'products/calendar' => 'products#calendar',         as: 'calendar_product'

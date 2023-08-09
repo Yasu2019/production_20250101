@@ -4,6 +4,15 @@
 # or operating system, you probably want to add a global ignore instead:
 #   git config --global core.excludesfile '~/.gitignore_global'
 
+#エラー: Permission denied
+#lib/excel_templates/~$process_design_plan_report.xlsx ファイルに関するパーミッションエラーが発生しています。このファイルは、Excelが一時的に作成するロックファイルであり、通常はGitで追跡する必要はありません。このファイルをGitの追跡から除外することで、このエラーを回避できます。
+#解決策:
+#.gitignore ファイルを編集または作成して、Excelのロックファイルを無視するように設定します。
+
+# .gitignore
+~$*.xlsx
+
+
 # Ignore bundler config.
 /.bundle
 

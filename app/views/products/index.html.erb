@@ -242,7 +242,7 @@ xl	1280px	@media (min-width: 1280px) { ... }
                     <li class="py-1 border-b-2"><a>
                     <%= link_to '全アイテム日程表', index9_product_path, class: "py-2 text-gray-700 hover:text-indigo-600 text-md" %>
                     </a></li>
-      
+
                     <li class="py-1 border-b-2"><a>
                         <%= form_with(url: index2_product_path, method: :get, local: true) do|form| %>
                         <%= form.label :"図番選択" %> 
@@ -339,34 +339,24 @@ xl	1280px	@media (min-width: 1280px) { ... }
                     <%= form.submit "測定機器リスト",class:"btn btn-secondary btn-sm" %>
                     <% end %>
                     </a></li>
-
-                    <!--
-                    <li class="py-1 border-b-2">
-                    <%= link_to "Python Excel出力", export_to_excel_product_path, class: "btn btn-secondary btn-sm" %>
-                    </li>
-                    -->
-
-
-                    <!--
-                    <li class="py-1 border-b-2"><a>
-                    <%= form_with(url: export_to_excel_product_path, method: :get, local: true) do|form| %>
-                    <%= form.submit "Python Excel出力",class:"btn btn-secondary btn-sm" %>
+                
+                    <%= form_with(url: rubyxl_product_path, method: :get, local: true, html: { id: 'product-form' }) do |form| %>
+                        <%= form.label :"図番選択" %>
+                        <%= form.collection_select(:partnumber, @produc, :partnumber, :partnumber)%> <br>
                     <% end %>
-                    </a></li>
-                    -->
+                      
+                    <%= button_to "製造工程設計計画/達成度報告書", "#", id: "submit-button", class: "btn btn-secondary" %>
+                      
+                      <!-- jQueryで作成したボタンをクリックした時にsubmitする -->
+                      <script>
+                        $(document).ready(function() {
+                          $("#submit-button").on("click", function(e) {
+                            e.preventDefault();
+                            $("#product-form").submit();
+                          });
+                        });
+                      </script>
 
-
-                    
-                    <!--
-                    <li class="py-2 "><a>
-                    <%= form_with(url: process_design_download_path, method: :get, local: true) do|form| %>
-                    <%= form.label :"図番選択" %> <br>
-                    <% @produc=Product.select(:partnumber).distinct.order(:partnumber) %> 
-                    <%= form.collection_select(:partnumber, @produc, :partnumber, :partnumber)%> <br>
-                    <%= form.submit "製造工程設計計画/達成度報告書",class:"btn btn-secondary"%>
-                    <% end %>
-                    </a></li>
-                    -->
 
                   </div>
               </div>
@@ -482,9 +472,6 @@ xl	1280px	@media (min-width: 1280px) { ... }
   
  </section>
 </main>
-
-
-
 
 <style>
 

@@ -62,8 +62,8 @@ RUN bundle install
 #PythonのoepnpyxlでテンプレートファイルからExcel帳票を作成する
 #https://qiita.com/5zm/items/ed0bd0ea0cfbea49fb5c
 # Python and openpyxl installation
-RUN apt-get install -y python3 python3-pip
-RUN pip3 install openpyxl pandas  # Add pandas installation here
+#RUN apt-get install -y python3 python3-pip
+#RUN pip3 install openpyxl pandas  # Add pandas installation here
 
 COPY . /myapp
 

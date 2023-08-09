@@ -30,51 +30,43 @@ https://teratail.com/questions/105974
   <% dateset_end_at=@product.end_at %>
 <% end %>
 
-
-
-
-
   <!-- https://blog.to-ko-s.com/rails-file-field-design/
-   【Rails・Tailwind】file_field使用時にボタンのデザインを変えてみよう！
-   -->
+  【Rails・Tailwind】file_field使用時にボタンのデザインを変えてみよう！
+  -->
 
 <%= form_with model: @product, local: true  do |form| %>
-
-
 
   <!--
   <%= form.text_area :partnumber %><br><br>
   -->
 <div class="lg:flex">
 
-   <div class="my-5 mx-4 w-1/5 ">
-      <%= form.label :図番を入力してください %>
-      <%= form.text_field :partnumber, class: "shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 bg-gray-100 bg-opacity-50 " %>
-   </div>
-
-   <div class="my-5 w-1/5 ">
-      <%= form.label :材料コードを入力してください %>
-      <%= form.text_field :materialcode, class: "shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 bg-gray-100 bg-opacity-50 " %>
-   </div>
-
-   <div class="my-5 w-1/5 ">
-      <%= form.label :文書名を入力してください %>
-      <%= form.text_field :documentname, class: "shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 bg-gray-100 bg-opacity-50 " %>
-   </div>
+  <div class="my-5 mx-4 w-1/5 ">
+    <%= form.label :図番を入力してください %>
+    <%= form.text_field :partnumber, class: "shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 bg-gray-100 bg-opacity-50 " %>
+  </div>
 
   <div class="my-5 w-1/5 ">
-      <%= form.label :箇条番号を入力してください %>
-      <%= form.text_field :documentnumber, class: "shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 bg-gray-100 bg-opacity-50 " %>
-   </div>
+    <%= form.label :材料コードを入力してください %>
+    <%= form.text_field :materialcode, class: "shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 bg-gray-100 bg-opacity-50 " %>
+  </div>
 
-   <div class="my-5 w-1/5 ">
-      <%= form.label :コメント %>
-      <%= form.text_field :description, class: "shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 bg-gray-100 bg-opacity-50 " %>
-   </div>
+  <div class="my-5 w-1/5 ">
+    <%= form.label :文書名を入力してください %>
+    <%= form.text_field :documentname, class: "shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 bg-gray-100 bg-opacity-50 " %>
+  </div>
+
+  <div class="my-5 w-1/5 ">
+    <%= form.label :箇条番号を入力してください %>
+    <%= form.text_field :documentnumber, class: "shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 bg-gray-100 bg-opacity-50 " %>
+  </div>
+
+  <div class="my-5 w-1/5 ">
+    <%= form.label :コメント %>
+    <%= form.text_field :description, class: "shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 bg-gray-100 bg-opacity-50 " %>
+  </div>
 
 </div>
-
-
 
 <label class="mt-2 sm:mt-0 py-2 w-[500px] sm:w-[212px] h-10 border border-primary-300 bg-gray-100 bg-opacity-50 text-primary-300 rounded-[3px] text-xs flex justify-center items-center">
   
@@ -102,7 +94,7 @@ https://iconsvg.xyz/
 -->
 
 <% if @product.documents.attached? %>
-         <%= form.label :添付ファイルを削除する場合、ㇾチェックしてください %><br>
+        <%= form.label :添付ファイルを削除する場合、ㇾチェックしてください %><br>
             <% @product.documents.each do |image| %>
               <%= form.check_box :detouch, {:multiple => true}, image.id, false  %> 
               <%= image.blob.filename %> <br>
@@ -129,56 +121,61 @@ https://iconsvg.xyz/
       </div>
   </div>
 
-   <% if @product.status=="完了" %>
-       <% num=100 %>
-   <% elseif @product.status==nil %>
-       <% num=50 %>
-   <% end %>
+  <% if @product.status=="完了" %>
+    <% num=100 %>
+  <% elsif @product.status==nil %>
+    <% num=50 %>
+  <% end %>
 
   <!-- https://qiita.com/kawakami_shotaro/items/11a677bf34136cb7686d -->
 
   <!--【JavaScript入門】onloadイベントの使い方とハマりやすい注意点とは -->
   <!-- https://www.sejuku.net/blog/19754 -->
   
-   <div data-controller="dropdown">  <!-- とりあえずここに挟んだ-->
+  <div data-controller="dropdown">  <!-- とりあえずここに挟んだ-->
 
-   <%= form.label :製品又は文書カテゴリーを選択してください %>
+  <%= form.label :製品又は文書カテゴリーを選択してください %>
 
-	 <%= form.collection_select  :category,  @phases, :id, :name,{ include_blank: '選択してください'}, { id: "phase", class:"shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-1/5 bg-gray-100 bg-opacity-50"} %>
+	<%= form.collection_select  :category,  @phases, :id, :name,{ include_blank: '選択してください'}, { id: "phase", class:"shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-1/5 bg-gray-100 bg-opacity-50"} %>
 
-   <br>
+  <br>
   <!--
   【Ruby】f.collection_select　を使ってみた
-   https://qiita.com/ohnitakahiro/items/c536fe65e37980e1087e
+  https://qiita.com/ohnitakahiro/items/c536fe65e37980e1087e
   -->
 
+  <%= form.label :APQPフェーズを選択してください %>
 
-   
-   <%= form.label :APQPフェーズを選択してください %>
-   
-   <% if @product.phase!=nil %>
-   <% phase_test=[[@product.phase,@product.phase]]%> 
-     <%= form.select :phase, [], { include_blank: @dropdownlist[@product.phase.to_i],selected:@dropdownlist[@product.phase.to_i] }, { id: "Child_JSON" } %>
-   <% else %>
-     <%= form.select :phase, [], { include_blank: '選択してください' }, { id: "Child_JSON", class:"shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-1/5 bg-gray-100 bg-opacity-50" } %>
-   <% end %>
+  <!--本当は、編集時にデータがある場合は、前データを表示し、且つドロップダウンリストから選択できるよにしたいが、うまくできないため、一旦保留とする  
+  <% if @product.phase!=nil %>
+    <% phase_test=[[@product.phase,@product.phase]]%> 
+    <%= form.select :phase, [], { include_blank: @dropdownlist[@product.phase.to_i],selected:@dropdownlist[@product.phase.to_i] }, { id: "Child_JSON" } %>
+  <% else %>
+    <%= form.select :phase, [], { include_blank: '選択してください' }, { id: "Child_JSON", class:"shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-1/5 bg-gray-100 bg-opacity-50" } %>
+  <% end %>
+  -->
 
-   
+  <% phase_test=[[@product.phase,@product.phase]]%> 
+  <%= form.select :phase, [], { include_blank: '選択してください' }, { id: "Child_JSON", class:"shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-1/5 bg-gray-100 bg-opacity-50" } %>
+  
+  <br>
 
-   <br>
-   
-   <%= form.label :項目を選択してください %>
-   
-   <% if @product.stage!=nil %>
-   <% stage_test=[[@product.stage,@product.stage]]%>
-     <%= form.select :stage, [], { include_blank: @dropdownlist[@product.stage.to_i],selected:@dropdownlist[@product.stage.to_i]}, { id: "Grand_Child_JSON" } %>
-   <% else %>
-     <%= form.select :stage, [], { include_blank: '選択してください'}, { id: "Grand_Child_JSON", class:"shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-1/5 bg-gray-100 bg-opacity-50" } %>
-   <% end %>
+  <%= form.label :項目を選択してください %>
+
+  <!--本当は、編集時にデータがある場合は、前データを表示し、且つドロップダウンリストから選択できるよにしたいが、うまくできないため、一旦保留とする 
+  <% if @product.stage!=nil %>
+    <% stage_test=[[@product.stage,@product.stage]]%>
+    <%= form.select :stage, [], { include_blank: @dropdownlist[@product.stage.to_i],selected:@dropdownlist[@product.stage.to_i]}, { id: "Grand_Child_JSON" } %>
+  <% else %>
+    <%= form.select :stage, [], { include_blank: '選択してください'}, { id: "Grand_Child_JSON", class:"shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-1/5 bg-gray-100 bg-opacity-50" } %>
+  <% end %>
   </div>
+  -->
+
+  <% stage_test=[[@product.stage,@product.stage]]%>
+  <%= form.select :stage, [], { include_blank: '選択してください'}, { id: "Grand_Child_JSON", class:"shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-1/5 bg-gray-100 bg-opacity-50" } %>
 
   </div>  <!-- とりあえずここに挟んだ-->
-
   
   <span>
   <br>
@@ -201,12 +198,8 @@ https://iconsvg.xyz/
 
   Changing button value of a scaffold when in /new and /edit in rails
   https://stackoverflow.com/questions/19016527/changing-button-value-of-a-scaffold-when-in-new-and-edit-in-rails
-
   -->
-
   <%= form.submit  class:"btn"   %>
   <br>
-
-
 <% end %>
 

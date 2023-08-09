@@ -29,10 +29,10 @@ CSV.foreach(Rails.root.join("db/record/attachedfile.csv"), headers: true) do |ro
     if File.file?(file_path)
       product.documents = ActiveStorage::Blob.create_and_upload!(io: File.open(file_path), filename: row["filename"])
     else
-      puts "File not found: #{file_path}"
+      puts "Attached File not found: #{file_path}"
     end
   else
-    puts "Filename is empty"
+    puts "Attached Filename is empty on csv data"
   end
   
   product.save
@@ -67,22 +67,24 @@ CSV.foreach(Rails.root.join("db/record/suppliers.csv"), headers: true) do |row|
     document_names = row["document_name"].split(',').map(&:strip)
 
     # Create and attach a blob for each filename
-filenames.zip(document_names).each do |filename, document_name|
-  file_path = Rails.root.join("db/documents/#{filename}")
-  if File.file?(file_path)
-    blob = ActiveStorage::Blob.create_and_upload!(io: File.open(file_path), filename: filename)
-    supplier.documents.attach(blob)
-    supplier.document_name = document_name  # Update the supplier's document_name
+    filenames.zip(document_names).each do |filename, document_name|
+      file_path = Rails.root.join("db/documents/#{filename}")
+      if File.file?(file_path)
+        blob = ActiveStorage::Blob.create_and_upload!(io: File.open(file_path), filename: filename)
+        supplier.documents.attach(blob)
+        supplier.document_name = document_name  # Update the supplier's document_name
+      else
+        puts "File not found: #{file_path}"
+      end
+    end
   else
-    puts "File not found: #{file_path}"
-  end
-end
-  else
-    puts "Filename and/or Document Name is empty"
+    puts "Supplier_File_name is empty" if row["filename"].blank?
+    puts "Supplier_Document_name is empty" if row["document_name"].blank?
   end
   
   supplier.save
 end
+
 
 
 

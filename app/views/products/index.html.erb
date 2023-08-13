@@ -111,14 +111,7 @@ xl	1280px	@media (min-width: 1280px) { ... }
         </div>
         <!--ここまでメニュー-->
     </div>
-
-
-
 </div>
-
-
-
-
 
 <p id="notice"><%= notice %></p>
 
@@ -134,7 +127,6 @@ xl	1280px	@media (min-width: 1280px) { ... }
         <h1 class="px-12 text-3xl font-bold bg-gradient-to-tr from-indigo-600 to-green-600 bg-clip-text text-transparent hover:cursor-pointer">IATF16949</h1>
       </div>
     
-  
       <!--
       Devise 4.9をインストールしてRails 7.0 （Hotwire/Turbo）に対応する
       https://qiita.com/jnchito/items/20fad64ab162b2c49bb9
@@ -147,7 +139,6 @@ xl	1280px	@media (min-width: 1280px) { ... }
 
       https://qiita.com/newburu/items/64f214d2f0fbc7a05d42
       https://qiita.com/newburu/items/64f214d2f0fbc7a05d42
-
 
       -->
     
@@ -165,15 +156,11 @@ xl	1280px	@media (min-width: 1280px) { ... }
               <div>
               <%= link_to 'サインアウト', destroy_user_session_path, method: :delete, data: { turbo_method: :delete } %>
               </div>   
-                       
             </div>
         </div>
 
-    
-  
         <div>
     
-            
             <%= search_form_for @q do |f| %>
 
               <ul class="flex space-x-4 items-center">
@@ -216,10 +203,17 @@ xl	1280px	@media (min-width: 1280px) { ... }
 </header>
 
 <main >
-  <!-- section hero -->
- <section class="flex h-full">
+  <!-- section hero 
+  -->
+  <section class="flex h-full">
   
-    <div class="hidden lg:inline-block w-1/6 ">
+    <!--
+    <div class="hidden lg:inline-block w-1/6 fixed top-0 left-0">
+    -->
+
+    <div class="hidden lg:inline-block w-1/6">
+
+
             <div class="bg-white py-3 px-4 rounded-lg flex justify-around items-center ">
                 <input type="text" placeholder="seach" class=" bg-gray-100 rounded-md  outline-none pl-2 ring-indigo-700 w-full mr-2 p-2">
                 <span><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor ">
@@ -344,7 +338,7 @@ xl	1280px	@media (min-width: 1280px) { ... }
                         <%= form.label :"図番選択" %>
                         <%= form.collection_select(:partnumber, @produc, :partnumber, :partnumber)%> <br>
                     <% end %>
-                      
+                    
                     <%= button_to "製造工程設計計画/達成度報告書", "#", id: "submit-button", class: "btn btn-secondary" %>
                       
                       <!-- jQueryで作成したボタンをクリックした時にsubmitする -->
@@ -358,12 +352,16 @@ xl	1280px	@media (min-width: 1280px) { ... }
                       </script>
 
 
-                  </div>
+                  
               </div>
             </div> 
     </div>
-    
+ 
+    <!--
     <div class="w-full lg:w-5/6 bg-blue-700 p-8 text-gray-600 rounded-lg ">
+    -->
+
+    <div class="w-full lg:w-5/6 lg:ml-1/6 bg-blue-700 p-8 text-gray-600 rounded-lg">
 
       <!--
       Border Spacing
@@ -469,8 +467,9 @@ xl	1280px	@media (min-width: 1280px) { ... }
       <br>
       <br>
     </div>
-  
- </section>
+
+</sectoin>
+
 </main>
 
 <style>

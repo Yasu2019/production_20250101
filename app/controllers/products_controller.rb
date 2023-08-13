@@ -548,6 +548,8 @@ end
     @pfmea_check="☐"
     @dr_check="☐"
     @msa_check="☐"
+    @msa_crosstab_check="☐"
+    @msa_grr_check="☐"
     @cpk_check="☐"
     @shisaku_check="☐"
     @kanagata_check="☐"
@@ -555,7 +557,6 @@ end
     @grr_check="☐"
     @feasibility_check="☐"
     @kataken_check="☐"
-    @crosstab_check="☐"
   
 
     @products.each do |pro|
@@ -651,20 +652,124 @@ end
         end
       end
 
-      if stage=="測定システム解析（MSA)"
-        @msa_yotei=pro.deadline_at.strftime('%y/%m/%d')
-        @msa_kanryou=pro.end_at.strftime('%y/%m/%d')
+      if stage == "測定システム解析（MSA)" # クロスタブ
+        @msa_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @msa_kanryou = pro.end_at.strftime('%y/%m/%d')
+      
         if pro.documents.attached?
-          @msa_check="☑"
+          # 変数の設定
+          partnumber = pro.partnumber
+          pattern = "/myapp/db/documents/*#{partnumber}*計数値MSA報告書*"
+          Rails.logger.info "Path= #{pattern}"
+          files = Dir.glob(pattern)
+          @msa_crosstab_count = files.size
+      
+          # 各記号のカウントを初期化
+          @maru_count = 0
+          @batsu_count = 0
+          @sankaku_count = 0
+          @oomaru_count = 0
+      
+          files.each do |file|
+            workbook = Roo::Excelx.new(file)
+            worksheet = workbook.sheet(0)
+      
+            if worksheet.cell(4, 24) != nil
+              @msa_kanryou = worksheet.cell(4, 24)
+              @msa_recorder= worksheet.cell(6, 24)
+              @msa_person = worksheet.cell(76, 29)
+              @msa_approved = worksheet.cell(76, 25)
+            end
+      
+            symbols = [worksheet.cell(131, 7), worksheet.cell(131, 11), worksheet.cell(131, 15)]
+      
+            # 各ファイルのカウントを累計
+            @maru_count += symbols.count("○")
+            @batsu_count += symbols.count("×")
+            @sankaku_count += symbols.count("△")
+            @oomaru_count += symbols.count("◎")
+          end
+      
+          @msa_crosstab_check = "☑"
         else
-          @msa_check="☐"
+          @msa_crosstab_check = "☐"
+          @msa_crosstab_count = 0
         end
       end
+      
+      
 
-      if stage=="寸法測定結果" #型検
-        @kataken_yotei=pro.deadline_at.strftime('%y/%m/%d')
-        @kataken_kanryou=pro.end_at.strftime('%y/%m/%d')
+      if stage == "寸法測定結果" # 型検
+        @kataken_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @kataken_kanryou = pro.end_at.strftime('%y/%m/%d')
+        
+        if pro.documents.attached?
+          # 変数の設定
+          partnumber = pro.partnumber
+          pattern = "/myapp/db/documents/*#{partnumber}*検定報告書*"
+          Rails.logger.info "Path= #{pattern}"
+          
+          files = Dir.glob(pattern)
+          files.each do |file|
+            if File.extname(file) == '.xlsx'
+              workbook = Roo::Excelx.new(file)
+            elsif File.extname(file) == '.xls'
+              workbook = Roo::Excel.new(file)
+            end
+      
+            worksheet = workbook.sheet("データ")
+            @kataken_person_in_charge = worksheet.cell(50, 71)
+            @cpk_manager = worksheet.cell(50, 76)
+      
+            if worksheet.cell(3, 28) != nil
+              @kataken_kanryou = worksheet.cell(3,28)
+            end
+
+            @kataken_cpk_OK = 0
+@kataken_cpk_NG = 0
+(1..200).each do |row|
+  if worksheet.cell(row, 2) == "Cpk"  # B列はインデックス2
+    (3..30).each do |col|  # C列からAD列はインデックス3から30
+      raw_value = worksheet.cell(row, col)
+      if raw_value.is_a?(Numeric)  # 数値の場合のみ処理を行う
+        value = raw_value.to_f
+        if value >= 1.67
+          @kataken_cpk_OK += 1
+        else
+          @kataken_cpk_NG += 1
+        end
       end
+    end
+  end
+end
+            
+@kataken_spec_OK = 0
+@kataken_spec_NG = 0
+(1..200).each do |row|
+  if worksheet.cell(row, 2) == "Spec"  # B列はインデックス2
+    (3..30).each do |col|  # C列からAD列はインデックス3から30
+      value = worksheet.cell(row, col)
+      if value == "OK"
+        @kataken_spec_OK += 1
+      elsif value == "NG"
+        @kataken_spec_NG += 1
+      end
+    end
+  end
+end
+
+
+
+            @kataken_spec_result = @kataken_spec_NG == 0 ? "合格" : "不合格"            
+            @kataken_cpk_result = @kataken_cpk_NG == 0 ? "合格" : "不合格"
+          end
+      
+          @kataken_check = "☑"
+        else
+          @kataken_check = "☐"
+        end
+      end
+      
 
       if stage=="初期工程調査結果"
         @cpk_yotei=pro.deadline_at.strftime('%y/%m/%d')
@@ -732,7 +837,9 @@ end
             else
               @cpk_result = "結果なし"  # この行は必要に応じて変更または削除してください
             end
-            
+            @cpk_satisfied_count=satisfied_count
+            @cpk_not_satisfied_count=not_satisfied_count
+
             @cpk_person_in_charge  =worksheet.cell(50,76) #担当者名
 
             if worksheet.cell(3, 59) != nil
@@ -784,8 +891,8 @@ end
               @plan_designer = worksheet.cell(4, 9)
               @plan_manager = worksheet.cell(5, 9)
               @plan_customer = worksheet.cell(6, 3)
-              @plan_risk = worksheet.cell(40, 4).nil? ? "" : worksheet.cell(40, 4).to_s + worksheet.cell(40, 4).to_s
-              @plan_opportunity = worksheet.cell(41, 4).nil? ? "" : worksheet.cell(41, 4).to_s + worksheet.cell(41, 4).to_s
+              @plan_risk = worksheet.cell(41, 4).nil? ? "" : worksheet.cell(41, 4).to_s + worksheet.cell(42, 4).to_s
+              @plan_opportunity = worksheet.cell(43, 4).nil? ? "" : worksheet.cell(43, 4).to_s + worksheet.cell(44, 4).to_s
               
               if worksheet.cell(10, 4) != nil
                 @plan_yotei  =worksheet.cell(11, 4)

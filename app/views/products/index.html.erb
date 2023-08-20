@@ -335,21 +335,49 @@ xl	1280px	@media (min-width: 1280px) { ... }
                     </a></li>
                 
                     <%= form_with(url: rubyxl_product_path, method: :get, local: true, html: { id: 'product-form' }) do |form| %>
-                        <%= form.label :"図番選択" %>
-                        <%= form.collection_select(:partnumber, @produc, :partnumber, :partnumber)%> <br>
+                      <%= form.label :"図番選択" %>
+                      <%= form.collection_select(:partnumber, @produc, :partnumber, :partnumber)%> <br>
                     <% end %>
+                    <%= button_to "製造工程設計計画/達成度報告書", "#", id: "design_submit-button", class: "btn btn-secondary" %>
                     
-                    <%= button_to "製造工程設計計画/達成度報告書", "#", id: "submit-button", class: "btn btn-secondary" %>
-                      
-                      <!-- jQueryで作成したボタンをクリックした時にsubmitする -->
-                      <script>
-                        $(document).ready(function() {
-                          $("#submit-button").on("click", function(e) {
-                            e.preventDefault();
-                            $("#product-form").submit();
-                          });
+                    <%= form_with(url: rubyxl_apqp_plan_report_product_path, method: :get, local: true, html: { id: 'apqp_plan-form' }) do |form| %>
+                      <%= form.label :"図番選択" %>
+                      <%= form.collection_select(:partnumber, @produc, :partnumber, :partnumber)%> <br>
+                    <% end %>
+                    <%= button_to "APQP計画書", "#", id: "apqp_plan_submit-button", class: "btn btn-secondary" %>
+                    
+                    <%= form_with(url: rubyxl_apqp_approved_report_product_path, method: :get, local: true, html: { id: 'apqp_approved-form' }) do |form| %>
+                      <%= form.label :"図番選択" %>
+                      <%= form.collection_select(:partnumber, @produc, :partnumber, :partnumber)%> <br>
+                    <% end %>
+                    <%= button_to "APQP総括・承認書", "#", id: "apqp_approved_submit-button", class: "btn btn-secondary" %>
+                    
+                    <script>
+                      $(document).ready(function() {
+                        $("#design_submit-button").on("click", function(e) {
+                          e.preventDefault();
+                          $("#product-form").submit();
                         });
+                      });
+                  
                       </script>
+                      <script>
+                      $(document).ready(function() {
+                        $("#apqp_plan_submit-button").on("click", function(e) {
+                          e.preventDefault();
+                          $("#apqp_plan-form").submit();
+                        });
+                      });
+                      </script>
+                      <script>
+                      $(document).ready(function() {
+                        $("#apqp_approved_submit-button").on("click", function(e) {
+                          e.preventDefault();
+                          $("#apqp_approved-form").submit();
+                        });
+                      });
+                    </script>
+                    
 
 
                   

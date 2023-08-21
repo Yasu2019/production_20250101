@@ -626,6 +626,8 @@ end
                   workbook = Roo::Excelx.new(file)
               elsif File.extname(file) == '.xls'
                   workbook = Roo::Excel.new(file)
+              else 
+                break
               end
 
               # 最初のシートを取得
@@ -700,6 +702,9 @@ end
               workbook = Roo::Excelx.new(file) #xlsxの場合はこちらを使用
             elsif File.extname(file) == '.xls'
               workbook = Roo::Excel.new(file) #xlsの場合はこちらを使用
+            else
+              break
+            
             end
 
             # 最初のシートを取得
@@ -868,6 +873,8 @@ end
                     workbook = Roo::Excelx.new(file)
                 elsif File.extname(file) == '.xls'
                     workbook = Roo::Excel.new(file)
+                else
+                  break
                 end
     
                 # シートの名前が"data"または"データ"を含むかどうかを確認
@@ -955,6 +962,8 @@ end
               workbook = Roo::Excelx.new(file) #xlsxの場合はこちらを使用
             elsif File.extname(file) == '.xls'
               workbook = Roo::Excel.new(file) #xlsの場合はこちらを使用
+            else
+              break
             end
 
             # 最初のシートを取得
@@ -1048,6 +1057,8 @@ end
                 workbook = Roo::Excelx.new(file) #xlsxの場合はこちらを使用
               elsif File.extname(file) == '.xls'
                 workbook = Roo::Excel.new(file) #xlsの場合はこちらを使用
+              else
+                break
               end
 
               # 最初のシートを取得
@@ -1093,6 +1104,8 @@ end
                 workbook = Roo::Excelx.new(file) #xlsxの場合はこちらを使用
               elsif File.extname(file) == '.xls'
                 workbook = Roo::Excel.new(file) #xlsの場合はこちらを使用
+              else
+                break
               end
 
 
@@ -1219,6 +1232,8 @@ end
                 workbook = Roo::Excelx.new(file) #xlsxの場合はこちらを使用
               elsif File.extname(file) == '.xls'
                 workbook = Roo::Excel.new(file) #xlsの場合はこちらを使用
+              else
+                break
               end
 
               # 最初のシートを取得

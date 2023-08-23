@@ -1,0 +1,19 @@
+<h1 class="font-bold text-4xl">2-Step Verification</h1>
+
+<%= form_tag two_step_verifications_path, method: :post do %>
+  <div class='field'>
+    
+  <img src="<%= @qr_code %>" alt="QR Code">
+
+
+  </div>
+
+  <div class='field'>
+    <%= label_tag :otp_attempt, 'Verify' %> <i>(enter a one-time password)</i><br />
+    <%= text_field_tag :otp_attempt %>
+  </div>
+
+  <div class='actions'>
+    <%= submit_tag 'Verify' %>
+  </div>
+<% end %>

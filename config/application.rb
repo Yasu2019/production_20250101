@@ -56,6 +56,11 @@ module Myapp
     config.time_zone = 'Tokyo'
     config.active_record.default_timezone = :local
 
+    #【Rails】devise-two-factorを使った2段階認証の実装方法【初学者】
+    #https://autovice.jp/articles/172
+    #chatGPT指示
+    config.active_record.encryption.key_derivation_salt = ENV['KEY_DERIVATION_SALT']
+    config.active_record.encryption.primary_key = ENV['PRIMARY_KEY']
 
 
   end

@@ -1,12 +1,17 @@
 Rails.application.routes.draw do
 
+
+
+  #【Rails】devise-two-factorを使った2段階認証の実装方法【初学者】
+  #https://autovice.jp/articles/172
+  # 以下を追記
+  resources :two_step_verifications, only: [:new, :create]
+
   get 'products/export_to_excel', to: 'products#export_to_excel',  as: 'export_to_excel_product' # IATF要求事項説明ページ
   
   get 'measurementequipments/index' => 'measurementequipments#index',                 as: 'index_measurementequipments' # サプライヤーのインデックスページ
   resources :measurementequipments
   
-
-
   get 'suppliers/index' => 'suppliers#index',                 as: 'index_suppliers' # サプライヤーのインデックスページ
   resources :suppliers
   #get 'touan/new'
@@ -16,6 +21,14 @@ Rails.application.routes.draw do
   devise_for :users , controllers: {
     sessions: 'users/sessions'
   }
+
+  devise_scope :user do
+    patch '/users/sign_in', to: 'users/sessions#create'
+    # 以下を追記
+    get '/users/two_step_verification', to: 'users/sessions#new_two_step_verification'
+    post '/users/two_step_verification', to: 'users/sessions#create_two_step_verification'
+
+  end
 
   #get 'touans/delete_testmondai' => 'touans#delete_testmondai',                 as: 'delete_testmondai' # テストの結果表示ページ
 

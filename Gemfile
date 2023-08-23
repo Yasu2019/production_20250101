@@ -203,3 +203,8 @@ gem 'axlsx'
 gem 'rubyXL', '>= 3.4.14'
 #gem 'rubyXL','3.3.29'
 
+#【Rails】devise-two-factorを使った2段階認証の実装方法【初学者】
+#https://autovice.jp/articles/172
+gem 'devise-two-factor'
+gem 'rqrcode'
+

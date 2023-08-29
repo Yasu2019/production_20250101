@@ -1,6 +1,8 @@
 
 <section class="text-gray-600 body-font">
-  <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+  
+  <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { "data-turbo" => "false" }) do |f| %>
+  
     <div class="container px-5 py-24 mx-auto flex flex-wrap items-center">
       <div class="lg:w-3/5 md:w-1/2 md:pr-16 lg:pr-0 pr-0">
           <h1 class="title-font font-medium text-3xl text-gray-900">IATF16949：2016 & Factory Equipment Monitoring System</h1>

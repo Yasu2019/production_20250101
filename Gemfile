@@ -65,8 +65,18 @@ group :development do
   # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
   # gem "spring"
 
+  #Net::SMTPAuthenticationError に関連する "Must issue a STARTTLS command first" エラーは、
+  #SMTPサーバーがTLS接続を要求していることを示しています。GmailのSMTPサーバーは、TLS接続を要求するため、
+  #このエラーが発生するのは理解できます。
+  #この問題を解決するためには、SMTP設定でTLS接続を明示的に有効にする必要があります。
+  #しかし、既に :enable_starttls_auto => true を設定しているため、
+  #この設定だけでは問題が解決しない可能性があります。
+  #別のアプローチとして、Mail gem や letter_opener gem などの他のメーリングライブラリを使用することで、
+  #開発環境でのメール送信をシミュレートすることができます。
+  #letter_opener gemを使用する方法:
 
-
+  #gem 'letter_opener'
+  
 end
 
 
@@ -208,3 +218,8 @@ gem 'rubyXL', '>= 3.4.14'
 gem 'devise-two-factor'
 gem 'rqrcode'
 
+#gem bulletを入れてみた（N+1問題に自分で気づけない人のために）
+#https://qiita.com/sazumy/items/7157446d7c3bfe377d63
+group :development do
+  gem 'bullet'
+end

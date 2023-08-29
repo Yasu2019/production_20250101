@@ -1,7 +1,5 @@
 Rails.application.routes.draw do
 
-
-
   #【Rails】devise-two-factorを使った2段階認証の実装方法【初学者】
   #https://autovice.jp/articles/172
   # 以下を追記
@@ -78,9 +76,19 @@ end
   #【Ruby on Rails】CSVインポート
   #https://qiita.com/seitarooodayo/items/c9d6955a12ca0b1fd1d4
 
+  
+  # productsリソースの中にdownloadsのルートをネスト
   resources :products do
     collection { post :import }
+  
+    # 以下を追加
+    collection do
+      get 'verify_password/:id', to: 'downloads#verify_password', as: :verify_password
+      post 'download', to: 'downloads#download', as: :download
+    end
   end
+  
+  
 
   resources :touans do
     collection { post :import_test }
@@ -89,3 +97,4 @@ end
   end
 
 end
+

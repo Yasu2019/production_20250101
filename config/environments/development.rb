@@ -2,6 +2,50 @@ require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
 
+  config.after_initialize do
+    Bullet.enable        = true
+    Bullet.alert         = true
+    Bullet.bullet_logger = true
+    Bullet.console       = true
+    Bullet.rails_logger  = true
+    Bullet.add_footer    = true
+  end
+
+  #Net::SMTPAuthenticationError に関連する "Must issue a STARTTLS command first" エラーは、
+  #SMTPサーバーがTLS接続を要求していることを示しています。GmailのSMTPサーバーは、TLS接続を要求するため、
+  #このエラーが発生するのは理解できます。
+  #この問題を解決するためには、SMTP設定でTLS接続を明示的に有効にする必要があります。
+  #しかし、既に :enable_starttls_auto => true を設定しているため、
+  #この設定だけでは問題が解決しない可能性があります。
+  #別のアプローチとして、Mail gem や letter_opener gem などの他のメーリングライブラリを使用することで、
+  #開発環境でのメール送信をシミュレートすることができます。
+  #letter_opener gemを使用する方法:
+
+  #config.action_mailer.delivery_method = :letter_opener
+  #config.action_mailer.perform_deliveries = true
+
+
+
+  
+  config.action_mailer.smtp_settings = {
+    :enable_starttls_auto => true,
+    :address => "smtp.gmail.com",
+    :port => 587,
+    :domain => 'smtp.gmail.com',
+    :user_name => ENV['SMTP_USERNAME'],
+    :password => ENV['SMTP_PASSWORD'],
+    #:user_name => "mitsui.seimitsu.iatf16949@gmail.com",
+    #:password => "aodwtnulqohgdgvf",
+    :authentication => 'plain',
+    :openssl_verify_mode => 'none' # この行を追加します
+    
+  }
+
+  
+
+
+  config.middleware.use Bullet::Rack
+
   config.hosts << "nys-web.net"
   
   # Settings specified here will take precedence over those in config/application.rb.

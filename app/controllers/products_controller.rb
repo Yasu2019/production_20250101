@@ -1441,42 +1441,55 @@ end
         @wi_kanryou=pro.end_at.strftime('%y/%m/%d')
       end
       
-    end
+    end  #@products.each do |pro|に対応するend
 
-    @all_products.each do |all|
-      stage = @dropdownlist[all.stage.to_i]
-      if stage == "金型製作記録"
-        Rails.logger.info "金型製作記録(添付資料確認前)"
-        if all.documents.attached?
-          pattern = "/myapp/db/documents/**/*.{xls,xlsx}"
-          Rails.logger.info "Path= #{pattern}"
-          # ディレクトリ内のExcelファイルを走査
-          Dir.glob(pattern) do |file|
-            # '金型製作記録'を含むファイルだけを対象に
-            next unless file.include?('金型製作記録')
-            Rails.logger.info "金型製作記録(添付資料確認後)"
-            # ファイル形式に応じて適切なRooクラスを使用
-            workbook = case File.extname(file)
-                      when '.xlsx'
-                        Roo::Excelx.new(file)
-                      when '.xls'
-                        Roo::Excel.new(file)
-                      end
-            workbook.sheets.each do |sheet|
-              worksheet = workbook.sheet(sheet)
-              # 最終行がnilの場合は、このシートの処理をスキップ
-              next if worksheet.last_row.nil?
-    
-              # 各行を走査
-              (1..worksheet.last_row).each do |i|
-                row = worksheet.row(i)
-                # E列がpartnumberと一致する場合、L列の値を@dieset_personに代入
-                if row[4] == @partnumber
-                  @dieset_person = row[11]
-                  @kanagata_yotei        = row[9]
-                  @kanagata_kanryou      = row[10]
-                  @kanagata_katagouzou   = row[8]
-                  @kanagata_remark       = row[12]
+
+    #すぐに終了するためには、ループの外側でも終了する必要があります。
+    #Rubyでは、catchとthrowを使用して、複数のネストされたループからの脱出を行うことができます。
+    #以下のようにコードを修正しました：
+    #catchブロックを最外部に追加します。
+    #@partnumberが見つかった場合、throw :foundでcatchブロックを終了させます。
+    #この修正により、@partnumberが見つかった時点で、すべてのループを終了します。
+
+
+    catch :found do
+      @all_products.each do |all|
+        stage = @dropdownlist[all.stage.to_i]
+        if stage == "金型製作記録"
+          Rails.logger.info "金型製作記録(添付資料確認前)"
+          if all.documents.attached?
+            pattern = "/myapp/db/documents/**/*.{xls,xlsx}"
+            Rails.logger.info "Path= #{pattern}"
+            # ディレクトリ内のExcelファイルを走査
+            Dir.glob(pattern) do |file|
+              # '金型製作記録'を含むファイルだけを対象に
+              next unless file.include?('金型製作記録')
+              Rails.logger.info "金型製作記録(添付資料確認後)"
+              # ファイル形式に応じて適切なRooクラスを使用
+              workbook = case File.extname(file)
+                        when '.xlsx'
+                          Roo::Excelx.new(file)
+                        when '.xls'
+                          Roo::Excel.new(file)
+                        end
+              workbook.sheets.each do |sheet|
+                worksheet = workbook.sheet(sheet)
+                # 最終行がnilの場合は、このシートの処理をスキップ
+                next if worksheet.last_row.nil?
+      
+                # 各行を走査
+                (1..worksheet.last_row).each do |i|
+                  row = worksheet.row(i)
+                  # E列がpartnumberと一致する場合、L列の値を@dieset_personに代入
+                  if row[4] == @partnumber
+                    @dieset_person = row[11]
+                    @kanagata_yotei        = row[9]
+                    @kanagata_kanryou      = row[10]
+                    @kanagata_katagouzou   = row[8]
+                    @kanagata_remark       = row[12]
+                    # @partnumber が見つかったので、ループを終了
+                    throw :found
+                  end
                 end
               end
             end

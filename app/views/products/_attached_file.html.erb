@@ -1,4 +1,28 @@
-            
+      
+      <% if pro.documents.attached? %>
+      <% pro.documents.each do |image| %>
+        <% fullfilename = rails_blob_path(image) %>
+        <% ext = File.extname(fullfilename).downcase %>
+        <% icon = icon_for_extension(ext) %>
+    
+        <% if icon %>
+          <!-- ダウンロードの前にパスワードの確認へリダイレクト -->
+          
+
+          <td><%= link_to image_tag(icon), verify_password_products_path(id: image.record.id, blob_id: image.blob.id), class: 'infoicon', data: { toggle: 'tooltip' }, title: image.blob.filename %></td>
+
+
+        <% else %>
+          <td><%= "  " %></td>
+        <% end %>
+      <% end %>
+    <% end %>
+
+
+
+
+
+    <!--
        
         <% if pro.documents.attached? %>
               
@@ -73,3 +97,4 @@
          
         <% end %>
 
+-->

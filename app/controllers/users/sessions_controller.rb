@@ -30,33 +30,31 @@ class Users::SessionsController < Devise::SessionsController
   #https://autovice.jp/articles/172
 
   # POST /resource/sign_in
-  # 以下を追記
   def create
     @user = User.find_by(email: params[:user][:email])
-    if @user.valid_password?(params[:user][:password])
-      session[:otp_user_id] = @user.id
 
-      # 修正: リダイレクト先のパスを変更
+    if @user && @user.valid_password?(params[:user][:password])
+      session[:otp_user_id] = @user.id
       redirect_to new_two_step_verification_path and return
     else
-      flash.now[:alert] = 'Invalid Email or password.'
+      # ログインの試みが失敗した場合、新しいユーザーオブジェクトを設定してフォームを再レンダリング
+      self.resource = resource_class.new(sign_in_params)
+      clean_up_passwords(resource)
+      flash.now[:alert] = '無効なEmail又はパスワードです。'
       render :new
     end
   end
 
-   # 以下を追記
-   def create_two_step_verification
+  def create_two_step_verification
     user = User.find(session[:otp_user_id])
 
-    if user.validate_and_consume_otp!(params[:otp_attempt])
+    if user && user.validate_and_consume_otp!(params[:otp_attempt])
       sign_in(user)
       redirect_to root_path
     else
       render :users_new_two_step_verification
     end
   end
-
-  
 
 
 

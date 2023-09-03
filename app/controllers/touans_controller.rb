@@ -123,40 +123,144 @@ class TouansController < ApplicationController
     end
   end
 
-  def index
+
+    def index
+      @user = current_user
+      
+
+      @products = Product.where.not(documentnumber: nil).includes(:documents_attachments)
+      
+      
+
+      # キャッシュからproductsを取得
+      #if Rails.cache.exist?("products_#{current_user.id}")
+      #  @products = Rails.cache.read("products_#{current_user.id}")
+      #  Rails.logger.info("Loaded products from cache for user ID: #{@user.id}")
+      #else
+      #  Rails.logger.warn("Cache for products not found for user ID: #{@user.id}. Loading from database.")
+      #  @products = Product.where.not(documentnumber: nil).includes(:documents_attachments)
+      #end
+
+      
+    
+      # キャッシュからtouansを取得
+      if Rails.cache.exist?("touans_#{current_user.id}")
+        @touans = Rails.cache.read("touans_#{current_user.id}")
+        Rails.logger.info("Loaded touans from cache for user ID: #{@user.id}")
+      else
+        Rails.logger.warn("Cache for touans not found for user ID: #{@user.id}. Loading from database.")
+        @touans = Touan.where(user_id: current_user.id)
+        CacheDataJob.perform_async(@user.id) # キャッシュジョブを呼び出す
+      end
+    
+      @auditor = current_user.auditor
+      @iatf_data_audit = Iatf.where(audit: "2")
+      @iatf_data_audit_sub = Iatf.where(audit: "1")
+      @csrs = Csr.all
+      @iatflists = Iatflist.all
+      
+      owner_mapping = {
+          'sales' => ['sales', '営業プロセス'],
+          'process_design' => ['process_design', '製造工程設計プロセス'],
+          'production' => ['production', '製造プロセス'],
+          'inspection' => ['inspection', '製品検査プロセス'],
+          'release' => ['release', '引渡しプロセス'],
+          'procurement' => ['procurement', '購買プロセス'],
+          'equipment' => ['equipment', '設備管理プロセス'],
+          'measurement' => ['measurement', '測定機器管理プロセス'],
+          'policy' => ['policy', '方針プロセス'],
+          'satisfaction' => ['satisfaction', '顧客満足プロセス'],
+          'audit' => ['audit', '内部監査プロセス'],
+          'corrective_action' => ['corrective_action', '改善プロセス']
+      }
+    
+      if owner_mapping.key?(@user.owner)
+          key, process_name = owner_mapping[@user.owner]
+          @iatf_data = Iatf.where("#{key}": "2")
+          @iatf_data_sub = Iatf.where("#{key}": "1")
+          @process_name = process_name
+      end
+    end
+    
+
+
+#  def index
+#    @user = current_user
+
+#    owner_mapping = {
+#        'sales' => ['sales', '営業プロセス'],
+#        'process_design' => ['process_design', '製造工程設計プロセス'],
+#        
+#        'production' => ['production', '製造プロセス'],
+#        'inspection' => ['inspection', '製品検査プロセス'],
+#        'release' => ['release', '引渡しプロセス'],
+#        'procurement' => ['procurement', '購買プロセス'],
+#        'equipment' => ['equipment', '設備管理プロセス'],
+#        'measurement' => ['measurement', '測定機器管理プロセス'],
+#        'policy' => ['policy', '方針プロセス'],
+#        'satisfaction' => ['satisfaction', '顧客満足プロセス'],
+#        'audit' => ['audit', '内部監査プロセス'],
+#        'corrective_action' => ['corrective_action', '改善プロセス']
+
+#    }
+
+#    if owner_mapping.key?(@user.owner)
+#        key, process_name = owner_mapping[@user.owner]
+#        @iatf_data = Iatf.where("#{key}": "2")
+#        @iatf_data_sub = Iatf.where("#{key}": "1")
+#        @process_name = process_name
+#    else
+        # 一致するキーがない場合、関連するデータの取得をスキップします。
+#        return
+#    end
+
+    # 以下は、すべてのOWNERに共通のデータの取得です。
+    #@products = Product.all.includes(:documents_attachments)
+  
+    #以下のようにクエリを修正して、documentnumber が nil の Product レコードを取得しないようにできます：
+
+#    @products = Product.where.not(documentnumber: nil).includes(:documents_attachments)
+#    @touans = Touan.where(user_id: @user)
+#    @auditor = @user.auditor
+#    @csrs = Csr.all
+#    @iatflists = Iatflist.all
+#end
+
+
+  #def index
     #@touans = Touan.all
     #@products = Product.all
-    @products = Product.all.includes(:documents_attachments)
-    @touans = Touan.where(user_id: current_user)
-    @user = current_user
-    @auditor = current_user.auditor
-    @iatf_data_audit = Iatf.where(audit: "2")
-    @iatf_data_audit_sub = Iatf.where(audit: "1")
-    @csrs = Csr.all
-    @iatflists = Iatflist.all
+  #  @products = Product.all.includes(:documents_attachments)
+  #  @touans = Touan.where(user_id: current_user)
+  #  @user = current_user
+  #  @auditor = current_user.auditor
+  #  @iatf_data_audit = Iatf.where(audit: "2")
+  #  @iatf_data_audit_sub = Iatf.where(audit: "1")
+  #  @csrs = Csr.all
+  #  @iatflists = Iatflist.all
 
-    owner_mapping = {
-        'sales' => ['sales', '営業プロセス'],
-        'process_design' => ['process_design', '製造工程設計プロセス'],
-        'production' => ['production', '製造プロセス'],
-        'inspection' => ['inspection', '製品検査プロセス'],
-        'release' => ['release', '引渡しプロセス'],
-        'procurement' => ['procurement', '購買プロセス'],
-        'equipment' => ['equipment', '設備管理プロセス'],
-        'measurement' => ['measurement', '測定機器管理プロセス'],
-        'policy' => ['policy', '方針プロセス'],
-        'satisfaction' => ['satisfaction', '顧客満足プロセス'],
-        'audit' => ['audit', '内部監査プロセス'],
-        'corrective_action' => ['corrective_action', '改善プロセス']
-    }
+  #  owner_mapping = {
+  #      'sales' => ['sales', '営業プロセス'],
+  #      'process_design' => ['process_design', '製造工程設計プロセス'],
+  #      'production' => ['production', '製造プロセス'],
+  #      'inspection' => ['inspection', '製品検査プロセス'],
+  #      'release' => ['release', '引渡しプロセス'],
+  #      'procurement' => ['procurement', '購買プロセス'],
+  #      'equipment' => ['equipment', '設備管理プロセス'],
+  #      'measurement' => ['measurement', '測定機器管理プロセス'],
+  #      'policy' => ['policy', '方針プロセス'],
+  #      'satisfaction' => ['satisfaction', '顧客満足プロセス'],
+  #      'audit' => ['audit', '内部監査プロセス'],
+  #      'corrective_action' => ['corrective_action', '改善プロセス']
+  #  }
 
-    if owner_mapping.key?(current_user.owner)
-        key, process_name = owner_mapping[current_user.owner]
-        @iatf_data = Iatf.where("#{key}": "2")
-        @iatf_data_sub = Iatf.where("#{key}": "1")
-        @process_name = process_name
-    end
-end
+  #  if owner_mapping.key?(current_user.owner)
+  #      key, process_name = owner_mapping[current_user.owner]
+  #      @iatf_data = Iatf.where("#{key}": "2")
+  #      @iatf_data_sub = Iatf.where("#{key}": "1")
+  #      @process_name = process_name
+  #  end
+  #end
 
   #def index
 #

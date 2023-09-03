@@ -1,36 +1,51 @@
 class DownloadsController < ApplicationController
-  before_action :find_product, only: [:verify_password, :download]
-
   def verify_password
-    # BlobのIDをセッションに保存
+    Rails.logger.debug("params[:blob_id]: #{params[:blob_id]}")
+
+    Rails.logger.debug("session[:download_blob_id]: #{session[:download_blob_id]}")
+    Rails.logger.debug("Entered password: #{params[:password]}")
+    Rails.logger.debug("Session password: #{session[:download_password]}")
+
+    @document = Product.find(params[:id])
+    # ここにログ出力を追加
+    Rails.logger.debug("@document: #{@document.inspect}")
     session[:download_blob_id] = params[:blob_id]
-    # ここでは、単にパスワード入力フォームを表示するためのビューをレンダリングします。
-    # 特定のロジックは必要ありません。
-  end
 
-  def download
+    blob_id = session[:download_blob_id]
+    Rails.logger.debug("Blob ID: #{blob_id}")
+
     entered_password = params[:password]
-    
-    Rails.logger.info("Entered password: #{entered_password}")
-    Rails.logger.info("Session password: #{session[:download_password]}")
-    
-    if entered_password == session[:download_password]
-      # セッションからBlobのIDを取得
-      blob_id = session[:download_blob_id]
-      file_attachment = ActiveStorage::Attachment.find(blob_id)
-      file = file_attachment.blob
 
-      # ActiveStorage のサービスURLを使用してファイルをダウンロードさせます
-      redirect_to rails_blob_url(file)
+    if entered_password == session[:download_password]
+      file_attachment = ActiveStorage::Attachment.find_by(blob_id: blob_id)
+
+      if file_attachment
+        file = file_attachment.blob
+        @download_url = rails_blob_url(file)
+      else
+        Rails.logger.warn("No attachment found for blob ID: #{blob_id}")
+        flash[:alert] = "ファイルが見つかりませんでした。"
+        render :verify_password
+        return
+      end
     else
       flash[:alert] = "Invalid password"
       render :verify_password
     end
   end
-  
-  private
 
-  def find_product
-    @product = Product.find(params[:id])
+  def download
+    blob_id = session[:download_blob_id]
+    file_attachment = ActiveStorage::Attachment.find_by(blob_id: blob_id)
+
+    # エラーハンドリングを追加
+    unless file_attachment
+      Rails.logger.warn("No attachment found for blob ID: #{blob_id} during download action.")
+      redirect_to root_path, alert: "ダウンロードするファイルが見つかりませんでした。"
+      return
+    end
+
+    file = file_attachment.blob
+    send_data file.download, filename: file.filename.to_s, disposition: 'attachment'
   end
 end

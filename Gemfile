@@ -223,3 +223,16 @@ gem 'rqrcode'
 group :development do
   gem 'bullet'
 end
+
+
+#letter_opener_web gem は、開発環境で送信されるメールをブラウザ上で確認できるようにするためのgemです。
+#Docker環境でもローカル開発環境でも使用できます。
+#Docker環境で letter_opener_web を使用する場合、次の手順を参考に設定することができます：
+
+gem 'letter_opener_web', group: :development
+
+#ログイン画面が表示されたときに、バックグラウンドでデータを事前に読み込み、
+#キャッシュするためには、以下の手順を実施する必要があります：
+
+gem 'sidekiq'
+gem 'redis'

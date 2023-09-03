@@ -1,5 +1,9 @@
 class ApplicationController < ActionController::Base
 
+
+  helper YourHelperName
+
+
   #ユーザがログインしているかどうかを確認し、ログインしていない場合はユーザをログインページにリダイレクトする。
   #https://qiita.com/gogotakataka1234/items/c7d5c0b3d8953216259e
   

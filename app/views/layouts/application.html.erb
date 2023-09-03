@@ -35,6 +35,12 @@
   </head>
 
   <body>
+  <% flash.each do |name, msg| %>
+    <div class="alert <%= bootstrap_class_for(name) %> p-4 mt-4">
+      <%= msg %>
+    </div>
+  <% end %>
+
   <!--
     <main class="container mx-auto mt-28 px-5 flex">
     </main>

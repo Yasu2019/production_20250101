@@ -3,7 +3,9 @@ class SuppliersController < ApplicationController
 
   # GET /suppliers
   def index
-    @suppliers = Supplier.all
+    #@suppliers = Supplier.all
+    @suppliers = Supplier.includes(documents_attachments: :blob).all
+
   end
 
   # GET /suppliers/1

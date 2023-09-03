@@ -285,7 +285,8 @@ class ProductsController < ApplicationController
 
   def training
     #@products=Product.all.page(params[:page]).per(10)
-    @products=Product.all
+    #@products=Product.all
+    @products = Product.includes(:documents_attachments).all
 
     #@user = current_user
   end
@@ -296,9 +297,10 @@ class ProductsController < ApplicationController
   end
 
   def index
+
     #@products = Product.all
     #@products = Product.page(params[:page]).per(8)
-    @q = Product.ransack(params[:q])
+    @q = Product.includes(:documents_attachments).ransack(params[:q]) # includesを追加
     @products = @q.result(distinct: true)
     @user = current_user
     @testmondais = Testmondai.all
@@ -320,7 +322,8 @@ class ProductsController < ApplicationController
   end
 
   def index2
-    @products = Product.where(partnumber:params[:partnumber])
+    #@products = Product.where(partnumber:params[:partnumber])
+    @products = Product.includes(:documents_attachments).where(partnumber: params[:partnumber])
   end
 
   def index3

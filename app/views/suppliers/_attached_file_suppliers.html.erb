@@ -4,10 +4,10 @@
     <% ext = File.extname(fullfilename).downcase %>
     <% icon = icon_for_extension(ext) %>
                 
-    <td>
-    <%= link_to image_tag(icon_for_extension(ext)), show_verify_password_supplier_path(id: image.record.id, blob_id: image.blob.id), class: 'infoicon', data: { toggle: 'tooltip' }, title: image.blob.filename %>
+  
+    <td><%= link_to image_tag(icon), supplier_verify_password_supplier_path(id: image.record.id, blob_id: image.blob.id), class: 'infoicon', data: { toggle: 'tooltip' }, title: image.blob.filename %></td>
 
-    </td>
+  
   <% end %>
 <% end %>
 

@@ -87,18 +87,28 @@ end
   resources :products, only: [:new, :create, :show, :edit] do
     collection { post :import }
     member do
-      get 'verify_password/:blob_id', to: 'downloadable#verify_password', as: :show_verify_password
-      post 'verify_password/:blob_id', to: 'downloadable#verify_password', as: :verify_password
+      get 'verify_password/:blob_id', to: 'downloadable#verify_password', as: :product_verify_password
+      post 'verify_password/:blob_id', to: 'downloadable#verify_password_post', as: :product_verify_password_post
       post 'download', to: 'downloadable#download'
     end
   end
   
+  
   resources :suppliers, only: [] do
     member do
-      get 'verify_password/:blob_id', to: 'downloadable#verify_password', as: :show_verify_password
+      get 'verify_password/:blob_id', to: 'downloadable#verify_password', as: :supplier_verify_password
       post 'download', to: 'downloadable#download'
     end
   end
+  
+  resources :touans, only: [] do
+    member do
+      get 'verify_password/:blob_id', to: 'downloadable#verify_password', as: :touan_verify_password
+      post 'download', to: 'downloadable#download'
+    end
+  end
+  
+  
   
   
   

@@ -16,14 +16,17 @@ CSV.foreach(Rails.root.join("db/record/attachedfile.csv"), headers: true) do |ro
   product.documentname = row["documentname"]
   product.documentrev = row["documentrev"]
   product.documentcategory = row["documentcategory"]
-  product.documentnumber = row["documentnumber"]
+
+  # documentnumberが空白である場合はnilに設定
+  product.documentnumber = row["documentnumber"].present? ? row["documentnumber"].strip : nil
+
   product.start_time = row["start_time"]
   product.deadline_at = row["deadline_at"]
   product.end_at = row["end_at"]
   product.goal_attainment_level = row["goal_attainment_level"]
   product.tasseido = row["tasseido"]
   product.object = row["object"]
-  
+
   if row["filename"].present?
     file_path = Rails.root.join("db/documents/#{row["filename"]}")
     if File.file?(file_path)
@@ -34,9 +37,12 @@ CSV.foreach(Rails.root.join("db/record/attachedfile.csv"), headers: true) do |ro
   else
     puts "Attached Filename is empty on csv data"
   end
-  
-  product.save
+
+  unless product.save
+    puts "Failed to save product with documentnumber: #{product.documentnumber}. Errors: #{product.errors.full_messages.join(', ')}"
+  end
 end
+
 
 #CSV.foreach('db/category.csv') do |row|
 #  Phase.create(:id => row[0], :name => row[1], :ancestry => row[2])

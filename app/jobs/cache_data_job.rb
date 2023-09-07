@@ -4,6 +4,7 @@ class CacheDataJob
   def perform(user_id)
     # データを取得
     #products = Product.where.not(documentnumber: nil).includes(:documents_attachments)
+    products = Product.all.includes(:documents_attachments)
     touans = Touan.where(user_id: user_id)
     #user = User.find(user_id)
     #auditor = user.auditor
@@ -14,6 +15,7 @@ class CacheDataJob
     
     # キャッシュに保存
     #Rails.cache.write("products_#{user_id}", products)
+    Rails.cache.write("products_all", products)
     Rails.cache.write("touans_#{user_id}", touans)
     #Rails.cache.write("user_#{user_id}", user)
     #Rails.cache.write("auditor_#{user_id}", auditor)

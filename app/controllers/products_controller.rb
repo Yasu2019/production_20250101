@@ -298,12 +298,32 @@ class ProductsController < ApplicationController
 
   def index
 
-    #@products = Product.all
-    #@products = Product.page(params[:page]).per(8)
-    @q = Product.includes(:documents_attachments).ransack(params[:q]) # includesを追加
-    @products = @q.result(distinct: true)
+
+    # 先にransackの検索条件を適用
+    @q = Product.ransack(params[:q])
+    cached_products = Rails.cache.read("products_all")
+
+    if cached_products
+      @products = @q.result(distinct: true).to_a & cached_products
+    else
+      @products = @q.result(distinct: true).includes(:documents_attachments).to_a
+      Rails.cache.write("products_all", @products)
+    end
+
     @user = current_user
     @testmondais = Testmondai.all
+
+
+
+
+
+
+
+
+    #@q = Product.includes(:documents_attachments).ransack(params[:q]) # includesを追加
+    #@products = @q.result(distinct: true)
+    #@user = current_user
+    #@testmondais = Testmondai.all
 
 
     #data = []

@@ -35,17 +35,33 @@
   </head>
 
   <body>
+
   <% flash.each do |name, msg| %>
-    <div class="alert <%= bootstrap_class_for(name) %> p-4 mt-4">
-      <%= msg %>
-    </div>
+    <% if name.to_sym == :alert %>
+      <p class="alert alert-danger blinking-text font-weight-bold" style="font-size: 24px;"><%= msg %></p>
+    <% elsif name.to_sym == :notice %>
+      <p class="alert <%= bootstrap_class_for(name) %> font-weight-bold" style="font-size: 24px;"><%= msg %></p>
+    <% else %>
+      <div class="alert <%= bootstrap_class_for(name) %> p-4 mt-4">
+        <%= msg %>
+      </div>
+    <% end %>
   <% end %>
 
-  <!--
-    <main class="container mx-auto mt-28 px-5 flex">
-    </main>
-  -->
-      <%= yield %>
+  <%= yield %>
 
-  </body>
+  <style>
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    .blinking-text {
+      animation: blink 1s infinite;
+    }
+  </style>
+</body>
+
+
 </html>

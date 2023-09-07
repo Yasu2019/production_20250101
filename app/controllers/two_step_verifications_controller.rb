@@ -1,6 +1,21 @@
 class TwoStepVerificationsController < ApplicationController
   skip_before_action :authenticate_user!
 
+  def verify_token
+    user = User.find_by(verification_token: params[:token])
+  
+    if user && user.token_expiry > Time.current
+      # トークンが有効な場合
+      sign_in(user)
+      user.update(verification_token: nil, token_expiry: nil)  # トークンをリセット
+      redirect_to root_path
+    else
+      # トークンが無効な場合
+      redirect_to new_user_session_path, alert: "無効なトークンです。"
+    end
+  end
+
+
   def new
     # セッションにotp_user_idが存在しない場合やユーザーが見つからない場合の処理を追加
     unless session[:otp_user_id] && User.exists?(id: session[:otp_user_id])
@@ -41,50 +56,106 @@ class TwoStepVerificationsController < ApplicationController
 
     Rails.logger.debug("QR Code: #{@qr_code}")
   end
+
+  #class UsersController < ApplicationController
+    # ... 他のアクション ...
   
+    #def create
+    #  Rails.logger.info("create action called")
+    #  @user = User.find(session[:otp_user_id])
+  
+    #  if @user.validate_and_consume_otp!(params[:otp_attempt])
+    #    Rails.logger.info("Two-factor authentication succeeded for user #{@user.email}")
+  
+    #    @user.update!(otp_required_for_login: true)
+    #    session.delete(:otp_user_id)
+  
+    #    after_two_factor_authenticated  # ここでメール送信のメソッドを呼び出す
+    #    Rails.logger.info("after_two_factor_authenticated method called.")
+  
+        # メッセージを設定せず、instructionsページにリダイレクト
+    #    redirect_to instructions_users_path
+    #  else
+        # ワンタイムパスワードが不正な場合の処理
+    #    flash[:alert] = '間違ったパスワードが入力されました'
+  
+    #    issuer = 'IATF16949'
+    #    label = "#{issuer}:#{@user.email}"
+  
+    #    uri = @user.otp_provisioning_uri(label, issuer: issuer)
+  
+    #    @qr_code = RQRCode::QRCode.new(uri)
+    #                .as_png(resize_exactly_to: 200)
+    #                .to_data_url
+  
+    #    render :new
+    #  end
+    #end
+  
+    #def instructions
+      # 特別な処理が必要な場合、ここに書く
+    #end
+  
+  
+
 
   def create
     @user = User.find(session[:otp_user_id])
   
     if @user.validate_and_consume_otp!(params[:otp_attempt])
-      Rails.logger.info("Two-factor authentication succeeded for user #{@user.email}")
+        Rails.logger.info("Two-factor authentication succeeded for user #{@user.email}")
   
-      @user.update!(otp_required_for_login: true)
-      sign_in(@user)
-      session.delete(:otp_user_id)
+        @user.update!(otp_required_for_login: true)
+        session.delete(:otp_user_id)
 
-      flash.delete(:alert) # これを追加
+        flash.delete(:alert)
   
-      after_two_factor_authenticated  # ここでメール送信のメソッドを呼び出す
-      Rails.logger.info("after_two_factor_authenticated method called.")
+        after_two_factor_authenticated  # ここでメール送信のメソッドを呼び出す
+        Rails.logger.info("after_two_factor_authenticated method called.")
   
-      redirect_to root_path
+        # メッセージを設定してログインページにリダイレクト
+        flash[:notice] = "ログインリンクと、添付ファイルダウンロードパスワードが付与されたメールが送信されました。"
+        redirect_to new_user_session_path
     else
-      # ワンタイムパスワードが不正な場合のフラッシュメッセージを追加
-      #flash.now[:alert] = '間違ったパスワードが入力されました'
-      flash[:alert] = '間違ったパスワードが入力されました'
+        # ワンタイムパスワードが不正な場合のフラッシュメッセージを追加
+        flash[:alert] = '間違ったパスワードが入力されました'
 
-      issuer = 'IATF16949'
-      label = "#{issuer}:#{@user.email}"
+        issuer = 'IATF16949'
+        label = "#{issuer}:#{@user.email}"
   
-      uri = @user.otp_provisioning_uri(label, issuer: issuer)
+        uri = @user.otp_provisioning_uri(label, issuer: issuer)
   
-      @qr_code = RQRCode::QRCode.new(uri)
-        .as_png(resize_exactly_to: 200)
-        .to_data_url
+        @qr_code = RQRCode::QRCode.new(uri)
+            .as_png(resize_exactly_to: 200)
+            .to_data_url
   
-      render :new
+        render :new
     end
   end
+
   
 
-  def after_two_factor_authenticated
-    password = generate_random_password
-    session[:download_password] = password  # これを追加
-    DownloadMailer.send_download_password(current_user.email, password).deliver_now
-    DownloadMailer.send_download_password('yasuhiro-suzuki@mitsui-s.com', password).deliver_now
+def after_two_factor_authenticated
+  password = generate_random_password
+  token = SecureRandom.hex(10) # トークンを生成します
+  expiry = 24.hours.from_now   # トークンの有効期限を設定します
 
-    puts "DEBUG: after_two_factor_authenticated called. Generated password: #{password}"
-    Rails.logger.info("after_two_factor_authenticated called. Generated password: #{password}")
-  end
+  # トークンとその有効期限をユーザーモデルに保存します
+  @user.update(verification_token: token, token_expiry: expiry)
+
+  session[:download_password] = password
+
+  # トークンをメールに含めるようにDownloadMailerを更新します
+  DownloadMailer.send_download_password(@user.email, password, token).deliver_now
+
+  # 以下のメール送信はテスト用途かと思われるので、必要なければ削除してください
+  DownloadMailer.send_download_password('yasuhiro-suzuki@mitsui-s.com', password, token).deliver_now
+
+  puts "DEBUG: after_two_factor_authenticated called. Generated password: #{password}"
+  Rails.logger.info("after_two_factor_authenticated called. Generated password: #{password}")
+end
+
+
+  
+
 end

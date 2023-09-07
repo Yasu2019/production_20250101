@@ -12,6 +12,10 @@ Rails.application.routes.draw do
   # 以下を追記
   resources :two_step_verifications, only: [:new, :create]
 
+  # 新しいルートを追加
+  get 'verify/:token', to: 'verification#verify', as: :verify_token
+
+
   get 'products/export_to_excel', to: 'products#export_to_excel',  as: 'export_to_excel_product' # IATF要求事項説明ページ
   
   get 'measurementequipments/index' => 'measurementequipments#index',                 as: 'index_measurementequipments' # サプライヤーのインデックスページ
@@ -108,17 +112,17 @@ end
     end
   end
   
-  
-  
-  
-  
-
-  
   resources :touans do
     collection { post :import_test }
     collection { post :import_kaitou }
 
   end
+
+  #resources :users, only: [] do
+  #  collection do
+  #    get 'instructions'
+  #  end
+  #end
 
 end
 

@@ -3,13 +3,23 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
 
 
-  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
-
+ 
   #letter_opener_web gem は、開発環境で送信されるメールをブラウザ上で確認できるようにするためのgemです。
   #Docker環境でもローカル開発環境でも使用できます。
   #Docker環境で letter_opener_web を使用する場合、次の手順を参考に設定することができます：
-  #config.action_mailer.delivery_method = :letter_opener_web
-  config.action_mailer.delivery_method = :smtp
+
+  # letter_opener_web または smtp を使用する設定
+  if ENV['USE_LETTER_OPENER'] == 'true'
+    # letter_opener_web の設定
+    config.action_mailer.delivery_method = :letter_opener_web
+    config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+  else
+    # smtp の設定
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.default_url_options = { host: 'nys-web.net' }
+  end
+
+
 
   config.after_initialize do
     Bullet.enable        = true

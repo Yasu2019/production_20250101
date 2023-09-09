@@ -298,6 +298,11 @@ class ProductsController < ApplicationController
 
   def index
 
+    # 現在のユーザーのトークンを確認し、存在する場合は削除
+  #if current_user && current_user.verification_token
+  #  current_user.update(verification_token: nil, token_expiry: nil)
+  #end
+
 
     # 先にransackの検索条件を適用
     @q = Product.ransack(params[:q])

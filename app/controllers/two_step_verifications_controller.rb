@@ -1,19 +1,19 @@
 class TwoStepVerificationsController < ApplicationController
   skip_before_action :authenticate_user!
 
-  def verify_token
-    user = User.find_by(verification_token: params[:token])
+  #def verify_token
+  #  user = User.find_by(verification_token: params[:token])
   
-    if user && user.token_expiry > Time.current
+  #  if user && user.token_expiry > Time.current
       # トークンが有効な場合
-      sign_in(user)
-      user.update(verification_token: nil, token_expiry: nil)  # トークンをリセット
-      redirect_to root_path
-    else
+  #    sign_in(user)
+  #    user.update(verification_token: nil, token_expiry: nil)  # トークンをリセット
+  #    redirect_to root_path
+  #  else
       # トークンが無効な場合
-      redirect_to new_user_session_path, alert: "無効なトークンです。"
-    end
-  end
+  #    redirect_to new_user_session_path, alert: "無効なトークンです。"
+  #  end
+  #end
 
 
   def new
@@ -57,45 +57,6 @@ class TwoStepVerificationsController < ApplicationController
     Rails.logger.debug("QR Code: #{@qr_code}")
   end
 
-  #class UsersController < ApplicationController
-    # ... 他のアクション ...
-  
-    #def create
-    #  Rails.logger.info("create action called")
-    #  @user = User.find(session[:otp_user_id])
-  
-    #  if @user.validate_and_consume_otp!(params[:otp_attempt])
-    #    Rails.logger.info("Two-factor authentication succeeded for user #{@user.email}")
-  
-    #    @user.update!(otp_required_for_login: true)
-    #    session.delete(:otp_user_id)
-  
-    #    after_two_factor_authenticated  # ここでメール送信のメソッドを呼び出す
-    #    Rails.logger.info("after_two_factor_authenticated method called.")
-  
-        # メッセージを設定せず、instructionsページにリダイレクト
-    #    redirect_to instructions_users_path
-    #  else
-        # ワンタイムパスワードが不正な場合の処理
-    #    flash[:alert] = '間違ったパスワードが入力されました'
-  
-    #    issuer = 'IATF16949'
-    #    label = "#{issuer}:#{@user.email}"
-  
-    #    uri = @user.otp_provisioning_uri(label, issuer: issuer)
-  
-    #    @qr_code = RQRCode::QRCode.new(uri)
-    #                .as_png(resize_exactly_to: 200)
-    #                .to_data_url
-  
-    #    render :new
-    #  end
-    #end
-  
-    #def instructions
-      # 特別な処理が必要な場合、ここに書く
-    #end
-  
   
 
 
@@ -138,7 +99,9 @@ class TwoStepVerificationsController < ApplicationController
 def after_two_factor_authenticated
   password = generate_random_password
   token = SecureRandom.hex(10) # トークンを生成します
-  expiry = 24.hours.from_now   # トークンの有効期限を設定します
+  #expiry = 24.hours.from_now   # トークンの有効期限を設定します
+  expiry = 24.hours.from_now.in_time_zone
+
 
   # トークンとその有効期限をユーザーモデルに保存します
   @user.update(verification_token: token, token_expiry: expiry)
@@ -148,10 +111,13 @@ def after_two_factor_authenticated
   # トークンをメールに含めるようにDownloadMailerを更新します
   DownloadMailer.send_download_password(@user.email, password, token).deliver_now
 
-  # 以下のメール送信はテスト用途かと思われるので、必要なければ削除してください
-  DownloadMailer.send_download_password('yasuhiro-suzuki@mitsui-s.com', password, token).deliver_now
+  Rails.logger.info("Generated token: #{token}")
 
-  puts "DEBUG: after_two_factor_authenticated called. Generated password: #{password}"
+
+  # 以下のメール送信はテスト用途かと思われるので、必要なければ削除してください
+  #DownloadMailer.send_download_password('yasuhiro-suzuki@mitsui-s.com', password, token).deliver_now
+
+  #puts "DEBUG: after_two_factor_authenticated called. Generated password: #{password}"
   Rails.logger.info("after_two_factor_authenticated called. Generated password: #{password}")
 end
 

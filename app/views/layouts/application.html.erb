@@ -38,9 +38,9 @@
 
   <% flash.each do |name, msg| %>
     <% if name.to_sym == :alert %>
-      <p class="alert alert-danger blinking-text font-weight-bold" style="font-size: 24px;"><%= msg %></p>
+      <div class="alert alert-danger p-4 mt-4 blinking-text font-weight-bold" style="font-size: 24px;"><%= msg %></div>
     <% elsif name.to_sym == :notice %>
-      <p class="alert <%= bootstrap_class_for(name) %> font-weight-bold" style="font-size: 24px;"><%= msg %></p>
+      <div class="alert <%= bootstrap_class_for(name) %> p-4 mt-4 font-weight-bold" style="font-size: 24px;"><%= msg %></div>
     <% else %>
       <div class="alert <%= bootstrap_class_for(name) %> p-4 mt-4">
         <%= msg %>

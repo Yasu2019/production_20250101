@@ -9,7 +9,7 @@ Rails.application.configure do
   #Docker環境で letter_opener_web を使用する場合、次の手順を参考に設定することができます：
 
   # letter_opener_web または smtp を使用する設定
-  if ENV['USE_LETTER_OPENER'] == 'true'
+  if ENV['USE_LETTER_OPENER'].to_s.downcase == 'true'
     # letter_opener_web の設定
     config.action_mailer.delivery_method = :letter_opener_web
     config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }

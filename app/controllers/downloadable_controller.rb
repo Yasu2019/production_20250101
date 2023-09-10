@@ -1,28 +1,57 @@
 class DownloadableController < ApplicationController
   before_action :set_downloadable
 
-  def verify_password_post
-    blob_id = params[:blob_id]
-    entered_password = params[:password]
+  class DownloadableController < ApplicationController
+    before_action :set_downloadable
   
-    if entered_password == session[:download_password]
-      @document = ActiveStorage::Attachment.find_by(blob_id: blob_id)
+    # ...
   
-      if @document
-        file = @document.blob
-        @download_url = rails_blob_url(file)
-        # ファイルのダウンロードURLを提供するページをレンダリング
-        render :download_page
+    def verify_password_post
+      blob_id = params[:blob_id]
+      entered_password = params[:password]
+    
+      if entered_password == session[:download_password]
+        session[:download_blob_id] = params[:blob_id]
+        redirect_to download_product_path(id: @downloadable.id)
       else
-        Rails.logger.warn("No attachment found for blob ID: #{blob_id}")
-        flash[:alert] = "ファイルが見つかりませんでした。"
+        flash[:alert] = "Invalid password"
         render :verify_password
       end
-    else
-      flash[:alert] = "Invalid password"
-      render :verify_password
     end
+  
+    # ... (other methods)
+  
   end
+  
+
+
+
+
+
+
+  #メール送信しなければ動くコード
+  #def verify_password_post
+  #  blob_id = params[:blob_id]
+  #  entered_password = params[:password]
+  
+  #  if entered_password == session[:download_password]
+  #    @document = ActiveStorage::Attachment.find_by(blob_id: blob_id)
+  
+  #    if @document
+  #      file = @document.blob
+  #      @download_url = rails_blob_url(file)
+        # ファイルのダウンロードURLを提供するページをレンダリング
+  #      render :download_page
+  #    else
+  #      Rails.logger.warn("No attachment found for blob ID: #{blob_id}")
+  #      flash[:alert] = "ファイルが見つかりませんでした。"
+  #      render :verify_password
+  #    end
+  #  else
+  #    flash[:alert] = "Invalid password"
+  #    render :verify_password
+  #  end
+  #end
 
   def new
     begin

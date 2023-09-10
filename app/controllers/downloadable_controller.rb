@@ -1,10 +1,7 @@
 class DownloadableController < ApplicationController
   before_action :set_downloadable
 
-  class DownloadableController < ApplicationController
-    before_action :set_downloadable
-  
-    # ...
+
   
     def verify_password_post
       blob_id = params[:blob_id]

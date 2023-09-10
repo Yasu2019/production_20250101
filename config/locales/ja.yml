@@ -1,6 +1,13 @@
 #[初学者]Railsのi18nによる日本語化対応
 #https://qiita.com/shimadama/items/7e5c3d75c9a9f51abdd5
 ja:
+  views:
+    pagination:
+      first: "先頭ページ "
+      previous: "前のページ "
+      next: "次のページ "
+      last: "最終ページ "
+      truncate: " … "
   activerecord:
     #https://kossy-web-engineer.hatenablog.com/entry/2018/09/24/115552
     attributes:

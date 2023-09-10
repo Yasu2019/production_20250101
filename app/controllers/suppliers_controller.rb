@@ -5,6 +5,7 @@ class SuppliersController < ApplicationController
   def index
     #@suppliers = Supplier.all
     @suppliers = Supplier.includes(documents_attachments: :blob).all
+    #@suppliers = Supplier.includes(documents_attachments: :blob).page(params[:page]).per(12)
 
   end
 

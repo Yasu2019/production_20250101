@@ -3,15 +3,17 @@
     <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-lg inline-block" id="notice"><%= notice %></p>
   <% end %>
 
-  <div class="flex justify-between items-center">
+  <div class="flex justify-between items-center  ">
     <h1 class="font-bold text-4xl">供給者リスト</h1>
-    <%= link_to '新規供給者登録', new_supplier_path, class: "rounded-lg py-3 px-5 bg-blue-600 text-white block font-medium" %>
+    <%= link_to '新規供給者登録', new_supplier_path, class: "text-2xl rounded-lg py-3 px-5 bg-blue-600 text-white block font-medium" %>
   </div>
 <!--
   <div id="suppliers" class="min-w-full">
     <%= render @suppliers %>
   </div>
-  -->
+  
+  
+   -->
   <table  class="sticky_table table-striped table-hover border-separate border-spacing-1 border-2 border-blue-900 bg-gray-100">
             <thead>
               <tr>  
@@ -69,6 +71,7 @@
                   <% end %>
             </tbody>
 </table>
+</div>
 
 
 

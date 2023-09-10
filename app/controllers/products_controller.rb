@@ -297,54 +297,32 @@ class ProductsController < ApplicationController
   end
 
   def index
-
     # 現在のユーザーのトークンを確認し、存在する場合は削除
-  #if current_user && current_user.verification_token
-  #  current_user.update(verification_token: nil, token_expiry: nil)
-  #end
-
+    #if current_user && current_user.verification_token
+    #  current_user.update(verification_token: nil, token_expiry: nil)
+    #end
 
     # 先にransackの検索条件を適用
     @q = Product.ransack(params[:q])
-    cached_products = Rails.cache.read("products_all")
 
-    if cached_products
-      @products = @q.result(distinct: true).to_a & cached_products
-    else
-      @products = @q.result(distinct: true).includes(:documents_attachments).to_a
-      Rails.cache.write("products_all", @products)
-    end
+    #cached_products = Rails.cache.read("products_all")
+
+    #if cached_products
+      # キャッシュされたデータを読み込んでからページネーションを適用
+    #  @products = (@q.result(distinct: true).to_a & cached_products).page(params[:page]).per(12)
+    #else
+      # データベースからデータを取得してからページネーションを適用
+    #  @products = @q.result(distinct: true).includes(:documents_attachments).page(params[:page]).per(12)
+    #  Rails.cache.write("products_all", @products.to_a)
+    #end
+
+    @products = @q.result(distinct: true).includes(:documents_attachments).page(params[:page]).per(12)
+    Rails.cache.write("products_all", @products.to_a)
+
 
     @user = current_user
     @testmondais = Testmondai.all
-
-
-
-
-
-
-
-
-    #@q = Product.includes(:documents_attachments).ransack(params[:q]) # includesを追加
-    #@products = @q.result(distinct: true)
-    #@user = current_user
-    #@testmondais = Testmondai.all
-
-
-    #data = []
-    #data_test = []
-    #if File.file?('/myapp/db/record/test_mondai.csv')
-    #    CSV.foreach('/myapp/db/record/test_mondai.csv', headers: true) do |row|
-    #      data=[row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8]]
-    #      data_test.push(data)
-    #    end
-    #    @test_mondai = data_test
-    #end
-
-
-    #@test_mondais=Test_mondai
-
-  end
+end
 
   def index2
     #@products = Product.where(partnumber:params[:partnumber])

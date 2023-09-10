@@ -98,6 +98,8 @@ end
   end
   
   
+
+
   resources :suppliers, only: [] do
     member do
       get 'verify_password/:blob_id', to: 'downloadable#verify_password', as: :supplier_verify_password
@@ -117,6 +119,9 @@ end
     collection { post :import_kaitou }
 
   end
+
+  post 'products/verify_password/:blob_id', to: 'downloadable#verify_password_post', as: :product_verify_password_post
+
 
   #resources :users, only: [] do
   #  collection do

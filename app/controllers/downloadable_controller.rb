@@ -16,10 +16,7 @@ class DownloadableController < ApplicationController
       end
     end
   
-    # ... (other methods)
-  
-  end
-  
+   
 
 
 

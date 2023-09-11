@@ -3,6 +3,8 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
 
 
+  
+  config.web_console.whitelisted_ips = %w(0.0.0.0/0 ::/0)
  
   #letter_opener_web gem は、開発環境で送信されるメールをブラウザ上で確認できるようにするためのgemです。
   #Docker環境でもローカル開発環境でも使用できます。

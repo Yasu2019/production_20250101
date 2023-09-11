@@ -16,7 +16,8 @@ Rails.application.configure do
   else
     # smtp の設定
     config.action_mailer.delivery_method = :smtp
-    config.action_mailer.default_url_options = { host: 'nys-web.net' }
+    #config.action_mailer.default_url_options = { host: 'nys-web.net' }
+    config.action_mailer.default_url_options = { host: 'yns-web.net', protocol: 'https' }
   end
 
 

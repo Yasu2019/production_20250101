@@ -1,19 +1,6 @@
 class TwoStepVerificationsController < ApplicationController
   skip_before_action :authenticate_user!
 
-  #def verify_token
-  #  user = User.find_by(verification_token: params[:token])
-  
-  #  if user && user.token_expiry > Time.current
-      # トークンが有効な場合
-  #    sign_in(user)
-  #    user.update(verification_token: nil, token_expiry: nil)  # トークンをリセット
-  #    redirect_to root_path
-  #  else
-      # トークンが無効な場合
-  #    redirect_to new_user_session_path, alert: "無効なトークンです。"
-  #  end
-  #end
 
 
   def new
@@ -42,16 +29,16 @@ class TwoStepVerificationsController < ApplicationController
       .to_data_url
     
     # キャッシュジョブの開始をログに記録
-  Rails.logger.info("Starting CacheDataJob for user ID: #{@user.id}")
+    #Rails.logger.info("Starting CacheDataJob for user ID: #{@user.id}")
 
-  # QRコードが生成された直後にキャッシュジョブを呼び出す
-  if CacheDataJob.perform_async(@user.id)
+    # QRコードが生成された直後にキャッシュジョブを呼び出す
+    #if CacheDataJob.perform_async(@user.id)
     # キャッシュの読み込みが成功した場合のログ
-    Rails.logger.info("Successfully started CacheDataJob for user ID: #{@user.id}")
-  else
+    #Rails.logger.info("Successfully started CacheDataJob for user ID: #{@user.id}")
+    #else
     # キャッシュの読み込みが失敗した場合のログ
-    Rails.logger.error("Failed to start CacheDataJob for user ID: #{@user.id}")
-  end
+    #Rails.logger.error("Failed to start CacheDataJob for user ID: #{@user.id}")
+    #end
   
 
     Rails.logger.debug("QR Code: #{@qr_code}")

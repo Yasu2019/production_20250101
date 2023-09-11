@@ -144,14 +144,16 @@ class TouansController < ApplicationController
       
     
       # キャッシュからtouansを取得
-      if Rails.cache.exist?("touans_#{current_user.id}")
-        @touans = Rails.cache.read("touans_#{current_user.id}")
-        Rails.logger.info("Loaded touans from cache for user ID: #{@user.id}")
-      else
-        Rails.logger.warn("Cache for touans not found for user ID: #{@user.id}. Loading from database.")
-        @touans = Touan.where(user_id: current_user.id)
-        CacheDataJob.perform_async(@user.id) # キャッシュジョブを呼び出す
-      end
+      #if Rails.cache.exist?("touans_#{current_user.id}")
+      #  @touans = Rails.cache.read("touans_#{current_user.id}")
+      #  Rails.logger.info("Loaded touans from cache for user ID: #{@user.id}")
+      #else
+      #  Rails.logger.warn("Cache for touans not found for user ID: #{@user.id}. Loading from database.")
+      #  @touans = Touan.where(user_id: current_user.id)
+      #  CacheDataJob.perform_async(@user.id) # キャッシュジョブを呼び出す
+      #end
+
+      @touans = Touan.where(user_id: current_user.id)
     
       @auditor = current_user.auditor
       @iatf_data_audit = Iatf.where(audit: "2")

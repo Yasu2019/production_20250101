@@ -1,45 +1,6 @@
 class DownloadableController < ApplicationController
   before_action :set_downloadable
 
-
-  
-  #  def verify_password_post
-  #    blob_id = params[:blob_id]
-  #    entered_password = params[:password]
-    
-  #    if entered_password == session[:download_password]
-  #      session[:download_blob_id] = params[:blob_id]
-  #      redirect_to download_product_path(id: @downloadable.id)
-  #    else
-  #      flash[:alert] = "Invalid password"
-  #      render :verify_password
-  #    end
-  #  end
-  
-  #<% if session[:download_blob_id] %>
-  #<p>認証が取れました。下記Download Fileリンクをクリックしてください:</p>
-  #<%= link_to "Download File", download_product_path(id: @downloadable.id) %>
-  #<br>
-  #<% elsif @document %>
-  #<p>下記の Password欄に、mitsui.seimitsu.iatf16949@gmail.com から送信されたパスワードを入力し、Downloadボタンをクリックしてください:</p>
-  #<%= form_with url: product_verify_password_product_path(id: @document.id, blob_id: @document.blob.id), method: :post, local: true, data: { turbo: "false" } do |f| %>
-
-  #    <%= f.label :password, "Password" %>
-  #    <%= f.password_field :password %>
-  #    <%= f.submit "Download", data: { turbo: "false" },class:"btn btn-sm" %>
-  #  <% end %>
-  #<% else %>
-  #  <p>パスワードが間違えてるか、ダウンロードするファイルが見つかりませんでした。</p>
-  #<% end %>
-
-  #<%= link_to '戻る', root_path, class: 'btn btn-accent' %>
-
-
-
-
-
-
-
   #メール送信しなければ動くコード
   def verify_password_post
     blob_id = params[:blob_id]

@@ -4,38 +4,38 @@ class CacheUpdateJob
 
   def perform(user_id=nil)
     # Productモデルのデータを取得してキャッシュに保存
-    products = Product.all.includes(:documents_attachments)
-    Rails.cache.write("products_all", products)
+    #products = Product.all.includes(:documents_attachments)
+    #Rails.cache.write("products_all", products)
 
     # Touanモデルのデータを取得してキャッシュに保存（user_idが存在する場合）
-    if user_id
-      touans = Touan.where(user_id: user_id)
-      Rails.cache.write("touans_#{user_id}", touans)
-    end
+    #if user_id
+    #  touans = Touan.where(user_id: user_id)
+    #  Rails.cache.write("touans_#{user_id}", touans)
+    #end
+   #end
   end
-end
 
 # app/models/touan.rb
 class Touan < ApplicationRecord
-  after_save :update_cache
+  #after_save :update_cache
 
   private
 
   def update_cache
     # Touanが保存または更新されたときにキャッシュ更新ジョブをトリガー
-    CacheUpdateJob.perform_async(self.user_id)
+    #CacheUpdateJob.perform_async(self.user_id)
   end
 end
 
 # app/models/product.rb
 class Product < ApplicationRecord
-  after_save :update_cache
+  #after_save :update_cache
 
   private
 
   def update_cache
     # Productが保存または更新されたときにキャッシュ更新ジョブをトリガー
-    CacheUpdateJob.perform_async
+    #CacheUpdateJob.perform_async
   end
 end
 

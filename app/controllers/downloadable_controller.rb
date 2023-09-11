@@ -40,7 +40,7 @@ class DownloadableController < ApplicationController
 
 
 
-  メール送信しなければ動くコード
+  #メール送信しなければ動くコード
   def verify_password_post
     blob_id = params[:blob_id]
     entered_password = params[:password]

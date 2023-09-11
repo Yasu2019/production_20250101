@@ -146,12 +146,12 @@ xl	1280px	@media (min-width: 1280px) { ... }
             <div class="lg:mr-4 ">
 
               <div class="hidden lg:block"><%= "Email："%>
-                                      <%= @user.email %> <br>
+              <%= @user.email if @user %> <br>
               </div>
                                       <%= "名前 ："%>
-                                      <%= @user.name %> <br>
+                                      <%= @user.name  if @user %> <br>
               <div class="hidden lg:block"><%= "識別 ："%>
-                                  <%= @user.role %> <br>
+                                  <%= @user.role  if @user %> <br>
               </div>
               <div>
               <%= link_to 'サインアウト', destroy_user_session_path, method: :delete, data: { turbo_method: :delete } %>

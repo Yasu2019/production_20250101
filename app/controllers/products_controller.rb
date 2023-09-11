@@ -334,7 +334,7 @@ class ProductsController < ApplicationController
     #end
 
     @products = @q.result(distinct: true).includes(:documents_attachments).page(params[:page]).per(12)
-    Rails.cache.write("products_all", @products.to_a)
+    #Rails.cache.write("products_all", @products.to_a)
 
 
     @user = current_user

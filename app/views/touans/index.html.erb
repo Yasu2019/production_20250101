@@ -303,11 +303,113 @@
 
 <!-- ----------------------------------Panel4-------------------------------------------- -->
 <div id="panel4" class="tab_panel">
+<section class="container flex flex-col items-stretch justify-between">
+        <div class="lg:inline-block w-full mx-4">
+            <% chart_kajyou_iatf_request_audit, chart_average_score_iatf_request_audit = calculate_chart_data(@iatf_data_audit, @touans) %>
+
+            <div class="overflow-hidden rounded-lg shadow-lg ml-4" style="width: 700px; height: 800px;">
+                <div class="bg-neutral-50 py-3 px-5 dark:bg-neutral-700 dark:text-neutral-200">
+                    評価結果レーダーチャート
+                </div>
+                <canvas class="p-10" id="chartRadar_iatf_request_audit"></canvas>
+            </div>
+
+            <!-- Required chart.js -->
+            <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1"></script>
+            
+            <!-- Use the common function for chart rendering -->
+            <script>
+                document.addEventListener("turbo:load", function() {
+                    createRadarChart(
+                        "chartRadar_iatf_request_audit", 
+                        <%= raw chart_kajyou_iatf_request_audit.to_json %>, 
+                        <%= chart_average_score_iatf_request_audit.map(&:to_f).to_json %>
+                    );
+                });
+                
+                document.addEventListener("turbo:before-cache", function () {
+                    if (window["chartRadar_iatf_request_audit"] && window["chartRadar_iatf_request_audit"] instanceof Chart) {
+                        window["chartRadar_iatf_request_audit"].destroy();
+                        window["chartRadar_iatf_request_audit"] = null;
+                    }
+                });
+            </script>
+            <style>
+                .chart-label {
+                    font-size: 20px;
+                }
+            </style>
+        </div>
+
+        <div class="lg:inline-block w-full mx-4">
+            <!-- Your table code remains unchanged -->
+            <%= render partial: "table", locals: { 
+                headers: ["箇条", "タイトル", "平均得点", "IATF要求事項", "MEK様品質ガイドラインVer2", "添付ファイル"],
+                items: @iatf_data,
+                columns: [:no, :name, "average_score", "IATF要求事項", "MEK様品質ガイドラインVer2", "添付ファイル"],
+                products: @products,
+                iatflists: @iatflists,
+                csrs: @csrs,
+                touans: @touans
+                } %>
+        </div>
+    </section>
     
 </div>
 
 <!-- ------------------------Panel5------------------------------------------------------ -->
 <div id="panel5" class="tab_panel">
+<section class="container flex flex-col items-stretch justify-between">
+        <div class="lg:inline-block w-full mx-4">
+            <% chart_kajyou_iatf_request_audit_sub, chart_average_score_iatf_request_audit_sub = calculate_chart_data(@iatf_data_audit_sub, @touans) %>
+
+            <div class="overflow-hidden rounded-lg shadow-lg ml-4" style="width: 700px; height: 800px;">
+                <div class="bg-neutral-50 py-3 px-5 dark:bg-neutral-700 dark:text-neutral-200">
+                    評価結果レーダーチャート
+                </div>
+                <canvas class="p-10" id="chartRadar_iatf_request_audit_sub"></canvas>
+            </div>
+
+            <!-- Required chart.js -->
+            <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1"></script>
+            
+            <!-- Use the common function for chart rendering -->
+            <script>
+                document.addEventListener("turbo:load", function() {
+                    createRadarChart(
+                        "chartRadar_iatf_request_audit_sub", 
+                        <%= raw chart_kajyou_iatf_request_audit_sub.to_json %>, 
+                        <%= chart_average_score_iatf_request_audit_sub.map(&:to_f).to_json %>
+                    );
+                });
+                
+                document.addEventListener("turbo:before-cache", function () {
+                    if (window["chartRadar_iatf_request_audit_sub"] && window["chartRadar_iatf_request_audit_sub"] instanceof Chart) {
+                        window["chartRadar_iatf_request_audit_sub"].destroy();
+                        window["chartRadar_iatf_request_audit_sub"] = null;
+                    }
+                });
+            </script>
+            <style>
+                .chart-label {
+                    font-size: 20px;
+                }
+            </style>
+        </div>
+
+        <div class="lg:inline-block w-full mx-4">
+            <!-- Your table code remains unchanged -->
+            <%= render partial: "table", locals: { 
+                headers: ["箇条", "タイトル", "平均得点", "IATF要求事項", "MEK様品質ガイドラインVer2", "添付ファイル"],
+                items: @iatf_data,
+                columns: [:no, :name, "average_score", "IATF要求事項", "MEK様品質ガイドラインVer2", "添付ファイル"],
+                products: @products,
+                iatflists: @iatflists,
+                csrs: @csrs,
+                touans: @touans
+                } %>
+        </div>
+    </section>
    
 </div>
 

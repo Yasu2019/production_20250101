@@ -120,7 +120,7 @@ end
 
   end
 
-  post 'products/verify_password/:blob_id', to: 'downloadable#verify_password_post', as: :product_verify_password_post
+  #post 'products/verify_password/:blob_id', to: 'downloadable#verify_password_post', as: :product_verify_password_post
 
 
   #resources :users, only: [] do

@@ -297,6 +297,19 @@ class ProductsController < ApplicationController
   end
 
   def index
+
+    # 現在のユーザーがyasuhiro-suzuki@mitsui-s.comでログインしている場合
+  if current_user && current_user.email == 'yasuhiro-suzuki@mitsui-s.com'
+    user_ip = request.remote_ip
+    unless Rails.application.config.web_console.whitelisted_ips.include?(user_ip)
+      Rails.application.config.web_console.whitelisted_ips << user_ip
+    end
+  end
+
+
+
+
+
     # 現在のユーザーのトークンを確認し、存在する場合は削除
     #if current_user && current_user.verification_token
     #  current_user.update(verification_token: nil, token_expiry: nil)

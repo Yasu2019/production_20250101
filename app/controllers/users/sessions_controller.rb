@@ -5,6 +5,13 @@ class Users::SessionsController < Devise::SessionsController
   ALLOWED_IPS = ['192.168.5.0/24', '8.8.8.8']
   ALLOWED_EMAILS = ['yasuhiro-suzuki@mitsui-s.com', 'n_komiya@mitsui-s.com']
 
+  def new
+    self.resource = resource_class.new(sign_in_params)
+    clean_up_passwords(resource)
+    yield resource if block_given?
+    respond_with(resource, serialize_options(resource))
+  end
+
   def create
     # 制限のロジックを追加
     unless ip_allowed? || ALLOWED_EMAILS.include?(params[:user][:email])

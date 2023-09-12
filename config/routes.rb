@@ -88,7 +88,8 @@ end
   #https://qiita.com/seitarooodayo/items/c9d6955a12ca0b1fd1d4
 
   
-  resources :products, only: [:new, :create, :show, :edit] do
+  #resources :products, only: [:new, :create, :show, :edit] do
+  resources :products, only: [:index, :new, :create, :show, :edit] do
     collection { post :import }
     member do
       get 'verify_password/:blob_id', to: 'downloadable#verify_password', as: :product_verify_password

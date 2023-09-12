@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+require 'ipaddr'
 
 class Users::SessionsController < Devise::SessionsController
   # ミツイ精密社内IPアドレスのみアクセス許可
@@ -7,7 +7,7 @@ class Users::SessionsController < Devise::SessionsController
 
   def create
     # 制限のロジックを追加
-    unless ALLOWED_IPS.include?(request.remote_ip) || ALLOWED_EMAILS.include?(params[:user][:email])
+    unless ip_allowed? || ALLOWED_EMAILS.include?(params[:user][:email])
       flash.now[:alert] = '管理者以外はミツイ精密社外からログインできません'
       render :new and return
     end
@@ -35,4 +35,13 @@ class Users::SessionsController < Devise::SessionsController
       render :users_new_two_step_verification
     end
   end
+
+  private
+
+  def ip_allowed?
+    ALLOWED_IPS.any? do |allowed_ip|
+      IPAddr.new(allowed_ip).include?(request.remote_ip)
+    end
+  end
 end
+

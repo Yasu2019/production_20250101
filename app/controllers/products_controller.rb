@@ -310,10 +310,6 @@ class ProductsController < ApplicationController
       end
     end
 
-
-
-
-
     # 現在のユーザーのトークンを確認し、存在する場合は削除
     #if current_user && current_user.verification_token
     #  current_user.update(verification_token: nil, token_expiry: nil)
@@ -321,6 +317,9 @@ class ProductsController < ApplicationController
 
     # 先にransackの検索条件を適用
     @q = Product.ransack(params[:q])
+
+    # 出力：params[:q]の内容
+    logger.debug "params[:q]: #{params[:q].inspect}"
 
     #cached_products = Rails.cache.read("products_all")
 
@@ -335,6 +334,9 @@ class ProductsController < ApplicationController
 
     @products = @q.result(distinct: true).includes(:documents_attachments).page(params[:page]).per(12)
     #Rails.cache.write("products_all", @products.to_a)
+
+    # 出力：検索結果
+    logger.debug "Searched products: #{@products.inspect}"
 
 
     @user = current_user

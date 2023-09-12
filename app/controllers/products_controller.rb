@@ -332,7 +332,8 @@ class ProductsController < ApplicationController
     #  Rails.cache.write("products_all", @products.to_a)
     #end
 
-    @products = @q.result(distinct: true).includes(:documents_attachments).page(params[:page]).per(12)
+    #@products = @q.result(distinct: true).includes(:documents_attachments).page(params[:page]).per(12)
+    @products = @q.result(distinct: true).includes(:documents_attachments)
     #Rails.cache.write("products_all", @products.to_a)
 
     # 出力：検索結果

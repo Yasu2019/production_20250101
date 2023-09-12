@@ -13,7 +13,12 @@ class ProductsController < ApplicationController
   before_action :restrict_ip_address
   before_action :set_q, only: [:index] # これを追加
 
-  ALLOWED_IPS = ['192.168.5.0/24', '8.8.8.8']
+
+  #全てのIPからのアクセスを許可する場合
+  ALLOWED_IPS = ['0.0.0.0/0']
+
+  #ミツイ精密社内IPアドレスのみアクセス許可
+  #ALLOWED_IPS = ['192.168.5.0/24', '8.8.8.8']
   ALLOWED_EMAILS = ['yasuhiro-suzuki@mitsui-s.com', 'n_komiya@mitsui-s.com']
 
 
@@ -321,6 +326,8 @@ class ProductsController < ApplicationController
     # 先にransackの検索条件を適用
     @q = Product.ransack(params[:q])
 
+    @products_json = @q.result.to_json
+
     # 出力：params[:q]の内容
     logger.debug "params[:q]: #{params[:q].inspect}"
 
@@ -336,8 +343,8 @@ class ProductsController < ApplicationController
     #end
 
     #@products = @q.result(distinct: true).includes(:documents_attachments).page(params[:page]).per(12)
-    #@products = @q.result(distinct: true).includes(:documents_attachments)
-    @products = @q.result(distinct: true)
+    @products = @q.result(distinct: true).includes(:documents_attachments)
+    #@products = @q.result(distinct: true)
 
     #Rails.cache.write("products_all", @products.to_a)
 
@@ -348,6 +355,9 @@ class ProductsController < ApplicationController
     @user = current_user
     @testmondais = Testmondai.all
 end
+
+
+
 
   def index2
     #@products = Product.where(partnumber:params[:partnumber])

@@ -3,11 +3,11 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
 
 
-
-  #config.web_console.whitelisted_ips = %w(0.0.0.0/0 ::/0)
+  #全てのIPからのアクセスを許可する場合
+  config.web_console.whitelisted_ips = %w(0.0.0.0/0 ::/0)
 
   #ミツイ精密社内からだけのアクセスを許可する場合
-  config.web_console.whitelisted_ips = ['192.168.5.0/24', '8.8.8.8']
+  #config.web_console.whitelisted_ips = ['192.168.5.0/24', '8.8.8.8']
 
   #自宅からだけのアクセスを許可する場合
 

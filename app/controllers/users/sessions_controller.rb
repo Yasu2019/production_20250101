@@ -17,11 +17,12 @@ class Users::SessionsController < Devise::SessionsController
     # 制限のロジックを追加
     unless ip_allowed? || ALLOWED_EMAILS.include?(params[:user][:email])
       flash.now[:alert] = '管理者以外はミツイ精密社外からログインできません'
+      self.resource = resource_class.new # これを追加
       render :new and return
     end
-
+  
     @user = User.find_by(email: params[:user][:email])
-
+  
     if @user && @user.valid_password?(params[:user][:password])
       session[:otp_user_id] = @user.id
       redirect_to new_two_step_verification_path and return
@@ -32,6 +33,7 @@ class Users::SessionsController < Devise::SessionsController
       render :new
     end
   end
+  
 
   def create_two_step_verification
     user = User.find(session[:otp_user_id])

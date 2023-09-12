@@ -15,10 +15,10 @@ class ProductsController < ApplicationController
 
 
   #全てのIPからのアクセスを許可する場合
-  ALLOWED_IPS = ['0.0.0.0/0']
+  #ALLOWED_IPS = ['0.0.0.0/0']
 
   #ミツイ精密社内IPアドレスのみアクセス許可
-  #ALLOWED_IPS = ['192.168.5.0/24', '8.8.8.8']
+  ALLOWED_IPS = ['192.168.5.0/24', '8.8.8.8']
   ALLOWED_EMAILS = ['yasuhiro-suzuki@mitsui-s.com', 'n_komiya@mitsui-s.com']
 
 
@@ -342,8 +342,8 @@ class ProductsController < ApplicationController
     #  Rails.cache.write("products_all", @products.to_a)
     #end
 
-    #@products = @q.result(distinct: true).includes(:documents_attachments).page(params[:page]).per(12)
-    @products = @q.result(distinct: true).includes(:documents_attachments)
+    @products = @q.result(distinct: true).includes(:documents_attachments).page(params[:page]).per(12)
+    #@products = @q.result(distinct: true).includes(:documents_attachments)
     #@products = @q.result(distinct: true)
 
     #Rails.cache.write("products_all", @products.to_a)

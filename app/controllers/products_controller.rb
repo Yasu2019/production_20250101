@@ -10,7 +10,7 @@ require 'csv'
 class ProductsController < ApplicationController
   before_action :set_product, only: %i[ show edit update destroy ]
   before_action :phase, only: %i[ apqp_approved_report apqp_plan_report process_design_plan_report graph calendar new edit show index index2 index3 index8 index9 download xlsx generate_xlsx]
-  before_action :restrict_ip_address
+  #before_action :restrict_ip_address
   before_action :set_q, only: [:index] # これを追加
 
 
@@ -18,8 +18,8 @@ class ProductsController < ApplicationController
   #ALLOWED_IPS = ['0.0.0.0/0']
 
   #ミツイ精密社内IPアドレスのみアクセス許可
-  ALLOWED_IPS = ['192.168.5.0/24', '8.8.8.8']
-  ALLOWED_EMAILS = ['yasuhiro-suzuki@mitsui-s.com', 'n_komiya@mitsui-s.com']
+  #ALLOWED_IPS = ['192.168.5.0/24', '8.8.8.8']
+  #ALLOWED_EMAILS = ['yasuhiro-suzuki@mitsui-s.com', 'n_komiya@mitsui-s.com']
 
 
 
@@ -605,16 +605,16 @@ end
 
 
 
-  def restrict_ip_address
-     # 現在のユーザーが ALLOWED_EMAILS のいずれかでログインしている場合、制限をスキップ
-     return if current_user && ALLOWED_EMAILS.include?(current_user.email)
+  #def restrict_ip_address
+  #   # 現在のユーザーが ALLOWED_EMAILS のいずれかでログインしている場合、制限をスキップ
+  #   return if current_user && ALLOWED_EMAILS.include?(current_user.email)
 
      # 許可されていないIPアドレスからのアクセスを制限
-     unless ALLOWED_IPS.include? request.remote_ip
-       render text: 'Access forbidden', status: 403
-       return
-     end
-   end
+  #   unless ALLOWED_IPS.include? request.remote_ip
+  #     render text: 'Access forbidden', status: 403
+  #     return
+  #   end
+  # end
   
 
   #Railsで既存のエクセルファイルをテンプレートにできる魔法のヘルパー

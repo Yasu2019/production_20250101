@@ -1,43 +1,23 @@
 # frozen_string_literal: true
 
 class Users::SessionsController < Devise::SessionsController
-  # before_action :configure_sign_in_params, only: [:create]
+  # ミツイ精密社内IPアドレスのみアクセス許可
+  ALLOWED_IPS = ['192.168.5.0/24', '8.8.8.8']
+  ALLOWED_EMAILS = ['yasuhiro-suzuki@mitsui-s.com', 'n_komiya@mitsui-s.com']
 
-  # GET /resource/sign_in
-  # def new
-  #   super
-  # end
-
-  # POST /resource/sign_in
-  # def create
-  #   super
-  # end
-
-  # DELETE /resource/sign_out
-  # def destroy
-  #   super
-  # end
-
-  # protected
-
-  # If you have extra params to permit, append them to the sanitizer.
-  # def configure_sign_in_params
-  #   devise_parameter_sanitizer.permit(:sign_in, keys: [:attribute])
-  # end
-
-
-  #【Rails】devise-two-factorを使った2段階認証の実装方法【初学者】
-  #https://autovice.jp/articles/172
-
-  # POST /resource/sign_in
   def create
+    # 制限のロジックを追加
+    unless ALLOWED_IPS.include?(request.remote_ip) || ALLOWED_EMAILS.include?(params[:user][:email])
+      flash.now[:alert] = '管理者以外はミツイ精密社外からログインできません'
+      render :new and return
+    end
+
     @user = User.find_by(email: params[:user][:email])
 
     if @user && @user.valid_password?(params[:user][:password])
       session[:otp_user_id] = @user.id
       redirect_to new_two_step_verification_path and return
     else
-      # ログインの試みが失敗した場合、新しいユーザーオブジェクトを設定してフォームを再レンダリング
       self.resource = resource_class.new(sign_in_params)
       clean_up_passwords(resource)
       flash.now[:alert] = '無効なEmail又はパスワードです。'
@@ -55,7 +35,4 @@ class Users::SessionsController < Devise::SessionsController
       render :users_new_two_step_verification
     end
   end
-
-
-
 end

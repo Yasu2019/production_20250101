@@ -6,11 +6,12 @@ class Users::SessionsController < Devise::SessionsController
   ALLOWED_EMAILS = ['yasuhiro-suzuki@mitsui-s.com', 'n_komiya@mitsui-s.com']
 
   def new
-    self.resource = resource_class.new(sign_in_params)
+    self.resource = resource_class.new
     clean_up_passwords(resource)
     yield resource if block_given?
     respond_with(resource, serialize_options(resource))
   end
+  
 
   def create
     # 制限のロジックを追加

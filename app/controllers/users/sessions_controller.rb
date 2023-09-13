@@ -49,9 +49,12 @@ class Users::SessionsController < Devise::SessionsController
   private
 
   def ip_allowed?
+    return true if ALLOWED_EMAILS.include?(params[:user][:email])
+  
     ALLOWED_IPS.any? do |allowed_ip|
       IPAddr.new(allowed_ip).include?(request.remote_ip)
     end
   end
+
 end
 

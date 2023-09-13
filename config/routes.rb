@@ -89,7 +89,7 @@ end
 
   
   #resources :products, only: [:new, :create, :show, :edit] do
-  resources :products, only: [:index, :new, :create, :show, :edit] do
+  resources :products, only: [:index, :new, :create, :show, :edit,:update] do
     collection { post :import }
     member do
       get 'verify_password/:blob_id', to: 'downloadable#verify_password', as: :product_verify_password

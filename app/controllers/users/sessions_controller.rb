@@ -2,7 +2,7 @@ require 'ipaddr'
 
 class Users::SessionsController < Devise::SessionsController
   # ミツイ精密社内IPアドレスのみアクセス許可
-  ALLOWED_IPS = ['192.168.5.0/24', '8.8.8.8']
+  ALLOWED_IPS = ['192.168.5.0/24']
   ALLOWED_EMAILS = ['yasuhiro-suzuki@mitsui-s.com', 'n_komiya@mitsui-s.com']
 
   def new

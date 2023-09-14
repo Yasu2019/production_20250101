@@ -305,52 +305,25 @@ class ProductsController < ApplicationController
     @product = Product.new
   end
 
-  def index
 
-   # 現在のユーザーが 'yasuhiro-suzuki@mitsui-s.com' または 'n_komiya@mitsui-s.com' でログインしている場合
-    if current_user && (current_user.email == 'yasuhiro-suzuki@mitsui-s.com' || current_user.email == 'n_komiya@mitsui-s.com')
-      user_ip = request.remote_ip
-      unless Rails.application.config.web_console.whitelisted_ips.include?(user_ip)
-        Rails.application.config.web_console.whitelisted_ips << user_ip
-      end
+  
+  def index
+    whitelisted_emails = ['yasuhiro-suzuki@mitsui-s.com', 'n_komiya@mitsui-s.com']
+
+    # Add user IP to whitelist if user's email is whitelisted
+    if current_user&.email&.in?(whitelisted_emails)
+        user_ip = request.remote_ip
+        Rails.application.config.web_console.whitelisted_ips |= [user_ip]
     end
 
-
-
-
-    # 現在のユーザーのトークンを確認し、存在する場合は削除
-    #if current_user && current_user.verification_token
-    #  current_user.update(verification_token: nil, token_expiry: nil)
-    #end
-
-    # 先にransackの検索条件を適用
     @q = Product.ransack(params[:q])
-
     @products_json = @q.result.to_json
 
-    # 出力：params[:q]の内容
     logger.debug "params[:q]: #{params[:q].inspect}"
 
-    #cached_products = Rails.cache.read("products_all")
-
-    #if cached_products
-      # キャッシュされたデータを読み込んでからページネーションを適用
-    #  @products = (@q.result(distinct: true).to_a & cached_products).page(params[:page]).per(12)
-    #else
-      # データベースからデータを取得してからページネーションを適用
-    #  @products = @q.result(distinct: true).includes(:documents_attachments).page(params[:page]).per(12)
-    #  Rails.cache.write("products_all", @products.to_a)
-    #end
-
     @products = @q.result(distinct: true).includes(:documents_attachments).page(params[:page]).per(12)
-    #@products = @q.result(distinct: true).includes(:documents_attachments)
-    #@products = @q.result(distinct: true)
-
-    #Rails.cache.write("products_all", @products.to_a)
-
-    # 出力：検索結果
+    
     logger.debug "Searched products: #{@products.inspect}"
-
 
     @user = current_user
     @testmondais = Testmondai.all

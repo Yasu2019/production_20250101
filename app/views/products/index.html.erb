@@ -213,16 +213,15 @@ xl	1280px	@media (min-width: 1280px) { ... }
 
     <div class="hidden lg:inline-block w-1/6">
 
+    <div class="bg-white py-3 px-4 rounded-lg flex justify-around items-center ">
+                <input type="text" placeholder="seach" class=" bg-gray-100 rounded-md  outline-none pl-2 ring-indigo-700 w-full mr-2 p-2">
+                <span><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor ">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg></span>
+            </div>
 
 
-  <div class="bg-white py-3 px-4 rounded-lg flex justify-around items-center">
-    <input type="text" placeholder="search" class="bg-gray-100 rounded-md outline-none pl-2 ring-indigo-700 w-full mr-2 p-2">
-    <span>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-    </span>
-  </div>
+
 
 
       
@@ -424,26 +423,80 @@ xl	1280px	@media (min-width: 1280px) { ... }
               </tr>
         </thead>
   
-          <tbody>
-            <% @products.each do |pro| %>
-                  <tr>
-                  <% [:partnumber, :materialcode, :documentname, :description].each do |attr| %>
-                    <% value = pro.send(attr) %>
-                    <td class="border-2 border-blue-900">
-                        <% if value.blank? %>
-                            "----"
-                        <% elsif attr == :description %>
-                            <div class="line-clamp-3"><%= value %></div>
-                        <% else %>
-                            <%= value %>
-                        <% end %>
-                    </td>
+        <tbody>
+        <% @products.each do |pro| %>
+              <tr>
+                <% if pro.partnumber=="" || pro.partnumber==nil %>
+                    <td class="border-2 border-blue-900 "><%= "----" %></td>
+                <% else %>
+                    <td class="border-2 border-blue-900 "><%= pro.partnumber %></td>
                 <% end %>
-                   
-                  </tr>
-              <% end %>
-          <br>
-        </tbody>
+                
+                <% if pro.materialcode=="" || pro.materialcode==nil  %>
+                    <td class="border-2 border-blue-900 "><%= "----" %></td>
+                <% else %>
+                    <td class="border-2 border-blue-900 "><%= pro.materialcode %></td>
+                <% end %>
+
+                <% if pro.documentname=="" || pro.documentname==nil  %>
+                    <td class="border-2 border-blue-900 "><%= "----" %></td>
+                <% else %>
+                    <td class="border-2 border-blue-900 "><%= pro.documentname %></td>
+                <% end %>
+                <% if pro.description=="" || pro.description==nil  %>
+                    <td class="border-2 border-blue-900 "><%= "----" %></td>
+                <% else %>
+                    <td class="border-2 border-blue-900 "><div class="line-clamp-3"><%= pro.description %></div></td>
+                <% end %>
+
+                <td class="border-2 border-blue-900 "><%= @dropdownlist[pro.category.to_i] %></td>
+                <td class="border-2 border-blue-900 "><div class="line-clamp-3"><%= @dropdownlist[pro.phase.to_i] %></div></td>
+                <!--
+                【Tailwind CSS】長い文字列を三点リーダー（…）で省略する方法
+                https://zenn.dev/ilove/articles/8a93705d396e05
+                -->
+                <td class="border-2 border-blue-900 "><div class="line-clamp-3"> <%= @dropdownlist[pro.stage.to_i] %></div></td>
+                <!--【初心者向け・動画付き】Railsで日時をフォーマットするときはstrftimeよりも、lメソッドを使おう
+                https://qiita.com/jnchito/items/831654253fb8a958ec25
+                -->
+
+                <!--
+                Tailwind CSS 縦書き対応 :writing-mode
+                https://tech-lab.sios.jp/archives/31882#:~:text=Tailwind%20CSS%20%E7%B8%A6%E6%9B%B8%E3%81%8D%E5%AF%BE%E5%BF%9C%20%3Awriting-mode%201%20%E4%BA%8B%E5%89%8D%E6%BA%96%E5%82%99%20Tailwind%20CSS%E3%81%AE%E7%92%B0%E5%A2%83%E6%A7%8B%E7%AF%89%E3%81%AF%E3%80%81,...%203%20Plugin%E3%81%A7%E8%A9%A6%E3%81%99%E7%B8%A6%E6%9B%B8%E3%81%8D%E5%AF%BE%E5%BF%9C%20%E3%81%93%E3%81%A1%E3%82%89%E3%81%AF%E3%80%81%E3%80%8Ctailwind.config.js%E3%80%8D%E3%81%AB%E8%BF%BD%E8%A8%98%E3%81%99%E3%82%8B%E3%81%93%E3%81%A8%E3%81%A7%E5%AE%9F%E7%8F%BE%E3%81%99%E3%82%8B%E3%81%93%E3%81%A8%E3%81%8C%E3%81%A7%E3%81%8D%E3%81%BE%E3%81%99%E3%80%82%20...%204%20%E7%B5%82%E3%82%8F%E3%82%8A%E3%81%AB%20
+                -->
+
+
+                <% if pro.start_time==nil %>
+                      <td class="border-2 border-blue-900 "><div class="vertical-rl lg:horizontal-tb"><%= "------"  %></div></td>
+                <% else %>
+                      <td class="border-2 border-blue-900 "><div class="vertical-rl lg:horizontal-tb"><%= pro.start_time.strftime('%y/%m/%d')  %></div></td>
+                <% end %>
+                <% if pro.deadline_at==nil %>
+                      <td class="border-2 border-blue-900 "><div class="vertical-rl lg:horizontal-tb"><%= "------"  %></div></td>
+                <% else %>
+                      <td class="border-2 border-blue-900 "><div class="vertical-rl lg:horizontal-tb"><%= pro.deadline_at.strftime('%y/%m/%d')  %></div></td>
+                <% end %>
+                <% if pro.end_at==nil %>
+                      <td class="border-2 border-blue-900 "><div class="vertical-rl lg:horizontal-tb"><%= "------"  %></div></td>
+                <% else %>
+                      <td class="border-2 border-blue-900 "><div class="vertical-rl lg:horizontal-tb"><%= pro.end_at.strftime('%y/%m/%d')  %></div></td>
+                <% end %>
+                
+                <td class="border-2 border-blue-900 "><%= pro.goal_attainment_level %></td>
+                <td class="border-2 border-blue-900 "><%= pro.status %></td>
+                <td class="inline-block"><div class="btn btn-accent btn-sm"><%= button_to '詳細表示', product_path(pro), { method: :get, params: pro }  %></div></td>
+                <td class="inline-block"><div class="btn btn-primary btn-sm"><%= button_to '編集', edit_product_path(pro), { method: :get, params: pro } %><div></td>
+                <!--https://katsushi-ougi.com/rails7-method-delete-->
+                <td class="inline-block"><div class="btn btn-secondary btn-sm"> <%= button_to '削除', pro, {method: :delete, data: { confirm: '本当に削除しますか？' } } %></div></td>
+                <!--https://y-i.jp/entry/rails7-form-data-confirm-->
+                <!--Rails7 で button_to の data-confirm の挙動が変わって data.confirm から form.data.confirm に変わってました
+                <td><%= button_to "削除", product_path(pro), { method: :delete, form: { data: { turbo_confirm: "本当に削除しますか？" } } } %></td>
+                -->
+                <td class="inline-block"><%= render partial: "attached_file", locals: { pro: pro }  %></td>
+              </tr>
+          <% end %>
+      <br>
+    </tbody>
       </table>
       <%= paginate @products %>
       <br>

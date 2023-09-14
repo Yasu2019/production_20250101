@@ -5,6 +5,9 @@ class Users::SessionsController < Devise::SessionsController
   ALLOWED_IPS = ['180.11.97.245']
   ALLOWED_EMAILS = ['yasuhiro-suzuki@mitsui-s.com', 'n_komiya@mitsui-s.com']
 
+  # エラーハンドリングを追加
+  rescue_from ActionController::InvalidAuthenticityToken, with: :handle_invalid_token
+
   def new
     self.resource = resource_class.new
     clean_up_passwords(resource)
@@ -54,6 +57,13 @@ class Users::SessionsController < Devise::SessionsController
     ALLOWED_IPS.any? do |allowed_ip|
       IPAddr.new(allowed_ip).include?(request.remote_ip)
     end
+  end
+
+  # エラーハンドリングのメソッドを追加
+  def handle_invalid_token
+    flash.now[:alert] = '管理者以外はミツイ精密社外からログインできません'
+    self.resource = resource_class.new # 新しいリソースインスタンスを作成
+    render :new # ログインページを再表示
   end
 
 end

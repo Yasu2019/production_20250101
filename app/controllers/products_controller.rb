@@ -316,17 +316,54 @@ class ProductsController < ApplicationController
         Rails.application.config.web_console.whitelisted_ips |= [user_ip]
     end
 
-    @q = Product.ransack(params[:q])
-    @products_json = @q.result.to_json
+    #@q = Product.ransack(params[:q])
+    #@products_json = @q.result.to_json
 
-    logger.debug "params[:q]: #{params[:q].inspect}"
+    #logger.debug "params[:q]: #{params[:q].inspect}"
 
-    @products = @q.result(distinct: true).includes(:documents_attachments).page(params[:page]).per(12)
+    #@products = @q.result(distinct: true).includes(:documents_attachments).page(params[:page]).per(12)
     
-    logger.debug "Searched products: #{@products.inspect}"
+    #logger.debug "Searched products: #{@products.inspect}"
 
     @user = current_user
-    @testmondais = Testmondai.all
+
+    @products = Product.includes(:documents_attachments).all.page(params[:page]).per(12)
+
+    if params[:q].present?
+      conditions = []
+      values = {}
+  
+      # 日時のカラムを検索対象から外すためのリスト
+      exclude_columns = %w[start_time deadline_at end_at]
+  
+      params[:q].each do |key, value|
+          if key.include?('_cont')
+              column_name = key.gsub('_cont', '')
+              operator = 'LIKE'
+              value = "%#{value}%"
+          elsif key.include?('_eq')
+              column_name = key.gsub('_eq', '')
+              operator = '='
+          else
+              next
+          end
+  
+          # カラム名とデータ型の存在確認 & 排除するカラムか確認
+          if Product.column_names.include?(column_name) && !exclude_columns.include?(column_name)
+              column_type = Product.columns_hash[column_name].type
+  
+              case column_type
+              when :string, :text
+                  conditions << "#{column_name} #{operator} :#{column_name}"
+                  values[column_name.to_sym] = value
+              end
+          end
+      end
+  
+      @products = @products.where(conditions.join(' OR '), values) if conditions.any?
+  end
+  
+    
 end
 
 
@@ -1597,7 +1634,9 @@ end
     params.require(:product).permit(:documentname,:materialcode,:start_time, :deadline_at, :end_at,:status,:goal_attainment_level,:description,:category,:partnumber,:phase,:stage,documents:[])
   end
 
-  
+  def search_params
+    params.require(:q).permit(Product.column_names.map { |col| "#{col}_eq" })
+  end
 
   def phase
 

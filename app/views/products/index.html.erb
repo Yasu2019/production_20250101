@@ -213,16 +213,94 @@ xl	1280px	@media (min-width: 1280px) { ... }
 
     <div class="hidden lg:inline-block w-1/6">
 
-    <div class="bg-white py-3 px-4 rounded-lg flex justify-around items-center ">
-                <input type="text" placeholder="seach" class=" bg-gray-100 rounded-md  outline-none pl-2 ring-indigo-700 w-full mr-2 p-2">
-                <span><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor ">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg></span>
-            </div>
+    <div class="bg-white py-3 px-4 rounded-lg flex justify-around items-center">
+    <!-- 検索フォームのname属性とid属性を追加 -->
+    <input type="text" id="searchInput" placeholder="search" class="bg-gray-100 rounded-md outline-none pl-2 ring-indigo-700 w-full mr-2 p-2">
+    <span id="searchTrigger">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path class="search-icon" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+    </span>
+</div>
+
+<div>
+<label>
+    <input type="radio" name="searchType" value="exact" checked> 完全一致
+</label>
+<label>
+    <input type="radio" name="searchType" value="contains"> 含む
+</label>
+</div>
+
+<script>
+$(document).ready(function(){
+    // 定数：すべての商品カラム
+    const allProductColumns = [
+        "category", "partnumber", "materialcode", "phase", "stage", "description", 
+        "status", "documenttype", "documentname", "documentrev", "documentcategory", 
+        "documentnumber", "start_time", "deadline_at", "end_at", 
+        "goal_attainment_level", "tasseido", "object"
+    ];
+
+    /**
+     * 検索クエリの構築
+     * @param {string} searchValue 検索値
+     * @param {string} searchType 検索タイプ（exactまたはcont）
+     * @returns {string} 構築されたクエリストリング
+     */
+    function buildSearchQuery(searchValue, searchType) {
+        return allProductColumns.map(column => {
+            const queryKey = searchType === 'exact' ? `q[${column}_eq]` : `q[${column}_cont]`;
+            return `${queryKey}=${encodeURIComponent(searchValue)}`;
+        }).join("&");
+    }
+
+    /**
+     * 検索を実行
+     */
+    function performSearch() {
+        const searchValue = $('#searchInput').val();
+        const searchType = $('input[name="searchType"]:checked').val();
+        const searchQuery = buildSearchQuery(searchValue, searchType);
+
+        window.location.href = `/products?${searchQuery}`;
+    }
+
+    // イベントハンドラ：検索入力でEnterキーが押されたとき
+    $('#searchInput').on('keyup', function(e){
+        if (e.key === "Enter" || e.keyCode === 13) {
+            performSearch();
+        }
+    });
+
+    // イベントハンドラ：検索トリガがクリックされたとき
+    $('#searchTrigger').on('click', function(){
+        $('.search-icon').addClass('clicked');
+        performSearch();
+    });
+});
+</script>
 
 
+<style>
 
+.search-icon {
+    stroke: currentColor;
+}
 
+#searchTrigger:hover {
+    cursor: pointer; /* ホバー時に指アイコンになる */
+}
+
+.search-icon:hover {
+    stroke: blue;  /* ホバー時の色 */
+}
+
+.search-icon.clicked {
+    stroke: red;   /* クリック後の色 */
+}
+
+</style>
 
       
 
@@ -356,33 +434,30 @@ xl	1280px	@media (min-width: 1280px) { ... }
                       <%= form.collection_select(:partnumber, @produc, :partnumber, :partnumber)%> <br>
                     <% end %>
                     <%= button_to "APQP総括・承認書", "#", id: "apqp_approved_submit-button", class: "btn btn-secondary" %>
+
+   
+
+
+                    
                     
                     <script>
-                      $(document).ready(function() {
+                    $(document).ready(function() {
                         $("#design_submit-button").on("click", function(e) {
-                          e.preventDefault();
-                          $("#product-form").submit();
+                            e.preventDefault();
+                            $("#product-form").submit();
                         });
-                      });
-                  
-                      </script>
-                      <script>
-                      $(document).ready(function() {
-                        $("#apqp_plan_submit-button").on("click", function(e) {
-                          e.preventDefault();
-                          $("#apqp_plan-form").submit();
-                        });
-                      });
-                      </script>
-                      <script>
-                      $(document).ready(function() {
-                        $("#apqp_approved_submit-button").on("click", function(e) {
-                          e.preventDefault();
-                          $("#apqp_approved-form").submit();
-                        });
-                      });
-                    </script>
                     
+                        $("#apqp_plan_submit-button").on("click", function(e) {
+                            e.preventDefault();
+                            $("#apqp_plan-form").submit();
+                        });
+                    
+                        $("#apqp_approved_submit-button").on("click", function(e) {
+                            e.preventDefault();
+                            $("#apqp_approved-form").submit();
+                        });
+                    });
+                    </script>
 
 
                   

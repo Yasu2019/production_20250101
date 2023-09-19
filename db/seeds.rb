@@ -127,6 +127,11 @@ CSV.foreach('db/record/mek_csr_list.csv') do |row|
   Csr.create(:csr_number => row[0],:csr_content => row[1])
 end
 
+
+CSV.foreach('db/record/mitsui_kajyou_list.csv') do |row|
+  Mitsui.create(:mitsui_number => row[0],:mitsui_content => row[1])
+end
+
 CSV.foreach('db/record/iatf_kajyou_list.csv') do |row|
   Iatflist.create(:iatf_number => row[0],:iatf_content => row[1])
 end

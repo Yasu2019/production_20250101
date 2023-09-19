@@ -365,6 +365,13 @@ $(document).ready(function(){
                     <%= form.submit "IATF教材",class:"btn btn-secondary btn-sm" %>
                     <% end %>
                     </a></li>
+                    
+
+                  
+
+                   
+
+
 
                     <!--
                     #RailsでAxlsxを使ってxlsxを生成
@@ -372,16 +379,16 @@ $(document).ready(function(){
                     -->
 
 
-                    <li class="py-1 border-b-2"><a>
+                    <li class="py-1 border-b-2">
                     <%= link_to "Excel出力", xlsx_product_path(@product, format: :xlsx),class:"btn btn-secondary btn-sm" %>
-                    </a></li>
+                    </li>
 
                     <!--
                     【Ruby on Rails】CSVインポート
                     https://qiita.com/seitarooodayo/items/c9d6955a12ca0b1fd1d4
                     -->
 
-                    <li class="py-1 border-b-2"><a>
+                    <li class="py-1 border-b-2">
                     <%= form_tag import_products_path, multipart: true do %>
                     <label class="mt-2 sm:mt-0 py-2 w-[500px] sm:w-[212px] h-10 border border-primary-300 bg-gray-100 bg-opacity-50 text-primary-300 rounded-[3px] text-xs flex justify-center items-center">
                     <span class="text-mg ml-5 mx-8"  style="width: 200px;">CSVファイル選択</span>
@@ -390,32 +397,47 @@ $(document).ready(function(){
 
                     <%= submit_tag "インポート",class:"btn btn-secondary btn-sm"  %>
                     <% end %>
-                    </a></li>
+                    </li>
                     
 
-                    <li class="py-1 border-b-2"><a>
+                    <li class="py-1 border-b-2">
                     <%= form_with(url: iot_product_path, method: :get, local: true) do|form| %>
                     <%= form.submit "IOTデータ",class:"btn btn-secondary btn-sm" %>
                     <% end %>
-                    </a></li>
+                    </li>
 
-                    <li class="py-1 border-b-2"><a>
-                    <%= form_with(url: index_touan_path, method: :get, local: true) do|form| %>
+                    <li class="py-1 border-b-2">
+                    <%= form_with(url: index_touan_path,      method: :get, local: true) do|form| %>
+                        <%= form.select :owner_select, [
+                            ['製品検査プロセス', 'inspection'],
+                            ['引渡しプロセス', 'release'],
+                            ['購買プロセス', 'procurement'],
+                            ['設備管理プロセス', 'equipment'],
+                            ['測定機器管理プロセス', 'measurement'],
+                            ['方針プロセス', 'policy'],
+                            ['顧客満足プロセス', 'satisfaction'],
+                            ['内部監査プロセス', 'audit'],
+                            ['改善プロセス', 'corrective_action']
+                         
+ 
+                        ], {}, class: "form-control" %>
+
                     <%= form.submit "IATF評価テスト",class:"btn btn-secondary btn-sm" %>
                     <% end %>
-                    </a></li>
+                    </li>
 
-                    <li class="py-1 border-b-2"><a>
+
+                    <li class="py-1 border-b-2">
                     <%= form_with(url: index_suppliers_path, method: :get, local: true) do|form| %>
                     <%= form.submit "供給者リスト",class:"btn btn-secondary btn-sm" %>
                     <% end %>
-                    </a></li>
+                    </li>
 
-                    <li class="py-1 border-b-2"><a>
+                    <li class="py-1 border-b-2">
                     <%= form_with(url: index_measurementequipments_path, method: :get, local: true) do|form| %>
                     <%= form.submit "測定機器リスト",class:"btn btn-secondary btn-sm" %>
                     <% end %>
-                    </a></li>
+                    </li>
                 
                     <%= form_with(url: rubyxl_product_path, method: :get, local: true, html: { id: 'product-form' }) do |form| %>
                       <%= form.label :"図番選択" %>

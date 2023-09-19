@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_09_07_074550) do
+ActiveRecord::Schema[7.0].define(version: 2023_09_18_210650) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -90,6 +90,13 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_07_074550) do
     t.string "laboratory_environmental_conditions"
     t.string "external_calibration_laboratory"
     t.string "remarks"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "mitsuis", force: :cascade do |t|
+    t.string "mitsui_number"
+    t.text "mitsui_content"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

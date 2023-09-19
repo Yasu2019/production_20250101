@@ -52,7 +52,7 @@ class ProductsController < ApplicationController
 
     create_data_apqp_plan_report
     send_data(
-      excel_render('lib/excel_templates/apqp_plan_report.xlsx').stream.string,
+      excel_render('lib/excel_templates/apqp_plan_report_modified.xlsx').stream.string,
       type: 'application/vnd.ms-excel',
       filename: "#{@datetime.strftime("%Y%m%d")}_#{@partnumber}_APQP計画書.xlsx"
     )
@@ -66,7 +66,7 @@ class ProductsController < ApplicationController
 
     create_data_apqp_approved_report
     send_data(
-      excel_render('lib/excel_templates/apqp_approved_report.xlsx').stream.string,
+      excel_render('lib/excel_templates/apqp_approved_report_modified.xlsx').stream.string,
       type: 'application/vnd.ms-excel',
       filename: "#{@datetime.strftime("%Y%m%d")}_#{@partnumber}_APQP総括・承認書.xlsx"
     )
@@ -296,6 +296,8 @@ class ProductsController < ApplicationController
     #@products=Product.all.page(params[:page]).per(10)
     #@products=Product.all
     @products = Product.includes(:documents_attachments).all
+    #@products = Product.includes(:documents_attachments).page(params[:page]).per(10)
+
 
     #@user = current_user
   end
@@ -1185,6 +1187,8 @@ end
               #@dr_setsubi_equipment_name = worksheet.cell(5, 11) #K5    
               #@dr_setsubi_shiteki = (11..25).map { |row| worksheet.cell(row, 1)&.to_s}.compact.join("\n")
 
+              instance_variable_set("@dr_setsubi_name_#{i + 1}", worksheet.cell(5, 11))
+
 
               instance_variable_set("@dr_setsubi_designer_#{i + 1}", worksheet.cell(2, 17))
               instance_variable_set("@dr_setsubi_manager_#{i + 1}", worksheet.cell(2, 16))
@@ -1248,7 +1252,10 @@ end
           worksheet[row_number][7].change_contents("生技（\#{?dr_setsubi_designer_#{i + 2}}）")
           worksheet[row_number][10].change_contents("\#{?dr_setsubi_yotei_#{i + 2}}")
           worksheet[row_number][12].change_contents("\#{?dr_setsubi_kanryou_#{i + 2}}")
-          worksheet[row_number][14].change_contents("\#{?dr_setsubi_shiteki_#{i + 2}}")
+          #worksheet[row_number][14].change_contents("\#{?dr_setsubi_shiteki_#{i + 2}}")
+
+          content = "設備名：\#{?dr_setsubi_name_#{i + 2}}\n\n\#{?dr_setsubi_shiteki_#{i + 2}}"
+          worksheet[row_number][14].change_contents(content)
 
           # H列、I列、J列を結合
           worksheet.merge_cells(row_number, 7, row_number, 9)
@@ -1581,11 +1588,562 @@ end
     # 日付を文字列に変換
     date.strftime('%Y/%m/%d')
   end
-
+#-------------------------------------------------------------------------------------------------
   def create_data_apqp_plan_report
     @datetime = Time.now
     @partnumber=params[:partnumber]
+
+    @apqp_plan_excel_template_initial=true  #Excelテンプレートを初期値にする
+    @apqp_plan_insert_rows_to_excel_template=true #MSAクロスタブを初期値にする。これをしておかないと、ファイルの数だけ挿入サブルーチンに飛んでしまう。
+    @apqp_plan_insert_rows_to_excel_template_dr_setsubi=true #初回のファイルのみ挿入サブルーチンに飛ぶ
+    @apqp_plan_insert_rows_to_excel_template_progress_management=true #初回のファイルのみ挿入サブルーチンに飛ぶ
+
+    @datetime = Time.now
+    @name = 'm-kubo'
+    @multi_lines_text = "Remember kids,\nthe magic is with in you.\nI'm princess m-kubo."
+    @cp_check="☐"
+    @datou_check="☐"
+    @scr_check="☐"
+    @pfmea_check="☐"
+    @dr_check="☐"
+    @msa_check="☐"
+    @msa_crosstab_check="☐"
+    @msa_grr_check="☐"
+    @cpk_check="☐"
+    @shisaku_check="☐"
+    @kanagata_check="☐"
+    @dr_setsubi_check="☐"
+    @grr_check="☐"
+    @feasibility_check="☐"
+    @kataken_check="☐"
+    @psw_check="☐"
+  
+
+    @products.each do |pro|
+      @partnumber=pro.partnumber
+      Rails.logger.info "@partnumber= #{@partnumber}"  # 追加
+      @materialcode=pro.materialcode
+      Rails.logger.info "@pro.stage= #{@dropdownlist[pro.stage.to_i]}"
+      stage=@dropdownlist[pro.stage.to_i]
+      Rails.logger.info "pro.stage(number)= #{pro.stage}"
+ 
+      if stage=="量産コントロールプラン" || stage=="試作コントロールプラン"
+        @controlplan_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @controlplan_kanryou=pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @cp_check="☑"
+          @cp_filename = pro.documents.first.filename.to_s
+        else
+          @cp_check="☐"
+        end
+      end
+
+      
+
+      if stage=="妥当性確認記録_金型設計"
+        @datou_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @datou_kanryou=pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @datou_check="☑"
+
+          # 変数の設定
+          partnumber = pro.partnumber
+          pattern = "/myapp/db/documents/*#{partnumber}*妥当性確認記録*"
+          Rails.logger.info "Path= #{pattern}"
+          
+          files = Dir.glob(pattern)
+          files.each do |file|
+              workbook = nil
+              if File.extname(file) == '.xlsx'
+                  workbook = Roo::Excelx.new(file)
+              elsif File.extname(file) == '.xls'
+                  workbook = Roo::Excel.new(file)
+              else 
+                break
+              end
+
+              # 最初のシートを取得
+              worksheet = workbook.sheet(0)
+
+              # X36のセルの値を取得
+              #RubyXLライブラリでExcelのセルを参照する際、行と列のインデックスは0から始まります。
+              #したがって、1行1列目のセルは worksheet.cell(1, 1) としてアクセスされます。
+              #したがって、セルX36を指定する場合:
+              #行番号: 36 - 1 = 35
+              #列番号: Xは24番目の列なので、24 - 1 = 23
+              @datou_result = worksheet.cell(36, 24)
+              @datou_person_in_charge = worksheet.cell(39, 22)
+              @datou_kanryou = worksheet.cell(37, 6)
+              @datou_filename = pro.documents.first.filename.to_s
+              Rails.logger.info "妥当性確認"  # 追加
+              Rails.logger.info "@partnumber= #{@partnumber}"  # 追加
+              Rails.logger.info "@datou_result #{@datou_result}"  # 追加
+          end
+        else
+          @datou_check="☐"
+        end
+      end
+
+      if stage=="製造実現可能性検討書"
+        @scr_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @scr_kanryou=pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @feasibility_check="☑"
+          @feasibility_filename = pro.documents.first.filename.to_s
+        else
+          @feasibility_check="☐"
+        end
+      end
+
+      if stage=="プロセスFMEA"
+        @pfmea_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @pfmea_kanryou=pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @pfmea_check="☑"
+          @pfmea_filename = pro.documents.first.filename.to_s
+        else
+          @pfmea_check="☐"
+        end
+      end
+
+      if stage=="部品提出保証書（PSW)"
+        @psw_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @psw_kanryou=pro.end_at.strftime('%y/%m/%d')
+        Rails.logger.info "@psw_yotei #{@psw_yotei}"  # 追加
+        if pro.documents.attached?
+          @psw_check="☑"
+
+          # 変数の設定
+          partnumber = pro.partnumber
+          pattern = "/myapp/db/documents/*#{partnumber}*部品提出保証書*"
+          Rails.logger.info "Path= #{pattern}"
+          
+          files = Dir.glob(pattern)
+          files.each do |file|
+              workbook = nil
+              if File.extname(file) == '.xlsx'
+                  workbook = Roo::Excelx.new(file)
+              elsif File.extname(file) == '.xls'
+                  workbook = Roo::Excel.new(file)
+              else 
+                break
+              end
+
+              # 最初のシートを取得
+              worksheet = workbook.sheet(0)
+
+              # X36のセルの値を取得
+              #RubyXLライブラリでExcelのセルを参照する際、行と列のインデックスは0から始まります。
+              #したがって、1行1列目のセルは worksheet.cell(1, 1) としてアクセスされます。
+              #したがって、セルX36を指定する場合:
+              #行番号: 36 - 1 = 35
+              #列番号: Xは24番目の列なので、24 - 1 = 23
+              # 指定の範囲で各行をチェック
+              (25..30).each do |row|
+                if worksheet.cell(row, 2)&.to_s == "■"
+                  @psw_level = worksheet.cell(row, 3)&.to_s
+                  break  # 一度見つかったらループを終了
+                end
+              end
+
+              @psw_filename = pro.documents.first.filename.to_s
+
+          
+          end
+        else
+          @psw_check="☐"
+        end
+      end
+
+      if stage=="DR会議議事録_金型設計"
+        @dr_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @dr_kanryou=pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          # 変数の設定
+          partnumber = pro.partnumber  # ここには実際の値を設定してください
+          # パスとファイル名のパターンを作成
+          pattern = "/myapp/db/documents/*#{partnumber}*D.R会議議事録*"
+          Rails.logger.info "Path= #{pattern}"
+          # パターンに一致するファイルを取得
+          files = Dir.glob(pattern)
+          # 各ファイルに対して処理を行う
+          files.each do |file|
+            # Excelファイルを開く
+            if File.extname(file) == '.xlsx'
+              workbook = Roo::Excelx.new(file) #xlsxの場合はこちらを使用
+            elsif File.extname(file) == '.xls'
+              workbook = Roo::Excel.new(file) #xlsの場合はこちらを使用
+            else
+              break
+            
+            end
+
+            # 最初のシートを取得
+            worksheet = workbook.sheet(0)
+
+            # i4のセルの値を取得
+            
+            #@dr_kanagata_shiteki = worksheet.cell(12, 1).nil? ? "" : worksheet.cell(12, 1).to_s + worksheet.cell(13, 1).to_s
+            #@dr_kanagata_shiteki = (12..28).map { |row| worksheet.cell(row, 1)&.to_s}.compact.join("\n")
+              #もちろん、空欄の場合に改行が登録されないようにコードを変更することができます。
+              #具体的には、セルの内容が空の文字列である場合、それを配列に含めないようにする必要があります。これを実現するために、配列の生成の際に compact メソッドと reject メソッドを使用して空の文字列を取り除きます。
+              #以下のように変更します：
+              @dr_kanagata_shiteki = (12..28).map { |row| worksheet.cell(row, 1)&.to_s }
+              .compact
+              .reject(&:empty?)
+              .join("\n")
+
+          end
+
+          @dr_check="☑"
+          @dr_check_filename = pro.documents.first.filename.to_s
+        else
+          @dr_check="☐"
+        end
+      end
+
+      if stage=="初期工程調査結果"
+        @cpk_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @cpk_kanryou=pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          # 変数の設定
+          partnumber = pro.partnumber  # ここには実際の値を設定してください
+          # パスとファイル名のパターンを作成
+          pattern = "/myapp/db/documents/*#{partnumber}*工程能力(Ppk)調査表*"
+          Rails.logger.info "Path= #{pattern}"
+          # パターンに一致するファイルを取得
+          files = Dir.glob(pattern)
+          # 各ファイルに対して処理を行う
+          files.each do |file|
+            # Excelファイルを開く
+            if File.extname(file) == '.xlsx'
+              workbook = Roo::Excelx.new(file) #xlsxの場合はこちらを使用
+            elsif File.extname(file) == '.xls'
+              workbook = Roo::Excel.new(file) #xlsの場合はこちらを使用
+            else
+              break
+            end
+
+            # 最初のシートを取得
+            worksheet = workbook.sheet(0)
+
+            # i4のセルの値を取得
+            @cpk_person_in_charge = worksheet.cell(50, 71)
+            @cpk_manager = worksheet.cell(50, 76)
+
+            def cell_address_to_position(cell_address)
+              col = cell_address.gsub(/\d/, '')
+              row = cell_address.gsub(/\D/, '').to_i
+            
+              col_index = col.chars.map { |char| char.ord - 'A'.ord + 1 }.reduce(0) { |acc, val| acc * 26 + val }
+              [row, col_index]
+            end
+            
+            satisfied = "工程能力は満足している"
+            not_satisfied = "工程能力は不足している"
+            
+            # チェックするセルの位置
+            check_addresses = ["E", "N", "W", "AF", "AO", "AX", "BG", "BP", "BY"].map { |col| "#{col}44" }
+            
+            # 初期値
+            satisfied_count = 0
+            not_satisfied_count = 0
+            
+            # すべてのシートをループ
+            workbook.sheets.each do |sheet_name|
+              worksheet = workbook.sheet(sheet_name)
+              
+              check_addresses.each do |cell_address|
+                row, col = cell_address_to_position(cell_address)
+                cell_value = worksheet.cell(row, col)
+                
+                satisfied_count += 1 if cell_value == satisfied
+                not_satisfied_count += 1 if cell_value == not_satisfied
+              end
+            end
+            
+            # 結果の設定
+            if not_satisfied_count > 0
+              @cpk_result = not_satisfied
+            elsif satisfied_count > 0
+              @cpk_result = satisfied
+            else
+              @cpk_result = "結果なし"  # この行は必要に応じて変更または削除してください
+            end
+            @cpk_satisfied_count=satisfied_count
+            @cpk_not_satisfied_count=not_satisfied_count
+
+            @cpk_person_in_charge  =worksheet.cell(50,76) #担当者名
+
+            if worksheet.cell(3, 59) != nil
+              @cpk_yotei  =worksheet.cell(3,59)
+              @cpk_kanryou=worksheet.cell(3,59)
+            end
+          end
+            @cpk_check="☑"
+            @cpk_check_filename = pro.documents.first.filename.to_s
+        else
+            @cpk_check="☐"
+        end
+      end
+
+      if stage=="試作製造指示書_営業"
+        @shisaku_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @shisaku_kanryou=pro.end_at.strftime('%y/%m/%d')
+      end
+
+      if stage=="金型製造指示書_営業"
+        @kanagata_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @kanagata_kanryou=pro.end_at.strftime('%y/%m/%d')
+      end
+
+      def format_date_from_cells(year_cell, month_day_cell)
+        if year_cell.is_a?(Date)
+          year = year_cell.strftime('%Y')
+        else
+          year = year_cell.slice(0, 4)
+        end
+        "#{year}/#{month_day_cell}"
+      end
+      
+      if stage == "設計計画書_金型設計"
+        @plan_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @plan_kanryou = pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+            partnumber = pro.partnumber
+            pattern = "/myapp/db/documents/*#{partnumber}*設計計画書*"
+            Rails.logger.info "Path= #{pattern}"
+            files = Dir.glob(pattern)
+            files.each do |file|
+                # Excelファイルを開く
+                if File.extname(file) == '.xlsx'
+                    workbook = Roo::Excelx.new(file) #xlsxの場合はこちらを使用
+                elsif File.extname(file) == '.xls'
+                    workbook = Roo::Excel.new(file) #xlsの場合はこちらを使用
+                else
+                    next # 不明なファイル形式の場合は次のファイルへ
+                end
+    
+                # 最初のシートを取得
+                worksheet = workbook.sheet(0)
+      
+            if worksheet.cell(10, 4)
+              year_cell = worksheet.cell(3, 9)
+      
+              @plan_customer=worksheet.cell(6, 8)
+      
+              @plan_yotei = format_date_from_cells(year_cell,  worksheet.cell(11, 4).to_s)
+              @plan_kanryou = format_date_from_cells(year_cell,  worksheet.cell(11, 4).to_s)
+              @actual_yotei = format_date_from_cells(year_cell,  worksheet.cell(11, 4).to_s)
+              @actual_kanryou = format_date_from_cells(year_cell,  worksheet.cell(11, 4).to_s)
+
+              @plan_design_start = format_date_from_cells(year_cell,  worksheet.cell(11, 4).to_s)
+              @plan_design_end = format_date_from_cells(year_cell,  worksheet.cell(11, 4).to_s)
+              @actual_design_start = format_date_from_cells(year_cell,  worksheet.cell(10, 6).to_s)
+              @actual_design_end = format_date_from_cells(year_cell,  worksheet.cell(11, 6).to_s)
+
+              @plan_datou_start = format_date_from_cells(year_cell,  worksheet.cell(17, 4).to_s)
+              @plan_datou_end =format_date_from_cells(year_cell,  worksheet.cell(17, 4).to_s)
+              @actual_datou_start = format_date_from_cells(year_cell,  worksheet.cell(17, 6).to_s)
+              @actual_datou_end = format_date_from_cells(year_cell,  worksheet.cell(17, 6).to_s)
+              
+            end
+          end
+        end
+      end
+
+      if stage=="顧客要求事項検討会議事録_営業"
+        @scr_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @scr_kanryou=pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @scr_check="☑"
+
+          # 変数の設定
+          partnumber = pro.partnumber
+          pattern = "/myapp/db/documents/*顧客要求検討会議事録*#{partnumber}*"
+          Rails.logger.info "Path= #{pattern}"
+          
+          files = Dir.glob(pattern)
+          files.each do |file|
+              workbook = nil
+              if File.extname(file) == '.xlsx'
+                  workbook = Roo::Excelx.new(file)
+              elsif File.extname(file) == '.xls'
+                  workbook = Roo::Excel.new(file)
+              else 
+                break
+              end
+
+              # 最初のシートを取得
+              worksheet = workbook.sheet(0)
+
+              # X36のセルの値を取得
+              #RubyXLライブラリでExcelのセルを参照する際、行と列のインデックスは0から始まります。
+              #したがって、1行1列目のセルは worksheet.cell(1, 1) としてアクセスされます。
+              #したがって、セルX36を指定する場合:
+              #行番号: 36 - 1 = 35
+              #列番号: Xは24番目の列なので、24 - 1 = 23
+              @plan_scr_start = worksheet.cell(5, 6)
+              @plan_scr_end = worksheet.cell(5, 6)
+              @actual_scr_start = worksheet.cell(5, 6)
+              @actual_scr_end = worksheet.cell(5, 6)
+
+
+
+          end
+        else
+          @scr_check="☐"
+        end
+      end
+      
+
+      if stage=="DR構想検討会議議事録_生産技術"
+        @dr_setsubi_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @dr_setsubi_kanryou=pro.end_at.strftime('%y/%m/%d')
+          if pro.documents.attached?
+            # 変数の設定
+            partnumber = pro.partnumber  # ここには実際の値を設定してください
+            # パスとファイル名のパターンを作成
+            pattern = "/myapp/db/documents/*#{partnumber}*DR構想検討会議議事録*"
+            Rails.logger.info "Path= #{pattern}"
+            # パターンに一致するファイルを取得
+            files = Dir.glob(pattern)
+
+            @dr_setsubi_count = files.size #追加　ファイルの数カウントし、何行挿入するか決定する
+
+            if @apqp_plan_insert_rows_to_excel_template_dr_setsubi==true #初回のファイルのみ挿入サブルーチンに飛ぶ
+              apqp_plan_insert_rows_to_excel_template_dr_setsubi #セルに必要な行数だけ行を挿入するサブルーチン
+            end
+
+            # 各ファイルに対して処理を行う
+            files.each_with_index do |file, i|  #with_indexでインデックスiを追加
+              # Excelファイルを開く
+              if File.extname(file) == '.xlsx'
+                workbook = Roo::Excelx.new(file) #xlsxの場合はこちらを使用
+              elsif File.extname(file) == '.xls'
+                workbook = Roo::Excel.new(file) #xlsの場合はこちらを使用
+              else
+                break
+              end
+
+              # 最初のシートを取得
+              worksheet = workbook.sheet(0)
+
+              # i4のセルの値を取得
+
+              # ファイル名の取得
+              filename = File.basename(file)
+
+              # インスタンス変数にファイル名を設定
+              instance_variable_set("@dr_setsubi_filename_#{i + 1}", filename)
+
+
+              #もちろん、空欄の場合に改行が登録されないようにコードを変更することができます。
+              #具体的には、セルの内容が空の文字列である場合、それを配列に含めないようにする必要があります。これを実現するために、配列の生成の際に compact メソッドと reject メソッドを使用して空の文字列を取り除きます。
+              #以下のように変更します：
+              #instance_variable_set("@dr_setsubi_shiteki_#{i + 1}", 
+              #(11..25).map { |row| worksheet.cell(row, 1)&.to_s }
+              #.compact
+              #.reject(&:empty?)
+              #.join("\n"))
+
+
+              #if worksheet.cell(5, 15) != nil
+              #  @dr_setsubi_yotei  =worksheet.cell(5,15)
+              #  @dr_setsubi_kanryou=worksheet.cell(5,15)
+              #end
+            end
+              @dr_setsubi_check="☑"
+          else
+              @dr_setsubi_check="☐"
+          end
+      end
+    end
   end
+
+      def apqp_plan_insert_rows_to_excel_template_dr_setsubi
+
+        if @apqp_plan_excel_template_initial==true  #Excelテンプレートが初期値の場合
+            workbook = RubyXL::Parser.parse('lib/excel_templates/apqp_plan_report.xlsx')
+            @apqp_plan_excel_template_initial=false
+        else
+          workbook = RubyXL::Parser.parse('lib/excel_templates/apqp_plan_report_modified.xlsx')
+        end
+        @apqp_plan_insert_rows_to_excel_template_dr_setsubi=false #初回のファイルのみサブルーチン処理したのでfalseにして次のファイルから飛ばないようにする
+
+        worksheet = workbook[0]
+        
+        count = @dr_setsubi_count-1
+
+        if count<0 
+          count=0
+        end
+
+        insert_row_number = 0  # 挿入する行番号を格納する変数
+        (20..30).each do |row|
+          if worksheet[row][5].value == "デザインレビュー(設備設計)"  # D列を参照。
+            insert_row_number = row+1  # 挿入する行番号を取得
+         
+            break
+          end
+        end
+
+        Rails.logger.info "insert_row_number= #{insert_row_number}"  # 追加
+        Rails.logger.info "count= #{count}"  # 追加
+
+
+
+        # @msa_crosstab_countの数だけ38行目と39行目の間に内容を挿入
+        count.times do |i|
+          row_number = insert_row_number + i  # 正しい行番号を計算
+          worksheet.insert_row(row_number)
+        
+          # 新しく追加された行に、生技（#{?dr_setsubi_designer_#{i+2}}）を設定
+          worksheet[row_number][12].change_contents("報告書名：\#{?dr_setsubi_filename_#{i + 2}}")
+    
+
+          # H列、I列、J列を結合
+          worksheet.merge_cells(row_number, 12, row_number, 19)
+          worksheet.merge_cells(row_number-count, 5, row_number, 11)
+          worksheet.merge_cells(row_number-count, 4, row_number, 4)
+
+        
+        end
+        
+        #worksheet.merge_cells メソッドは、セルの範囲を結合するために使用されます。
+        #指定されたコマンド worksheet.merge_cells(40, 3, 41, 6) において、引数は以下のように解釈されます：
+        #最初の2つの数字 (40, 3) は、結合を開始するセルを指定します。この場合、41行目のD列（インデックス3はD列を示す）のセル、すなわちセルD41を示します。
+        #次の2つの数字 (41, 6) は、結合を終了するセルを指定します。この場合、42行目のG列（インデックス6はG列を示す）のセル、すなわちセルG42を示します。
+        #したがって、このコマンドにより、セルD41からG42までの範囲（D41, E41, F41, G41, D42, E42, F42, G42の8つのセル）が結合されます。
+        
+        #worksheet.merge_cells(insert_row_number-1, 3, insert_row_number+count-1, 6)
+        
+        workbook.write('lib/excel_templates/apqp_plan_report_modified.xlsx')
+      end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ #   end
+
+
+
+#  end  
 
   def create_data_apqp_approved_report
     @datetime = Time.now

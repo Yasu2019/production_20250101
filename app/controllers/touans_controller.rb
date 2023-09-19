@@ -126,6 +126,8 @@ class TouansController < ApplicationController
 
     def index
       @user = current_user
+      @owner_select = params[:owner_select]
+
       
 
       @products = Product.where.not(documentnumber: nil).includes(:documents_attachments)
@@ -156,10 +158,11 @@ class TouansController < ApplicationController
       @touans = Touan.where(user_id: current_user.id)
     
       @auditor = current_user.auditor
-      @iatf_data_audit = Iatf.where(audit: "2")
-      @iatf_data_audit_sub = Iatf.where(audit: "1")
+      #@iatf_data_audit = Iatf.where(audit: "2")
+      #@iatf_data_audit_sub = Iatf.where(audit: "1")
       @csrs = Csr.all
       @iatflists = Iatflist.all
+      @mitsuis = Mitsui.all
       
       owner_mapping = {
           'sales' => ['sales', '営業プロセス'],
@@ -175,165 +178,34 @@ class TouansController < ApplicationController
           'audit' => ['audit', '内部監査プロセス'],
           'corrective_action' => ['corrective_action', '改善プロセス']
       }
-    
+
+      @iatf_data = []
+      @iatf_data_sub = []
       if owner_mapping.key?(@user.owner)
           key, process_name = owner_mapping[@user.owner]
           @iatf_data = Iatf.where("#{key}": "2")
           @iatf_data_sub = Iatf.where("#{key}": "1")
           @process_name = process_name
       end
+
+      @iatf_data_audit = []
+      @iatf_data_audit_sub = []
+      if owner_mapping.key?(@owner_select)
+        key, process_name = owner_mapping[@owner_select]
+        @iatf_data_audit = Iatf.where("#{key}": "2")
+        @iatf_data_audit_sub = Iatf.where("#{key}": "1")
+        #@select_process_name = @owner_select
     end
+
+    # @owner_selectの値に応じて@owner_select_jpに日本語のプロセス名を代入
+      if owner_mapping.key?(@owner_select)
+        @owner_select_jp = owner_mapping[@owner_select][1]
+      end
+
+  end
     
 
 
-#  def index
-#    @user = current_user
-
-#    owner_mapping = {
-#        'sales' => ['sales', '営業プロセス'],
-#        'process_design' => ['process_design', '製造工程設計プロセス'],
-#        
-#        'production' => ['production', '製造プロセス'],
-#        'inspection' => ['inspection', '製品検査プロセス'],
-#        'release' => ['release', '引渡しプロセス'],
-#        'procurement' => ['procurement', '購買プロセス'],
-#        'equipment' => ['equipment', '設備管理プロセス'],
-#        'measurement' => ['measurement', '測定機器管理プロセス'],
-#        'policy' => ['policy', '方針プロセス'],
-#        'satisfaction' => ['satisfaction', '顧客満足プロセス'],
-#        'audit' => ['audit', '内部監査プロセス'],
-#        'corrective_action' => ['corrective_action', '改善プロセス']
-
-#    }
-
-#    if owner_mapping.key?(@user.owner)
-#        key, process_name = owner_mapping[@user.owner]
-#        @iatf_data = Iatf.where("#{key}": "2")
-#        @iatf_data_sub = Iatf.where("#{key}": "1")
-#        @process_name = process_name
-#    else
-        # 一致するキーがない場合、関連するデータの取得をスキップします。
-#        return
-#    end
-
-    # 以下は、すべてのOWNERに共通のデータの取得です。
-    #@products = Product.all.includes(:documents_attachments)
-  
-    #以下のようにクエリを修正して、documentnumber が nil の Product レコードを取得しないようにできます：
-
-#    @products = Product.where.not(documentnumber: nil).includes(:documents_attachments)
-#    @touans = Touan.where(user_id: @user)
-#    @auditor = @user.auditor
-#    @csrs = Csr.all
-#    @iatflists = Iatflist.all
-#end
-
-
-  #def index
-    #@touans = Touan.all
-    #@products = Product.all
-  #  @products = Product.all.includes(:documents_attachments)
-  #  @touans = Touan.where(user_id: current_user)
-  #  @user = current_user
-  #  @auditor = current_user.auditor
-  #  @iatf_data_audit = Iatf.where(audit: "2")
-  #  @iatf_data_audit_sub = Iatf.where(audit: "1")
-  #  @csrs = Csr.all
-  #  @iatflists = Iatflist.all
-
-  #  owner_mapping = {
-  #      'sales' => ['sales', '営業プロセス'],
-  #      'process_design' => ['process_design', '製造工程設計プロセス'],
-  #      'production' => ['production', '製造プロセス'],
-  #      'inspection' => ['inspection', '製品検査プロセス'],
-  #      'release' => ['release', '引渡しプロセス'],
-  #      'procurement' => ['procurement', '購買プロセス'],
-  #      'equipment' => ['equipment', '設備管理プロセス'],
-  #      'measurement' => ['measurement', '測定機器管理プロセス'],
-  #      'policy' => ['policy', '方針プロセス'],
-  #      'satisfaction' => ['satisfaction', '顧客満足プロセス'],
-  #      'audit' => ['audit', '内部監査プロセス'],
-  #      'corrective_action' => ['corrective_action', '改善プロセス']
-  #  }
-
-  #  if owner_mapping.key?(current_user.owner)
-  #      key, process_name = owner_mapping[current_user.owner]
-  #      @iatf_data = Iatf.where("#{key}": "2")
-  #      @iatf_data_sub = Iatf.where("#{key}": "1")
-  #      @process_name = process_name
-  #  end
-  #end
-
-  #def index
-#
-#    #@touans = Touan.all
-#
-#    
-#    #@products = Product.all
-#    @products = Product.all.includes(:documents_attachments)
-#
-#    @touans = Touan.where(user_id:current_user)
-#    @user = current_user
-
-#    @auditor = current_user.auditor
-#    @iatf_data_audit = Iatf.where(audit: "2")
-#    @iatf_data_audit_sub = Iatf.where(audit: "1")
-
-#    @csrs=Csr.all
-#    @iatflists=Iatflist.all
-
-
-#    case current_user.owner
-#    when 'sales'
-#      @iatf_data = Iatf.where(sales: "2")
-#      @iatf_data_sub = Iatf.where(sales: "1")
-#      @process_name = "営業プロセス"
-#    when 'process_design'
-#      @iatf_data = Iatf.where(process_design: "2")
-#      @iatf_data_sub = Iatf.where(process_design: "1")
-#      @process_name = "製造工程設計プロセス"
-#    when 'production'
-#      @iatf_data = Iatf.where(production: "2")
-#      @iatf_data_sub = Iatf.where(production: "1")
-#      @process_name = "製造プロセス"
-#    when 'inspection'
-#      @iatf_data = Iatf.where(inspection: "2")
-#      @iatf_data_sub = Iatf.where(inspection: "1")
-#      @process_name = "製品検査プロセス"
-#    when 'release'
-#      @iatf_data = Iatf.where(release: "2")
-#      @iatf_data_sub = Iatf.where(release: "1")
-#      @process_name = "引渡しプロセス"
-#    when 'procurement'
-#      @iatf_data = Iatf.where(procurement: "2")
-#      @iatf_data_sub = Iatf.where(procurement: "1")
-#      @process_name = "購買プロセス"
-#    when 'equipment'
-#      @iatf_data = Iatf.where(equipment: "2")
-#      @iatf_data_sub = Iatf.where(equipment: "1")
-#      @process_name = "設備管理プロセス"
-#    when 'measurement'
-#      @iatf_data = Iatf.where(measurement: "2")
-#      @iatf_data_sub = Iatf.where(measurement: "1")
-#      @process_name = "測定機器管理プロセス"
-#    when 'policy'
-#      @iatf_data = Iatf.where(policy: "2")
-#      @iatf_data_sub = Iatf.where(policy: "1")
-#      @process_name = "方針プロセス"
-#    when 'satisfaction'
-#      @iatf_data = Iatf.where(satisfaction: "2")
-#      @iatf_data_sub = Iatf.where(satisfaction: "1")
-#      @process_name = "顧客満足プロセス"
-#    when 'audit'
-#      @iatf_data = Iatf.where(audit: "2")
-#      @iatf_data_sub = Iatf.where(audit: "1")
-#      @process_name = "内部監査プロセス"
-#    when 'corrective_action'
-#      @iatf_data = Iatf.where(corrective_action: "2")
-#      @iatf_data_sub = Iatf.where(corrective_action: "1")
-#      @process_name = "改善プロセス"
-#    end
-#  end
 
   def kekka
     @touans = Touan.where(created_at: Time.parse(params[:created_at]) - 1.minute..Time.parse(params[:created_at]) + 1.minute)

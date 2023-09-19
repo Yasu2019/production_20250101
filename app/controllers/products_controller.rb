@@ -860,67 +860,7 @@ end
 
       end
     
-      def insert_rows_to_excel_template
-
-        if @excel_template_initial==true  #Excelテンプレートが初期値の場合
-            workbook = RubyXL::Parser.parse('lib/excel_templates/process_design_plan_report.xlsx')
-            @excel_template_initial=false
-        else
-          workbook = RubyXL::Parser.parse('lib/excel_templates/process_design_plan_report_modified.xlsx')
-        end
-        @insert_rows_to_excel_template=false #初回のファイルのみサブルーチン処理したのでfalseにして次のファイルから飛ばないようにする
-        worksheet = workbook[0]
-        
-        if @msa_crosstab_count >= 2
-          count = @msa_crosstab_count - 1
-        else
-          count = 0
-        end
-        
-
-        insert_row_number = 0  # 挿入する行番号を格納する変数
-        (13..85).each do |row|
-          if worksheet[row][3].value == "クロスタブ"  # D列を参照。
-            insert_row_number = row+1  # 挿入する行番号を取得
-            break
-          end
-        end
-
-
-        # countの数だけ38行目と39行目の間に内容を挿入
-        count.times do |i|
-          row_number = insert_row_number + i  # 正しい行番号を計算
-          worksheet.insert_row(row_number)
-        
-          # 新しく追加された行に、品証（#{?msa_crosstab_person_in_charge_#{i+2}}）を設定
-          worksheet[row_number][7].change_contents("品証（\#{?msa_crosstab_person_in_charge_#{i + 2}}）")
-          worksheet[row_number][10].change_contents("\#{?msa_crosstab_yotei_#{i + 2}}")
-          worksheet[row_number][12].change_contents("\#{?msa_crosstab_kanryou_#{i + 2}}")
-          worksheet[row_number][14].change_contents("\#{?inspector_name_a_#{i + 2}}：\#{?inspector_a_result_#{i + 2}}、\#{?inspector_name_b_#{i + 2}}：\#{?inspector_b_result_#{i + 2}}、\#{?inspector_name_c_#{i + 2}}：\#{?inspector_c_result_#{i + 2}}")
-
-          # H列、I列、J列を結合
-          worksheet.merge_cells(row_number, 7, row_number, 9)
-          worksheet.merge_cells(row_number, 10, row_number, 11)
-          worksheet.merge_cells(row_number, 12, row_number, 13)
-          worksheet.merge_cells(row_number, 14, row_number, 23)
-        end
-        
-        
-
-        
-        #worksheet.merge_cells メソッドは、セルの範囲を結合するために使用されます。
-        #指定されたコマンド worksheet.merge_cells(40, 3, 41, 6) において、引数は以下のように解釈されます：
-        #最初の2つの数字 (40, 3) は、結合を開始するセルを指定します。この場合、41行目のD列（インデックス3はD列を示す）のセル、すなわちセルD41を示します。
-        #次の2つの数字 (41, 6) は、結合を終了するセルを指定します。この場合、42行目のG列（インデックス6はG列を示す）のセル、すなわちセルG42を示します。
-        #したがって、このコマンドにより、セルD41からG42までの範囲（D41, E41, F41, G41, D42, E42, F42, G42の8つのセル）が結合されます。
-
-        #worksheet.merge_cells(insert_row_number-1, 3, insert_row_number+count-1, 6)
-        Rails.logger.info "insert_row_number= #{insert_row_number}"  # 追加
-        
-        Rails.logger.info "count= #{count}"  # 追加
-
-        workbook.write('lib/excel_templates/process_design_plan_report_modified.xlsx')
-      end
+      
       
 
       if stage == "寸法測定結果" # 型検
@@ -1216,64 +1156,7 @@ end
           end
       end
 
-      def insert_rows_to_excel_template_dr_setsubi
-
-        if @excel_template_initial==true  #Excelテンプレートが初期値の場合
-            workbook = RubyXL::Parser.parse('lib/excel_templates/process_design_plan_report.xlsx')
-            @excel_template_initial=false
-        else
-          workbook = RubyXL::Parser.parse('lib/excel_templates/process_design_plan_report_modified.xlsx')
-        end
-        @insert_rows_to_excel_template_dr_setsubi=false #初回のファイルのみサブルーチン処理したのでfalseにして次のファイルから飛ばないようにする
-
-        worksheet = workbook[0]
-        
-        count = @dr_setsubi_count-1
-
-        if count<0 
-          count=0
-        end
-
-        insert_row_number = 0  # 挿入する行番号を格納する変数
-        (13..85).each do |row|
-          if worksheet[row][3].value == "デザインレビュー(設備)"  # D列を参照。
-            insert_row_number = row+1  # 挿入する行番号を取得
-            break
-          end
-        end
-
-
-        # @msa_crosstab_countの数だけ38行目と39行目の間に内容を挿入
-        count.times do |i|
-          row_number = insert_row_number + i  # 正しい行番号を計算
-          worksheet.insert_row(row_number)
-        
-          # 新しく追加された行に、生技（#{?dr_setsubi_designer_#{i+2}}）を設定
-          worksheet[row_number][7].change_contents("生技（\#{?dr_setsubi_designer_#{i + 2}}）")
-          worksheet[row_number][10].change_contents("\#{?dr_setsubi_yotei_#{i + 2}}")
-          worksheet[row_number][12].change_contents("\#{?dr_setsubi_kanryou_#{i + 2}}")
-          #worksheet[row_number][14].change_contents("\#{?dr_setsubi_shiteki_#{i + 2}}")
-
-          content = "設備名：\#{?dr_setsubi_name_#{i + 2}}\n\n\#{?dr_setsubi_shiteki_#{i + 2}}"
-          worksheet[row_number][14].change_contents(content)
-
-          # H列、I列、J列を結合
-          worksheet.merge_cells(row_number, 7, row_number, 9)
-          worksheet.merge_cells(row_number, 10, row_number, 11)
-          worksheet.merge_cells(row_number, 12, row_number, 13)
-          worksheet.merge_cells(row_number, 14, row_number, 23)
-        end
-        
-        #worksheet.merge_cells メソッドは、セルの範囲を結合するために使用されます。
-        #指定されたコマンド worksheet.merge_cells(40, 3, 41, 6) において、引数は以下のように解釈されます：
-        #最初の2つの数字 (40, 3) は、結合を開始するセルを指定します。この場合、41行目のD列（インデックス3はD列を示す）のセル、すなわちセルD41を示します。
-        #次の2つの数字 (41, 6) は、結合を終了するセルを指定します。この場合、42行目のG列（インデックス6はG列を示す）のセル、すなわちセルG42を示します。
-        #したがって、このコマンドにより、セルD41からG42までの範囲（D41, E41, F41, G41, D42, E42, F42, G42の8つのセル）が結合されます。
-        
-        worksheet.merge_cells(insert_row_number-1, 3, insert_row_number+count-1, 6)
-        
-        workbook.write('lib/excel_templates/process_design_plan_report_modified.xlsx')
-      end
+      
 
       if stage=="進捗管理票_生産技術"
         @dr_seigi_yotei=pro.deadline_at.strftime('%y/%m/%d')
@@ -1375,133 +1258,7 @@ end
           end
       end
 
-      def insert_rows_to_excel_template_progress_management
-
-        if @excel_template_initial==true  #Excelテンプレートが初期値の場合
-            workbook = RubyXL::Parser.parse('lib/excel_templates/process_design_plan_report.xlsx')
-            @excel_template_initial=false
-        else
-          workbook = RubyXL::Parser.parse('lib/excel_templates/process_design_plan_report_modified.xlsx')
-        end
-        @insert_rows_to_excel_template_progress_management=false #初回のファイルのみサブルーチン処理したのでfalseにして次のファイルから飛ばないようにする
-
-        worksheet = workbook[0]
-        
-        count =  @progress_management_count -1
-
-        if count<0 
-          count=0
-        end
-
-        insert_row_number = 0  # 挿入する行番号を格納する変数
-        (13..85).each do |row|
-          if worksheet[row][3].value == "設備設計"  # D列を参照。
-            insert_row_number = row+4  # 挿入する行番号を取得(3行分下の行から挿入開始)
-            break
-          end
-        end
-
-
-        # @msa_crosstab_countの数だけ38行目と39行目の間に内容を挿入
-        count.times do |i|
-          #row_number = insert_row_number + i  # 正しい行番号を計算
-          row_number = insert_row_number + i*4  # 正しい行番号を計算
-          worksheet.insert_row(row_number)
-          worksheet.insert_row(row_number)
-          worksheet.insert_row(row_number)
-          worksheet.insert_row(row_number)
-        
-          # 新しく追加された行に、生技（#{?dr_setsubi_designer_#{i+2}}）を設定
-
-          
-
-          
-          worksheet[row_number][14].change_contents("設備名：\#{?progress_management_seigi_equipment_name_#{i + 2}}")  #H13 設備名称
-
-          #@progress_management_seigi_design_name = worksheet.cell(14, 8)           #H13 設計担当者名
-          worksheet[row_number][7].change_contents("生技（\#{?progress_management_seigi_design_name_#{i + 2}}）")  #H13 設計担当者名
-          #@progress_management_seigi_design_yotei = convert_excel_date(worksheet.cell(12, 6)) #F12 設計予定日
-          worksheet[row_number][10].change_contents("\#{?progress_management_seigi_design_yotei_#{i + 2}}")
-          #@progress_management_seigi_design_kanryou = convert_excel_date(worksheet.cell(12, 7)) #G12 設計完了日
-          worksheet[row_number][12].change_contents("\#{?progress_management_seigi_design_kanryou_#{i + 2}}")
-              
-          #@progress_management_seigi_assembly_name = worksheet.cell(27, 8)         #H27 組立担当者名
-          worksheet[row_number+1][7].change_contents("生技（\#{?progress_management_seigi_assembly_name_#{i + 2}}）")  #H27 組立担当者名
-          #@progress_management_seigi_assembly_yotei = convert_excel_date(worksheet.cell(26, 6)) #F26 組立予定日
-          worksheet[row_number+1][10].change_contents("\#{?progress_management_seigi_assembly_yotei_#{i + 2}}")    
-          #@progress_management_seigi_assembly_kanryou = convert_excel_date(worksheet.cell(26, 7)) #G26 組立完了日
-          worksheet[row_number+1][12].change_contents("\#{?progress_management_seigi_assembly_kanryou_#{i + 2}}")
-              
-          #@progress_management_seigi_wiring_name = worksheet.cell(30, 8)           #H30 配線担当者名
-          worksheet[row_number+2][7].change_contents("生技（\#{?progress_management_seigi_wiring_name_#{i + 2}}）")    #H30 配線担当者名
-          #@progress_management_seigi_wiring_yotei = convert_excel_date(worksheet.cell(29, 6)) #F29 配線予定日
-          worksheet[row_number+2][10].change_contents("\#{?progress_management_seigi_wiring_yotei_#{i + 2}}")
-          #@progress_management_seigi_wiring_kanryou = convert_excel_date(worksheet.cell(29, 7)) #G29 配線完了日
-          worksheet[row_number+2][12].change_contents("\#{?progress_management_seigi_wiring_kanryou_#{i + 2}}")
-              
-          #@progress_management_seigi_program_name = worksheet.cell(34, 8)          #H34 プログラム担当者名
-          worksheet[row_number+3][7].change_contents("生技（\#{?progress_management_seigi_program_name_#{i + 2}}）")   #H34 プログラム担当者名
-          #@progress_management_seigi_program_yotei = convert_excel_date(worksheet.cell(33, 6)) #F33 プログラム予定日
-          worksheet[row_number+3][10].change_contents("\#{?progress_management_seigi_program_yotei_#{i + 2}}")
-          #@progress_management_seigi_program_kanryou = convert_excel_date(worksheet.cell(33, 7)) #G33 プログラム完了日             
-          worksheet[row_number+3][12].change_contents("\#{?progress_management_seigi_program_kanryou_#{i + 2}}")
-
-          #    if worksheet.cell(10, 4) != nil
-          #      @dr_seigi_yotei  =worksheet.cell(33, 6) #F33　プログラム予定日
-          #      @dr_seigi_kanryou=worksheet.cell(33, 7) #G33 プログラム完了日
-          #    end
-
-
-
-          worksheet[row_number][3].change_contents("設備設計")
-          worksheet[row_number+1][3].change_contents("設備製作")
-          worksheet[row_number+1][5].change_contents("組立")
-          worksheet[row_number+2][5].change_contents("配線")
-          worksheet[row_number+3][5].change_contents("プログラム")
-
-          worksheet.merge_cells(row_number, 3, row_number, 6)
-
-          worksheet.merge_cells(row_number+1, 3, row_number+3, 4) #D列、E列を結合
-
-          worksheet.merge_cells(row_number+1, 5, row_number+1, 6)
-          worksheet.merge_cells(row_number+2, 5, row_number+2, 6)
-          worksheet.merge_cells(row_number+3, 5, row_number+3, 6)
-
-          worksheet.merge_cells(row_number, 14, row_number+3, 23) #設備名称のセルを結合
-          
-
-
-          # H列、I列、J列を結合
-          worksheet.merge_cells(row_number, 7, row_number, 9)
-          worksheet.merge_cells(row_number, 10, row_number, 11)
-          worksheet.merge_cells(row_number, 12, row_number, 13)
-
-          worksheet.merge_cells(row_number+1, 7, row_number+1, 9)
-          worksheet.merge_cells(row_number+1, 10, row_number+1, 11)
-          worksheet.merge_cells(row_number+1, 12, row_number+1, 13)
-
-          worksheet.merge_cells(row_number+2, 7, row_number+2, 9)
-          worksheet.merge_cells(row_number+2, 10, row_number+2, 11)
-          worksheet.merge_cells(row_number+2, 12, row_number+2, 13)
-
-          worksheet.merge_cells(row_number+3, 7, row_number+3, 9)
-          worksheet.merge_cells(row_number+3, 10, row_number+3, 11)
-          worksheet.merge_cells(row_number+3, 12, row_number+3, 13)
-
-
-
-        end
-        
-        #worksheet.merge_cells メソッドは、セルの範囲を結合するために使用されます。
-        #指定されたコマンド worksheet.merge_cells(40, 3, 41, 6) において、引数は以下のように解釈されます：
-        #最初の2つの数字 (40, 3) は、結合を開始するセルを指定します。この場合、41行目のD列（インデックス3はD列を示す）のセル、すなわちセルD41を示します。
-        #次の2つの数字 (41, 6) は、結合を終了するセルを指定します。この場合、42行目のG列（インデックス6はG列を示す）のセル、すなわちセルG42を示します。
-        #したがって、このコマンドにより、セルD41からG42までの範囲（D41, E41, F41, G41, D42, E42, F42, G42の8つのセル）が結合されます。
-        
-        #worksheet.merge_cells(insert_row_number-1, 3, insert_row_number+count-1, 6)
-        
-        workbook.write('lib/excel_templates/process_design_plan_report_modified.xlsx')
-      end
+      
 
       if stage=="初期流動検査記録"
         @shoki_yotei=pro.deadline_at.strftime('%y/%m/%d')
@@ -1569,8 +1326,285 @@ end
         end
       end
     end
+
+
+
+
+
+
     
   end
+
+
+
+
+
+  def insert_rows_to_excel_template
+
+    if @excel_template_initial==true  #Excelテンプレートが初期値の場合
+        workbook = RubyXL::Parser.parse('lib/excel_templates/process_design_plan_report.xlsx')
+        @excel_template_initial=false
+    else
+      workbook = RubyXL::Parser.parse('lib/excel_templates/process_design_plan_report_modified.xlsx')
+    end
+    @insert_rows_to_excel_template=false #初回のファイルのみサブルーチン処理したのでfalseにして次のファイルから飛ばないようにする
+    worksheet = workbook[0]
+    
+    if @msa_crosstab_count >= 2
+      count = @msa_crosstab_count - 1
+    else
+      count = 0
+    end
+    
+
+    insert_row_number = 0  # 挿入する行番号を格納する変数
+    (13..85).each do |row|
+      if worksheet[row][3].value == "クロスタブ"  # D列を参照。
+        insert_row_number = row+1  # 挿入する行番号を取得
+        break
+      end
+    end
+
+
+    # countの数だけ38行目と39行目の間に内容を挿入
+    count.times do |i|
+      row_number = insert_row_number + i  # 正しい行番号を計算
+      worksheet.insert_row(row_number)
+    
+      # 新しく追加された行に、品証（#{?msa_crosstab_person_in_charge_#{i+2}}）を設定
+      worksheet[row_number][7].change_contents("品証（\#{?msa_crosstab_person_in_charge_#{i + 2}}）")
+      worksheet[row_number][10].change_contents("\#{?msa_crosstab_yotei_#{i + 2}}")
+      worksheet[row_number][12].change_contents("\#{?msa_crosstab_kanryou_#{i + 2}}")
+      worksheet[row_number][14].change_contents("\#{?inspector_name_a_#{i + 2}}：\#{?inspector_a_result_#{i + 2}}、\#{?inspector_name_b_#{i + 2}}：\#{?inspector_b_result_#{i + 2}}、\#{?inspector_name_c_#{i + 2}}：\#{?inspector_c_result_#{i + 2}}")
+
+      # H列、I列、J列を結合
+      worksheet.merge_cells(row_number, 7, row_number, 9)
+      worksheet.merge_cells(row_number, 10, row_number, 11)
+      worksheet.merge_cells(row_number, 12, row_number, 13)
+      worksheet.merge_cells(row_number, 14, row_number, 23)
+    end
+    
+    
+
+    
+    #worksheet.merge_cells メソッドは、セルの範囲を結合するために使用されます。
+    #指定されたコマンド worksheet.merge_cells(40, 3, 41, 6) において、引数は以下のように解釈されます：
+    #最初の2つの数字 (40, 3) は、結合を開始するセルを指定します。この場合、41行目のD列（インデックス3はD列を示す）のセル、すなわちセルD41を示します。
+    #次の2つの数字 (41, 6) は、結合を終了するセルを指定します。この場合、42行目のG列（インデックス6はG列を示す）のセル、すなわちセルG42を示します。
+    #したがって、このコマンドにより、セルD41からG42までの範囲（D41, E41, F41, G41, D42, E42, F42, G42の8つのセル）が結合されます。
+
+    #worksheet.merge_cells(insert_row_number-1, 3, insert_row_number+count-1, 6)
+    Rails.logger.info "insert_row_number= #{insert_row_number}"  # 追加
+    
+    Rails.logger.info "count= #{count}"  # 追加
+
+    workbook.write('lib/excel_templates/process_design_plan_report_modified.xlsx')
+  end
+
+
+
+  def insert_rows_to_excel_template_dr_setsubi
+
+    if @excel_template_initial==true  #Excelテンプレートが初期値の場合
+        workbook = RubyXL::Parser.parse('lib/excel_templates/process_design_plan_report.xlsx')
+        @excel_template_initial=false
+    else
+      workbook = RubyXL::Parser.parse('lib/excel_templates/process_design_plan_report_modified.xlsx')
+    end
+    @insert_rows_to_excel_template_dr_setsubi=false #初回のファイルのみサブルーチン処理したのでfalseにして次のファイルから飛ばないようにする
+
+    worksheet = workbook[0]
+    
+    count = @dr_setsubi_count-1
+
+    if count<0 
+      count=0
+    end
+
+    insert_row_number = 0  # 挿入する行番号を格納する変数
+    (13..85).each do |row|
+      if worksheet[row][3].value == "デザインレビュー(設備)"  # D列を参照。
+        insert_row_number = row+1  # 挿入する行番号を取得
+        break
+      end
+    end
+
+
+    # @msa_crosstab_countの数だけ38行目と39行目の間に内容を挿入
+    count.times do |i|
+      row_number = insert_row_number + i  # 正しい行番号を計算
+      worksheet.insert_row(row_number)
+    
+      # 新しく追加された行に、生技（#{?dr_setsubi_designer_#{i+2}}）を設定
+      worksheet[row_number][7].change_contents("生技（\#{?dr_setsubi_designer_#{i + 2}}）")
+      worksheet[row_number][10].change_contents("\#{?dr_setsubi_yotei_#{i + 2}}")
+      worksheet[row_number][12].change_contents("\#{?dr_setsubi_kanryou_#{i + 2}}")
+      #worksheet[row_number][14].change_contents("\#{?dr_setsubi_shiteki_#{i + 2}}")
+
+      content = "設備名：\#{?dr_setsubi_name_#{i + 2}}\n\n\#{?dr_setsubi_shiteki_#{i + 2}}"
+      worksheet[row_number][14].change_contents(content)
+
+      # H列、I列、J列を結合
+      worksheet.merge_cells(row_number, 7, row_number, 9)
+      worksheet.merge_cells(row_number, 10, row_number, 11)
+      worksheet.merge_cells(row_number, 12, row_number, 13)
+      worksheet.merge_cells(row_number, 14, row_number, 23)
+    end
+    
+    #worksheet.merge_cells メソッドは、セルの範囲を結合するために使用されます。
+    #指定されたコマンド worksheet.merge_cells(40, 3, 41, 6) において、引数は以下のように解釈されます：
+    #最初の2つの数字 (40, 3) は、結合を開始するセルを指定します。この場合、41行目のD列（インデックス3はD列を示す）のセル、すなわちセルD41を示します。
+    #次の2つの数字 (41, 6) は、結合を終了するセルを指定します。この場合、42行目のG列（インデックス6はG列を示す）のセル、すなわちセルG42を示します。
+    #したがって、このコマンドにより、セルD41からG42までの範囲（D41, E41, F41, G41, D42, E42, F42, G42の8つのセル）が結合されます。
+    
+    worksheet.merge_cells(insert_row_number-1, 3, insert_row_number+count-1, 6)
+    
+    workbook.write('lib/excel_templates/process_design_plan_report_modified.xlsx')
+  end
+
+
+
+
+
+  def insert_rows_to_excel_template_progress_management
+
+    if @excel_template_initial==true  #Excelテンプレートが初期値の場合
+        workbook = RubyXL::Parser.parse('lib/excel_templates/process_design_plan_report.xlsx')
+        @excel_template_initial=false
+    else
+      workbook = RubyXL::Parser.parse('lib/excel_templates/process_design_plan_report_modified.xlsx')
+    end
+    @insert_rows_to_excel_template_progress_management=false #初回のファイルのみサブルーチン処理したのでfalseにして次のファイルから飛ばないようにする
+
+    worksheet = workbook[0]
+    
+    count =  @progress_management_count -1
+
+    if count<0 
+      count=0
+    end
+
+    insert_row_number = 0  # 挿入する行番号を格納する変数
+    (13..85).each do |row|
+      if worksheet[row][3].value == "設備設計"  # D列を参照。
+        insert_row_number = row+4  # 挿入する行番号を取得(3行分下の行から挿入開始)
+        break
+      end
+    end
+
+
+    # @msa_crosstab_countの数だけ38行目と39行目の間に内容を挿入
+    count.times do |i|
+      #row_number = insert_row_number + i  # 正しい行番号を計算
+      row_number = insert_row_number + i*4  # 正しい行番号を計算
+      worksheet.insert_row(row_number)
+      worksheet.insert_row(row_number)
+      worksheet.insert_row(row_number)
+      worksheet.insert_row(row_number)
+    
+      # 新しく追加された行に、生技（#{?dr_setsubi_designer_#{i+2}}）を設定
+
+      
+
+      
+      worksheet[row_number][14].change_contents("設備名：\#{?progress_management_seigi_equipment_name_#{i + 2}}")  #H13 設備名称
+
+      #@progress_management_seigi_design_name = worksheet.cell(14, 8)           #H13 設計担当者名
+      worksheet[row_number][7].change_contents("生技（\#{?progress_management_seigi_design_name_#{i + 2}}）")  #H13 設計担当者名
+      #@progress_management_seigi_design_yotei = convert_excel_date(worksheet.cell(12, 6)) #F12 設計予定日
+      worksheet[row_number][10].change_contents("\#{?progress_management_seigi_design_yotei_#{i + 2}}")
+      #@progress_management_seigi_design_kanryou = convert_excel_date(worksheet.cell(12, 7)) #G12 設計完了日
+      worksheet[row_number][12].change_contents("\#{?progress_management_seigi_design_kanryou_#{i + 2}}")
+          
+      #@progress_management_seigi_assembly_name = worksheet.cell(27, 8)         #H27 組立担当者名
+      worksheet[row_number+1][7].change_contents("生技（\#{?progress_management_seigi_assembly_name_#{i + 2}}）")  #H27 組立担当者名
+      #@progress_management_seigi_assembly_yotei = convert_excel_date(worksheet.cell(26, 6)) #F26 組立予定日
+      worksheet[row_number+1][10].change_contents("\#{?progress_management_seigi_assembly_yotei_#{i + 2}}")    
+      #@progress_management_seigi_assembly_kanryou = convert_excel_date(worksheet.cell(26, 7)) #G26 組立完了日
+      worksheet[row_number+1][12].change_contents("\#{?progress_management_seigi_assembly_kanryou_#{i + 2}}")
+          
+      #@progress_management_seigi_wiring_name = worksheet.cell(30, 8)           #H30 配線担当者名
+      worksheet[row_number+2][7].change_contents("生技（\#{?progress_management_seigi_wiring_name_#{i + 2}}）")    #H30 配線担当者名
+      #@progress_management_seigi_wiring_yotei = convert_excel_date(worksheet.cell(29, 6)) #F29 配線予定日
+      worksheet[row_number+2][10].change_contents("\#{?progress_management_seigi_wiring_yotei_#{i + 2}}")
+      #@progress_management_seigi_wiring_kanryou = convert_excel_date(worksheet.cell(29, 7)) #G29 配線完了日
+      worksheet[row_number+2][12].change_contents("\#{?progress_management_seigi_wiring_kanryou_#{i + 2}}")
+          
+      #@progress_management_seigi_program_name = worksheet.cell(34, 8)          #H34 プログラム担当者名
+      worksheet[row_number+3][7].change_contents("生技（\#{?progress_management_seigi_program_name_#{i + 2}}）")   #H34 プログラム担当者名
+      #@progress_management_seigi_program_yotei = convert_excel_date(worksheet.cell(33, 6)) #F33 プログラム予定日
+      worksheet[row_number+3][10].change_contents("\#{?progress_management_seigi_program_yotei_#{i + 2}}")
+      #@progress_management_seigi_program_kanryou = convert_excel_date(worksheet.cell(33, 7)) #G33 プログラム完了日             
+      worksheet[row_number+3][12].change_contents("\#{?progress_management_seigi_program_kanryou_#{i + 2}}")
+
+      #    if worksheet.cell(10, 4) != nil
+      #      @dr_seigi_yotei  =worksheet.cell(33, 6) #F33　プログラム予定日
+      #      @dr_seigi_kanryou=worksheet.cell(33, 7) #G33 プログラム完了日
+      #    end
+
+
+
+      worksheet[row_number][3].change_contents("設備設計")
+      worksheet[row_number+1][3].change_contents("設備製作")
+      worksheet[row_number+1][5].change_contents("組立")
+      worksheet[row_number+2][5].change_contents("配線")
+      worksheet[row_number+3][5].change_contents("プログラム")
+
+      worksheet.merge_cells(row_number, 3, row_number, 6)
+
+      worksheet.merge_cells(row_number+1, 3, row_number+3, 4) #D列、E列を結合
+
+      worksheet.merge_cells(row_number+1, 5, row_number+1, 6)
+      worksheet.merge_cells(row_number+2, 5, row_number+2, 6)
+      worksheet.merge_cells(row_number+3, 5, row_number+3, 6)
+
+      worksheet.merge_cells(row_number, 14, row_number+3, 23) #設備名称のセルを結合
+      
+
+
+      # H列、I列、J列を結合
+      worksheet.merge_cells(row_number, 7, row_number, 9)
+      worksheet.merge_cells(row_number, 10, row_number, 11)
+      worksheet.merge_cells(row_number, 12, row_number, 13)
+
+      worksheet.merge_cells(row_number+1, 7, row_number+1, 9)
+      worksheet.merge_cells(row_number+1, 10, row_number+1, 11)
+      worksheet.merge_cells(row_number+1, 12, row_number+1, 13)
+
+      worksheet.merge_cells(row_number+2, 7, row_number+2, 9)
+      worksheet.merge_cells(row_number+2, 10, row_number+2, 11)
+      worksheet.merge_cells(row_number+2, 12, row_number+2, 13)
+
+      worksheet.merge_cells(row_number+3, 7, row_number+3, 9)
+      worksheet.merge_cells(row_number+3, 10, row_number+3, 11)
+      worksheet.merge_cells(row_number+3, 12, row_number+3, 13)
+
+
+
+    end
+    
+    #worksheet.merge_cells メソッドは、セルの範囲を結合するために使用されます。
+    #指定されたコマンド worksheet.merge_cells(40, 3, 41, 6) において、引数は以下のように解釈されます：
+    #最初の2つの数字 (40, 3) は、結合を開始するセルを指定します。この場合、41行目のD列（インデックス3はD列を示す）のセル、すなわちセルD41を示します。
+    #次の2つの数字 (41, 6) は、結合を終了するセルを指定します。この場合、42行目のG列（インデックス6はG列を示す）のセル、すなわちセルG42を示します。
+    #したがって、このコマンドにより、セルD41からG42までの範囲（D41, E41, F41, G41, D42, E42, F42, G42の8つのセル）が結合されます。
+    
+    #worksheet.merge_cells(insert_row_number-1, 3, insert_row_number+count-1, 6)
+    
+    workbook.write('lib/excel_templates/process_design_plan_report_modified.xlsx')
+  end
+
+
+
+
+
+
+
+
+
+
+
+
 
   #すみません、混乱を招いてしまったようで。Roo gemはExcelの日付をシリアル日付として読み込む場合があります。
   #Excelでは、日付は1900年1月1日からの日数として保存されます。

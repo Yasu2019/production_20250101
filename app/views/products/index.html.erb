@@ -409,6 +409,9 @@ $(document).ready(function(){
                     <li class="py-1 border-b-2">
                     <%= form_with(url: index_touan_path,      method: :get, local: true) do|form| %>
                         <%= form.select :owner_select, [
+                            ['営業プロセス', 'sales'],
+                            ['製造工程設計プロセス', 'process_design'],
+                            ['製造プロセス', 'production'],
                             ['製品検査プロセス', 'inspection'],
                             ['引渡しプロセス', 'release'],
                             ['購買プロセス', 'procurement'],

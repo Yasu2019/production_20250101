@@ -634,6 +634,7 @@ end
   def create_data
     @excel_template_initial=true  #Excelテンプレートを初期値にする
     @insert_rows_to_excel_template=true #MSAクロスタブを初期値にする。これをしておかないと、ファイルの数だけ挿入サブルーチンに飛んでしまう。
+    @insert_rows_to_excel_template_msa=true #MSA GRRを初期値にする。これをしておかないと、ファイルの数だけ挿入サブルーチンに飛んでしまう。
     @insert_rows_to_excel_template_dr_setsubi=true #初回のファイルのみ挿入サブルーチンに飛ぶ
     @insert_rows_to_excel_template_progress_management=true #初回のファイルのみ挿入サブルーチンに飛ぶ
 
@@ -796,6 +797,123 @@ end
           @dr_check="☐"
         end
       end
+      
+
+
+
+
+
+
+
+      if stage == "測定システム解析（MSA)" # GRR
+        @grr_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @grr_kanryou = pro.end_at.strftime('%y/%m/%d')
+      
+        if pro.documents.attached?
+          # 変数の設定
+          partnumber = pro.partnumber
+          pattern = "/myapp/db/documents/*ゲージR&R*#{partnumber}*"
+          Rails.logger.info "Path= #{pattern}"
+          files = Dir.glob(pattern)
+          @grr_count = files.size
+
+          if @insert_rows_to_excel_template_msa==true #初回のファイルのみサブルーチン処理
+            insert_rows_to_excel_template_msa #ファイルの数だけ行を挿入するサブルーチン処理
+          end 
+
+          # 各記号の初期化
+          @grr = 0
+          @ndc = 0
+      
+    
+          files.each_with_index do |file, i|  #with_indexでインデックスiを追加
+          
+            if file.end_with?('.xlsx')
+              workbook = Roo::Excelx.new(file)
+            elsif file.end_with?('.xls')
+              workbook = Roo::Excel.new(file)
+            else
+              raise "Unsupported file format"
+            end
+            
+
+
+
+            worksheet = workbook.sheet(0)
+      
+            @debagtest=""
+            #if worksheet.cell(4, 24) != nil
+            
+              instance_variable_set("@grr_kanryou_#{i + 1}", worksheet.cell(2, 8))
+              instance_variable_set("@grr_yotei_#{i + 1}", worksheet.cell(2, 8))
+              instance_variable_set("@grr_person_in_charge_#{i + 1}", worksheet.cell(36,9))
+              instance_variable_set("@grr_approved_#{i + 1}", worksheet.cell(36, 9))
+              
+
+            #end
+            instance_variable_set("@grr_no_#{i + 1}", worksheet.cell(4, 2).to_s)
+
+            instance_variable_set("@grr_#{i + 1}", worksheet.cell(23, 8).round(2))
+            instance_variable_set("@ndc_#{i + 1}", worksheet.cell(31,8).round(2))
+
+
+            if worksheet.cell(23, 8) <= 10
+              instance_variable_set("@grr_result_#{i + 1}", "合格")
+            elsif worksheet.cell(23, 8) > 10 && worksheet.cell(23, 8) < 30
+              instance_variable_set("@grr_result_#{i + 1}", "十分ではないが合格")
+            else 
+              instance_variable_set("@grr_result_#{i + 1}", "不合格")
+            end
+
+
+
+            if worksheet.cell(31, 8) >= 5
+              instance_variable_set("@ndc_result_#{i + 1}", "合格")
+            else
+              instance_variable_set("@ndc_result_#{i + 1}", "不合格")
+            end
+              
+
+          end
+      
+          @grr_check = "☑"
+        else
+          @grr_check = "☐"
+          
+        end
+        Rails.logger.info "@grr_person_in_charge_1= #{@grr_person_in_charge_1}"  # 追加
+        Rails.logger.info "@grr_result_1= #{@grr_result_1}"  # 追加
+        Rails.logger.info "@ndc_result_1= #{@ndc_result_1}"  # 追加
+
+        Rails.logger.info "worksheet.cell(76, 29)= #{@debagtest}"  # 追加
+
+      end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       if stage == "測定システム解析（MSA)" # クロスタブ
         @msa_yotei = pro.deadline_at.strftime('%y/%m/%d')
@@ -1328,11 +1446,141 @@ end
     end
 
 
+    
+    catch :found do
+      @all_products.each do |all|
+        stage = @dropdownlist[all.stage.to_i]
+        Rails.logger.info "JIGU Sub Stage= #{stage}"
+
+
+        if stage == "台帳"
+          Rails.logger.info "プレス台帳"
+          if all.documents.attached?
+            pattern = "/myapp/db/documents/**/*.{xls,xlsx}"
+            Rails.logger.info "Path= #{pattern}"
+            # ディレクトリ内のExcelファイルを走査
+            Dir.glob(pattern) do |file|
+              # '治具管理台帳'を含むファイルだけを対象に
+              next unless file.include?('治具管理台帳')
+              Rails.logger.info "治具管理台帳ファイル検出_読み込み"
+              # ファイル形式に応じて適切なRooクラスを使用
+              workbook = case File.extname(file)
+                        when '.xlsx'
+                          Roo::Excelx.new(file)
+                        when '.xls'
+                          Roo::Excel.new(file)
+                        end
+
+                        worksheet = workbook.sheet(1)  # 最初のワークシートを選択
+
+                        # J6 から J100 までのセルを読み込む
+                        (6..100).each do |row_number|
+                          cell_value = worksheet.cell(row_number, 10)  # J 列は 10 列目になる
+
+
+                          # セルの値が "," を含む場合、それを分割して個々の値を処理
+                          
+                          values = cell_value.present? && cell_value.include?(",") ? cell_value.split(",") : (cell_value.present? ? [cell_value] : [])
+
+
+                          values.each do |value|
+                            Rails.logger.info "@partnumber #{@partnumber}"
+                            Rails.logger.info "value #{value}"
+
+                            if value.strip == @partnumber  # セルの値が partnumber と一致するかチェック
+                              # 一致する場合、その行の他のセルの値をインスタンス変数に代入
+                              @jigu_kanribangou = worksheet.cell(row_number, 1)  # A 列
+                              @jigu_name = worksheet.cell(row_number, 2)     # B 列
+                              @jigu_produced_date = worksheet.cell(row_number, 5)    # E 列
+                              @jigu_start_useage_date = worksheet.cell(row_number, 7)  # G 列
+                              @jigu_tantou = worksheet.cell(row_number, 12)      # L 列
+                              @jigu_approved = worksheet.cell(row_number, 11)    # K 列
+                              break  # pro.partnumber に一致する値を見つけたら、ループを抜ける
+                            end
+                          end
+                        end
+
+
+
+
+
+            end
+          end
+        end
+      end
+    end
+
+
+
 
 
 
 
     
+  end
+
+def insert_rows_to_excel_template_msa
+
+    if @excel_template_initial==true  #Excelテンプレートが初期値の場合
+        workbook = RubyXL::Parser.parse('lib/excel_templates/process_design_plan_report.xlsx')
+        @excel_template_initial=false
+    else
+      workbook = RubyXL::Parser.parse('lib/excel_templates/process_design_plan_report_modified.xlsx')
+    end
+    @insert_rows_to_excel_template_msa=false #初回のファイルのみサブルーチン処理したのでfalseにして次のファイルから飛ばないようにする
+    worksheet = workbook[0]
+    
+    if @grr_count >= 2
+      count = @grr_count - 1
+    else
+      count = 0
+    end
+    
+
+    insert_row_number = 0  # 挿入する行番号を格納する変数
+    (13..85).each do |row|
+      if worksheet[row][3].value == "GRR"  # D列を参照。
+        insert_row_number = row+1  # 挿入する行番号を取得
+        break
+      end
+    end
+
+
+    # countの数だけ38行目と39行目の間に内容を挿入
+    count.times do |i|
+      row_number = insert_row_number + i  # 正しい行番号を計算
+      worksheet.insert_row(row_number)
+    
+      # 新しく追加された行に、品証（#{?msa_crosstab_person_in_charge_#{i+2}}）を設定
+      worksheet[row_number][7].change_contents("品証（\#{?grr_person_in_charge_#{i + 2}}）")
+      worksheet[row_number][10].change_contents("\#{?grr_yotei_#{i + 2}}")
+      worksheet[row_number][12].change_contents("\#{?grr_kanryou_#{i + 2}}")
+      worksheet[row_number][14].change_contents("項番：\#{?grr_no_#{i + 2}} \n GRR値：\#{?grr_#{i + 2}}%、GRR結果：\#{?grr_result_#{i + 2}} \n ndc値：\#{?ndc_#{i + 2}}、ndc結果：\#{?ndc_result#{i + 2}}")
+
+
+
+      # H列、I列、J列を結合
+      worksheet.merge_cells(row_number, 7, row_number, 9)
+      worksheet.merge_cells(row_number, 10, row_number, 11)
+      worksheet.merge_cells(row_number, 12, row_number, 13)
+      worksheet.merge_cells(row_number, 14, row_number, 23)
+    end
+    
+    
+
+    
+    #worksheet.merge_cells メソッドは、セルの範囲を結合するために使用されます。
+    #指定されたコマンド worksheet.merge_cells(40, 3, 41, 6) において、引数は以下のように解釈されます：
+    #最初の2つの数字 (40, 3) は、結合を開始するセルを指定します。この場合、41行目のD列（インデックス3はD列を示す）のセル、すなわちセルD41を示します。
+    #次の2つの数字 (41, 6) は、結合を終了するセルを指定します。この場合、42行目のG列（インデックス6はG列を示す）のセル、すなわちセルG42を示します。
+    #したがって、このコマンドにより、セルD41からG42までの範囲（D41, E41, F41, G41, D42, E42, F42, G42の8つのセル）が結合されます。
+
+    worksheet.merge_cells(insert_row_number-1, 3, insert_row_number+count-1, 6)
+    Rails.logger.info "insert_row_number= #{insert_row_number}"  # 追加
+    
+    Rails.logger.info "count= #{count}"  # 追加
+
+    workbook.write('lib/excel_templates/process_design_plan_report_modified.xlsx')
   end
 
 
@@ -1393,7 +1641,7 @@ end
     #次の2つの数字 (41, 6) は、結合を終了するセルを指定します。この場合、42行目のG列（インデックス6はG列を示す）のセル、すなわちセルG42を示します。
     #したがって、このコマンドにより、セルD41からG42までの範囲（D41, E41, F41, G41, D42, E42, F42, G42の8つのセル）が結合されます。
 
-    #worksheet.merge_cells(insert_row_number-1, 3, insert_row_number+count-1, 6)
+    worksheet.merge_cells(insert_row_number-1, 3, insert_row_number+count-1, 6)
     Rails.logger.info "insert_row_number= #{insert_row_number}"  # 追加
     
     Rails.logger.info "count= #{count}"  # 追加
@@ -2182,7 +2430,552 @@ end
   def create_data_apqp_approved_report
     @datetime = Time.now
     @partnumber=params[:partnumber]
+
+    @apqp_approved_report_excel_template_initial=true  #Excelテンプレートを初期値にする
+    @apqp_approved_report_insert_rows_to_excel_template=true #MSAクロスタブを初期値にする。これをしておかないと、ファイルの数だけ挿入サブルーチンに飛んでしまう。
+    @apqp_approved_report_insert_rows_to_excel_template_msa=true #MSAクロスタブを初期値にする。これをしておかないと、ファイルの数だけ挿入サブルーチンに飛んでしまう。
+    @apqp_approved_report_insert_rows_to_excel_template_dr_setsubi=true #初回のファイルのみ挿入サブルーチンに飛ぶ
+    @apqp_approved_report_insert_rows_to_excel_template_progress_management=true #初回のファイルのみ挿入サブルーチンに飛ぶ
+
+    @datetime = Time.now
+    @name = 'm-kubo'
+    @multi_lines_text = "Remember kids,\nthe magic is with in you.\nI'm princess m-kubo."
+    @cp_check="☐"
+    @datou_check="☐"
+    @scr_check="☐"
+    @pfmea_check="☐"
+    @dr_check="☐"
+    @msa_check="☐"
+    @msa_crosstab_check="☐"
+    @msa_grr_check="☐"
+    @cpk_check="☐"
+    @shisaku_check="☐"
+    @kanagata_check="☐"
+    @dr_setsubi_check="☐"
+    @grr_check="☐"
+    @feasibility_check="☐"
+    @kataken_check="☐"
+    @psw_check="☐"
+    @pf_sales_check="☐"
+    @pf_production_check="☐"
+    @pf_inspectoin_check="☐"
+    @pf_release_check="☐"
+    @pf_process_design_check="☐"
+  
+    catch :found do
+      @all_products.each do |all|
+        stage = @dropdownlist[all.stage.to_i]
+        Rails.logger.info "Stage: #{stage}, all.stage: #{all.stage.to_i},Documents attached: #{all.documents.attached?}"
+
+
+        
+
+
+        Rails.logger.info "Current stage: #{stage}"
+        if stage == "営業プロセスフロー"
+          Rails.logger.info "Inside the condition for 営業プロセスフロー"
+          @pf_sales_check = all.documents.attached? ? "☑" : "☐"
+          Rails.logger.info "@pf_sales_check: #{@pf_sales_check}"
+        elsif stage == "製造工程設計プロセスフロー"
+          @pf_process_design_check = all.documents.attached? ? "☑" : "☐"
+          
+        elsif stage == "製造プロセスフロー"
+          @pf_production_check = all.documents.attached? ? "☑" : "☐"
+          
+        elsif stage == "製品検査プロセスフロー"
+          @pf_inspectoin_check = all.documents.attached? ? "☑" : "☐"
+          
+        elsif stage == "引渡しプロセスフロー"
+          @pf_release_check = all.documents.attached? ? "☑" : "☐"
+          
+        end
+    
+        if @pf_sales_check && @pf_process_design_check && @pf_production_check && @pf_inspectoin_check && @pf_release_check
+          Rails.logger.info "All checks completed."
+          #throw :found
+        end
+      end
+    end
+    
+
+    @products.each do |pro|
+      @partnumber=pro.partnumber
+      Rails.logger.info "@partnumber= #{@partnumber}"  # 追加
+      @materialcode=pro.materialcode
+      Rails.logger.info "@pro.stage= #{@dropdownlist[pro.stage.to_i]}"
+      stage=@dropdownlist[pro.stage.to_i]
+      Rails.logger.info "pro.stage(number)= #{pro.stage}"
+
+
+
+      
+
+      if stage=="初期工程調査結果"
+        @cpk_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @cpk_kanryou=pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          # 変数の設定
+          partnumber = pro.partnumber  # ここには実際の値を設定してください
+          # パスとファイル名のパターンを作成
+          pattern = "/myapp/db/documents/*#{partnumber}*工程能力(Ppk)調査表*"
+          Rails.logger.info "Path= #{pattern}"
+          # パターンに一致するファイルを取得
+          files = Dir.glob(pattern)
+          # 各ファイルに対して処理を行う
+          files.each do |file|
+            # Excelファイルを開く
+            if File.extname(file) == '.xlsx'
+              workbook = Roo::Excelx.new(file) #xlsxの場合はこちらを使用
+            elsif File.extname(file) == '.xls'
+              workbook = Roo::Excel.new(file) #xlsの場合はこちらを使用
+            else
+              break
+            end
+
+            # 最初のシートを取得
+            worksheet = workbook.sheet(0)
+
+            # i4のセルの値を取得
+            @cpk_person_in_charge = worksheet.cell(50, 71)
+            @cpk_manager = worksheet.cell(50, 76)
+
+            def cell_address_to_position(cell_address)
+              col = cell_address.gsub(/\d/, '')
+              row = cell_address.gsub(/\D/, '').to_i
+            
+              col_index = col.chars.map { |char| char.ord - 'A'.ord + 1 }.reduce(0) { |acc, val| acc * 26 + val }
+              [row, col_index]
+            end
+            
+            satisfied = "工程能力は満足している"
+            not_satisfied = "工程能力は不足している"
+            
+            # チェックするセルの位置
+            check_addresses = ["E", "N", "W", "AF", "AO", "AX", "BG", "BP", "BY"].map { |col| "#{col}44" }
+            
+            # 初期値
+            satisfied_count = 0
+            not_satisfied_count = 0
+            
+            # すべてのシートをループ
+            workbook.sheets.each do |sheet_name|
+              worksheet = workbook.sheet(sheet_name)
+              
+              check_addresses.each do |cell_address|
+                row, col = cell_address_to_position(cell_address)
+                cell_value = worksheet.cell(row, col)
+                
+                satisfied_count += 1 if cell_value == satisfied
+                not_satisfied_count += 1 if cell_value == not_satisfied
+              end
+            end
+            
+            # 結果の設定
+            if not_satisfied_count > 0
+              @cpk_result = not_satisfied
+            elsif satisfied_count > 0
+              @cpk_result = satisfied
+            else
+              @cpk_result = "結果なし"  # この行は必要に応じて変更または削除してください
+            end
+            @cpk_satisfied_count=satisfied_count
+            @cpk_not_satisfied_count=not_satisfied_count
+
+            @cpk_person_in_charge  =worksheet.cell(50,76) #担当者名
+
+            if worksheet.cell(3, 59) != nil
+              @cpk_yotei  =worksheet.cell(3,59)
+              @cpk_kanryou=worksheet.cell(3,59)
+            end
+          end
+            @cpk_check="☑"
+        else
+            @cpk_check="☐"
+        end
+      end
+
+
+
+
+      if stage == "測定システム解析（MSA)" # GRR
+        @grr_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @grr_kanryou = pro.end_at.strftime('%y/%m/%d')
+      
+        if pro.documents.attached?
+          # 変数の設定
+          partnumber = pro.partnumber
+          pattern = "/myapp/db/documents/*ゲージR&R*#{partnumber}*"
+          Rails.logger.info "Path= #{pattern}"
+          files = Dir.glob(pattern)
+          @grr_count = files.size
+
+          if @apqp_approved_report_insert_rows_to_excel_template_msa==true #初回のファイルのみサブルーチン処理
+            apqp_approved_report_insert_rows_to_excel_template_msa #ファイルの数だけ行を挿入するサブルーチン処理
+          end 
+
+          # 各記号の初期化
+          @grr = 0
+          @ndc = 0
+      
+    
+          files.each_with_index do |file, i|  #with_indexでインデックスiを追加
+          
+            if file.end_with?('.xlsx')
+              workbook = Roo::Excelx.new(file)
+            elsif file.end_with?('.xls')
+              workbook = Roo::Excel.new(file)
+            else
+              raise "Unsupported file format"
+            end
+            
+
+
+
+            worksheet = workbook.sheet(0)
+      
+            @debagtest=""
+            #if worksheet.cell(4, 24) != nil
+            
+              instance_variable_set("@grr_kanryou_#{i + 1}", worksheet.cell(2, 8))
+              instance_variable_set("@grr_yotei_#{i + 1}", worksheet.cell(2, 8))
+              instance_variable_set("@grr_person_in_charge_#{i + 1}", worksheet.cell(36,9))
+              instance_variable_set("@grr_approved_#{i + 1}", worksheet.cell(36, 9))
+              
+
+            #end
+            instance_variable_set("@grr_no_#{i + 1}", worksheet.cell(4, 2).to_s)
+
+            instance_variable_set("@grr_#{i + 1}", worksheet.cell(23, 8).round(2))
+            instance_variable_set("@ndc_#{i + 1}", worksheet.cell(31,8).round(2))
+
+
+            if worksheet.cell(23, 8) <= 10
+              instance_variable_set("@grr_result_#{i + 1}", "合格")
+            elsif worksheet.cell(23, 8) > 10 && worksheet.cell(23, 8) < 30
+              instance_variable_set("@grr_result_#{i + 1}", "十分ではないが合格")
+            else 
+              instance_variable_set("@grr_result_#{i + 1}", "不合格")
+            end
+
+
+
+            if worksheet.cell(31, 8) >= 5
+              instance_variable_set("@ndc_result_#{i + 1}", "合格")
+            else
+              instance_variable_set("@ndc_result_#{i + 1}", "不合格")
+            end
+              
+
+          end
+      
+          @grr_check = "☑"
+        else
+          @grr_check = "☐"
+          
+        end
+        Rails.logger.info "@grr_person_in_charge_1= #{@grr_person_in_charge_1}"  # 追加
+        Rails.logger.info "@grr_result_1= #{@grr_result_1}"  # 追加
+        Rails.logger.info "@ndc_result_1= #{@ndc_result_1}"  # 追加
+
+        Rails.logger.info "worksheet.cell(76, 29)= #{@debagtest}"  # 追加
+
+      end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      if stage == "測定システム解析（MSA)" # クロスタブ
+        @msa_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @msa_kanryou = pro.end_at.strftime('%y/%m/%d')
+      
+        if pro.documents.attached?
+          # 変数の設定
+          partnumber = pro.partnumber
+          pattern = "/myapp/db/documents/*#{partnumber}*計数値MSA報告書*"
+          Rails.logger.info "Path= #{pattern}"
+          files = Dir.glob(pattern)
+          @msa_crosstab_count = files.size
+
+          if @apqp_approved_report_insert_rows_to_excel_template==true #初回のファイルのみサブルーチン処理
+            apqp_approved_report_insert_rows_to_excel_template #ファイルの数だけ行を挿入するサブルーチン処理
+          end 
+
+          # 各記号のカウントを初期化
+          @maru_count = 0
+          @batsu_count = 0
+          @sankaku_count = 0
+          @oomaru_count = 0
+      
+    
+          files.each_with_index do |file, i|  #with_indexでインデックスiを追加
+          
+            workbook = Roo::Excelx.new(file)
+            worksheet = workbook.sheet(0)
+      
+            @debagtest=""
+            #if worksheet.cell(4, 24) != nil
+              
+              instance_variable_set("@msa_crosstab_kanryou_#{i + 1}", worksheet.cell(4, 24))
+              instance_variable_set("@msa_crosstab_recorder_#{i + 1}", worksheet.cell(6, 24))
+              instance_variable_set("@msa_crosstab_person_in_charge_#{i + 1}", worksheet.cell(120, 29))
+              instance_variable_set("@msa_crosstab_approved_#{i + 1}", worksheet.cell(120, 27))
+              @debagtest=worksheet.cell(76, 29)
+              Rails.logger.info "worksheet.cell(76, 29)= #{@debagtest}"  # 追加
+              Rails.logger.info "i= #{i}"  # 追加
+
+            #end
+
+            instance_variable_set("@inspector_name_a_#{i + 1}", worksheet.cell(8, 10))
+            instance_variable_set("@inspector_name_b_#{i + 1}", worksheet.cell(8, 16))
+            instance_variable_set("@inspector_name_c_#{i + 1}", worksheet.cell(8, 22))
+            instance_variable_set("@inspector_a_result_#{i + 1}", worksheet.cell(131, 7))
+            instance_variable_set("@inspector_b_result_#{i + 1}", worksheet.cell(131, 11))
+            instance_variable_set("@inspector_c_result_#{i + 1}", worksheet.cell(131, 15))
+
+          end
+      
+          @msa_crosstab_check = "☑"
+        else
+          @msa_crosstab_check = "☐"
+          @msa_crosstab_count = 0
+        end
+        Rails.logger.info "@msa_crosstab_person_in_charge_0= #{@msa_crosstab_person_in_charge_0}"  # 追加
+        Rails.logger.info "@msa_crosstab_person_in_charge_1= #{@msa_crosstab_person_in_charge_1}"  # 追加
+        Rails.logger.info "@msa_crosstab_person_in_charge_2= #{@msa_crosstab_person_in_charge_2}"  # 追加
+        Rails.logger.info "@msa_crosstab_person_in_charge_3= #{@msa_crosstab_person_in_charge_3}"  # 追加
+        Rails.logger.info "worksheet.cell(76, 29)= #{@debagtest}"  # 追加
+
+      end
+
+
+
+    
+
+
+      if stage=="量産コントロールプラン" || stage=="試作コントロールプラン"
+        @controlplan_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @controlplan_kanryou=pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @cp_check="☑"
+          @cp_filename = pro.documents.first.filename.to_s
+        else
+          @cp_check="☐"
+        end
+      end
+
+      if stage=="設計計画書_金型設計"
+        @plan_yotei=pro.deadline_at.strftime('%y/%m/%d')
+        @plan_kanryou=pro.end_at.strftime('%y/%m/%d')
+          if pro.documents.attached?
+            # 変数の設定
+            partnumber = pro.partnumber  # ここには実際の値を設定してください
+            # パスとファイル名のパターンを作成
+            pattern = "/myapp/db/documents/*#{partnumber}*設計計画書*"
+            #pattern = "/myapp/db/documents/NT2394-P43_PM81EB_設計計画書.xls"
+            Rails.logger.info "Path= #{pattern}"
+            # パターンに一致するファイルを取得
+            files = Dir.glob(pattern)
+            # 各ファイルに対して処理を行う
+            files.each do |file|
+              # Excelファイルを開く
+              if File.extname(file) == '.xlsx'
+                workbook = Roo::Excelx.new(file) #xlsxの場合はこちらを使用
+              elsif File.extname(file) == '.xls'
+                workbook = Roo::Excel.new(file) #xlsの場合はこちらを使用
+              else
+                break
+              end
+
+              # 最初のシートを取得
+              worksheet = workbook.sheet(0)
+
+              # i4のセルの値を取得
+              @plan_designer = worksheet.cell(4, 9)
+              @plan_manager = worksheet.cell(5, 9)
+              @plan_customer = worksheet.cell(6, 3)
+              @plan_risk = worksheet.cell(41, 4).nil? ? "" : worksheet.cell(41, 4).to_s + worksheet.cell(42, 4).to_s
+              @plan_opportunity = worksheet.cell(43, 4).nil? ? "" : worksheet.cell(43, 4).to_s + worksheet.cell(44, 4).to_s
+              
+              if worksheet.cell(10, 4) != nil
+                @plan_yotei  =worksheet.cell(11, 4)
+                @plan_kanryou=worksheet.cell(11, 6)
+              end
+            end
+          end
+      end
+
+
+    end
+
+
+
+
+
+
+
+
   end
+
+
+def apqp_approved_report_insert_rows_to_excel_template_msa
+
+    if @apqp_approved_report_excel_template_initial==true  #Excelテンプレートが初期値の場合
+        workbook = RubyXL::Parser.parse('lib/excel_templates/apqp_approved_report.xlsx')
+        @apqp_approved_report_excel_template_initial=false
+    else
+      workbook = RubyXL::Parser.parse('lib/excel_templates/apqp_approved_report_modified.xlsx')
+    end
+    @apqp_approved_report_insert_rows_to_excel_template_msa=false #初回のファイルのみサブルーチン処理したのでfalseにして次のファイルから飛ばないようにする
+    worksheet = workbook[0]
+    
+    if @grr_count >= 2
+      count = @grr_count - 1
+    else
+      count = 0
+    end
+    
+
+    insert_row_number = 0  # 挿入する行番号を格納する変数
+    (10..85).each do |row|
+      if worksheet[row][1].value == "GRR"  # B列を参照。
+        insert_row_number = row+1  # 挿入する行番号を取得
+        break
+      end
+    end
+
+
+    # countの数だけ38行目と39行目の間に内容を挿入
+    count.times do |i|
+      row_number = insert_row_number + i  # 正しい行番号を計算
+      worksheet.insert_row(row_number)
+    
+      # 新しく追加された行に、品証（#{?msa_crosstab_person_in_charge_#{i+2}}）を設定
+      #worksheet[row_number][7].change_contents("品証（\#{?grr_person_in_charge_#{i + 2}}）")
+      #worksheet[row_number][10].change_contents("\#{?grr_yotei_#{i + 2}}")
+      #worksheet[row_number][12].change_contents("\#{?grr_kanryou_#{i + 2}}")
+      worksheet[row_number][5].change_contents("項番：\#{?grr_no_#{i + 2}} \n GRR値：\#{?grr_#{i + 2}}%、GRR結果：\#{?grr_result_#{i + 2}} \n ndc値：\#{?ndc_#{i + 2}}、ndc結果：\#{?ndc_result#{i + 2}}")
+
+
+
+      # H列、I列、J列を結合
+      #worksheet.merge_cells(row_number, 7, row_number, 9)
+      #worksheet.merge_cells(row_number, 10, row_number, 11)
+      #worksheet.merge_cells(row_number, 12, row_number, 13)
+      worksheet.merge_cells(row_number, 5, row_number, 20)
+    end
+    
+    
+
+    
+    #worksheet.merge_cells メソッドは、セルの範囲を結合するために使用されます。
+    #指定されたコマンド worksheet.merge_cells(40, 3, 41, 6) において、引数は以下のように解釈されます：
+    #最初の2つの数字 (40, 3) は、結合を開始するセルを指定します。この場合、41行目のD列（インデックス3はD列を示す）のセル、すなわちセルD41を示します。
+    #次の2つの数字 (41, 6) は、結合を終了するセルを指定します。この場合、42行目のG列（インデックス6はG列を示す）のセル、すなわちセルG42を示します。
+    #したがって、このコマンドにより、セルD41からG42までの範囲（D41, E41, F41, G41, D42, E42, F42, G42の8つのセル）が結合されます。
+
+    worksheet.merge_cells(insert_row_number-1, 1, insert_row_number+count-1, 4)
+    Rails.logger.info "insert_row_number= #{insert_row_number}"  # 追加
+    
+    Rails.logger.info "count= #{count}"  # 追加
+
+    workbook.write('lib/excel_templates/apqp_approved_report_modified.xlsx')
+  end
+
+
+
+
+
+  def apqp_approved_report_insert_rows_to_excel_template
+
+    if @apqp_approved_report_excel_template_initial==true  #Excelテンプレートが初期値の場合
+        workbook = RubyXL::Parser.parse('lib/excel_templates/apqp_approved_report.xlsx')
+        @apqp_approved_report_excel_template_initial=false
+    else
+      workbook = RubyXL::Parser.parse('lib/excel_templates/apqp_approved_report_modified.xlsx')
+    end
+    @apqp_approved_report_insert_rows_to_excel_template=false #初回のファイルのみサブルーチン処理したのでfalseにして次のファイルから飛ばないようにする
+    worksheet = workbook[0]
+    
+    if @msa_crosstab_count >= 2
+      count = @msa_crosstab_count - 1
+    else
+      count = 0
+    end
+    
+
+    insert_row_number = 0  # 挿入する行番号を格納する変数
+    (10..85).each do |row|
+      if worksheet[row][1].value == "クロスタブ"  # B列を参照。
+        insert_row_number = row+1  # 挿入する行番号を取得
+        break
+      end
+    end
+
+    Rails.logger.info "insert_row_number= #{insert_row_number}"  # 追加
+
+    # countの数だけ38行目と39行目の間に内容を挿入
+    count.times do |i|
+      row_number = insert_row_number + i  # 正しい行番号を計算
+      worksheet.insert_row(row_number)
+    
+      # 新しく追加された行に、品証（#{?msa_crosstab_person_in_charge_#{i+2}}）を設定
+      #worksheet[row_number][7].change_contents("品証（\#{?msa_crosstab_person_in_charge_#{i + 2}}）")
+      #worksheet[row_number][10].change_contents("\#{?msa_crosstab_yotei_#{i + 2}}")
+      #worksheet[row_number][12].change_contents("\#{?msa_crosstab_kanryou_#{i + 2}}")
+      worksheet[row_number][5].change_contents("\#{?inspector_name_a_#{i + 2}}：\#{?inspector_a_result_#{i + 2}}、\#{?inspector_name_b_#{i + 2}}：\#{?inspector_b_result_#{i + 2}}、\#{?inspector_name_c_#{i + 2}}：\#{?inspector_c_result_#{i + 2}}")
+
+      # H列、I列、J列を結合
+      #worksheet.merge_cells(row_number, 7, row_number, 9)
+      #worksheet.merge_cells(row_number, 10, row_number, 11)
+      #worksheet.merge_cells(row_number, 12, row_number, 13)
+      worksheet.merge_cells(row_number, 5, row_number, 20)
+    end
+    
+    
+
+    
+    #worksheet.merge_cells メソッドは、セルの範囲を結合するために使用されます。
+    #指定されたコマンド worksheet.merge_cells(40, 3, 41, 6) において、引数は以下のように解釈されます：
+    #最初の2つの数字 (40, 3) は、結合を開始するセルを指定します。この場合、41行目のD列（インデックス3はD列を示す）のセル、すなわちセルD41を示します。
+    #次の2つの数字 (41, 6) は、結合を終了するセルを指定します。この場合、42行目のG列（インデックス6はG列を示す）のセル、すなわちセルG42を示します。
+    #したがって、このコマンドにより、セルD41からG42までの範囲（D41, E41, F41, G41, D42, E42, F42, G42の8つのセル）が結合されます。
+
+    worksheet.merge_cells(insert_row_number-1, 1, insert_row_number+count-1, 4)
+    Rails.logger.info "insert_row_number= #{insert_row_number}"  # 追加
+    
+    Rails.logger.info "count= #{count}"  # 追加
+
+    workbook.write('lib/excel_templates/apqp_approved_report_modified.xlsx')
+  end
+
+
+
+
+
+
 
   #RailsでAxlsxを使ってxlsxを生成
   #https://qiita.com/necojackarc/items/0dbd672b2888c30c5a38

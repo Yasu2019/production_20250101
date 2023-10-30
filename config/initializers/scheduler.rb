@@ -1,6 +1,6 @@
 require 'rufus-scheduler'
 require 'stackprof'  # stackprofのrequire
-require 'estackprof'
+#require 'estackprof'
 
 
 

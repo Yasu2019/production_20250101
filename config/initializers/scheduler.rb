@@ -63,7 +63,7 @@ stackprof_cpu_results = `stackprof tmp/stackprof_cpu.dump --text`
 
 # estackprofの結果を取得
 #estackprof_results = `estackprof top -c`
-estackprof_results = "保留"
+#estackprof_results = "保留"
 
 
 
@@ -76,7 +76,9 @@ stackprof_results = "Object Mode Results:\n#{stackprof_object_results}\n\nCPU Mo
 
   # メール送信
 begin
-  MemoryUsageMailer.send_memory_usage_with_success_message('yasuhiro-suzuki@mitsui-s.com', current_memory, max_memory, min_memory, avg_memory, stackprof_results, estackprof_results).deliver_now
+  #MemoryUsageMailer.send_memory_usage_with_success_message('yasuhiro-suzuki@mitsui-s.com', current_memory, max_memory, min_memory, avg_memory, stackprof_results, estackprof_results).deliver_now
+  MemoryUsageMailer.send_memory_usage_with_success_message('yasuhiro-suzuki@mitsui-s.com', current_memory, max_memory, min_memory, avg_memory, stackprof_results).deliver_now
+
   Rails.logger.info "メールが正常に送信されました"
 rescue => e
   Rails.logger.error "メールの送信に失敗しました: #{e.message}"

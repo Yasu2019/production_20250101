@@ -238,3 +238,5 @@ gem 'sidekiq'
 gem 'redis'
 
 gem 'stackprof'
+
+gem 'rufus-scheduler'

@@ -446,7 +446,7 @@ $(document).ready(function(){
                       <%= form.label :"図番選択" %>
                       <%= form.collection_select(:partnumber, @produc, :partnumber, :partnumber)%> <br>
                     <% end %>
-                    <%= button_to "製造工程設計計画/達成度報告書", "#", id: "design_submit-button", class: "btn btn-secondary" %>
+                    <%= button_to "製造工程設計計画／実績書", "#", id: "design_submit-button", class: "btn btn-secondary" %>
                     
                     <%= form_with(url: rubyxl_apqp_plan_report_product_path, method: :get, local: true, html: { id: 'apqp_plan-form' }) do |form| %>
                       <%= form.label :"図番選択" %>

@@ -90,7 +90,7 @@ gem 'dotenv-rails'
 #gem 'bootstrap-sass', '~> 3.3.6'
 
 #https://qiita.com/345dvl/items/4bafb05964281079033e
-gem 'cssbundling-rails'
+#gem 'cssbundling-rails'
 
 gem "sass-rails", "~> 6"
 #gem "sass-rails", "~> 5"
@@ -236,3 +236,5 @@ gem 'letter_opener_web', group: :development
 
 gem 'sidekiq'
 gem 'redis'
+
+gem 'stackprof'

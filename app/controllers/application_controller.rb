@@ -1,5 +1,20 @@
 class ApplicationController < ActionController::Base
 
+  # app/controllers/application_controller.rb
+
+rescue_from ActiveRecord::NoDatabaseError do |exception|
+  # エラーメッセージやスタックトレースをログに記録
+  Rails.logger.error exception.message
+  Rails.logger.error exception.backtrace.join("\n")
+
+  # リストアスクリプトを実行
+  system("/root/restore_latest_backup.sh")
+
+  # ユーザーにエラーメッセージを表示（またはリダイレクト等の処理）
+  render plain: "データベースエラーが発生しました。復旧作業を行いましたので、再度操作をお試しください。", status: 500
+end
+
+
 
   helper YourHelperName
 

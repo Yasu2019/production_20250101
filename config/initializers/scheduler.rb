@@ -37,7 +37,7 @@ scheduler.every '10s' do
 end
 
 # 3分ごとにメモリの使用量の統計とstackprofの結果を計算してメールを送信
-scheduler.every '3m' do
+scheduler.every '60m' do
   current_memory = $memory_usages.last
   max_memory = $memory_usages.max
   min_memory = $memory_usages.min

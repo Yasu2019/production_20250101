@@ -12,7 +12,7 @@ class CacheUpdateJob
     #  touans = Touan.where(user_id: user_id)
     #  Rails.cache.write("touans_#{user_id}", touans)
     #end
-   #end
+   end
   end
 
 # app/models/touan.rb

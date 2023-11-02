@@ -78,3 +78,8 @@ COPY . /myapp
 #RUN chmod 744 /start.sh
 #CMD ["sh", "/start.sh"]
 
+# スクリプトをコンテナにコピー
+COPY ./restore_latest_backup.sh /root/restore_latest_backup.sh
+
+# 実行権限を設定
+RUN chmod +x /root/restore_latest_backup.sh

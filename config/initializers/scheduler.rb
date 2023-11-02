@@ -30,7 +30,7 @@ def backup_postgresql
 end
 
 # 10秒ごとにメモリの使用量を取得
-scheduler.every '10s' do
+scheduler.every '60s' do
   memory_usage = `ps -o rss= -p #{Process.pid}`.to_i / 1024  # MB単位
   $memory_usages << memory_usage
   $memory_usages.shift if $memory_usages.length > 600  # 過去1時間（600エントリー）のデータのみ保持

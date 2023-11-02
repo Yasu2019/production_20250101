@@ -1,4 +1,4 @@
-module YourHelperName
+module ChartDataHelper
   def calculate_chart_data(iatf_data, touans)
     chart_kajyou = []
     chart_average_score = []

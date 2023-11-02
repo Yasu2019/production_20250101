@@ -240,3 +240,5 @@ gem 'redis'
 gem 'stackprof'
 
 gem 'rufus-scheduler'
+
+gem 'rack-mini-profiler'

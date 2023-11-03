@@ -5,7 +5,7 @@ DB_NAME="myapp_development"
 DB_USER="postgres"
 DB_PASSWORD="password"
 DB_HOST="db"
-BACKUP_DIR="/root/db/backup"
+BACKUP_DIR="/myapp/db/backup"
 
 # 最新のバックアップファイルを取得
 BACKUP_FILE=$(ls $BACKUP_DIR/backup_*.sql | sort -r | head -n 1)

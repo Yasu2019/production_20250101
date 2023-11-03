@@ -1,17 +1,14 @@
-<!-- app/views/memory_usage_mailer/send_memory_usage_with_success_message.html.erb -->
+class MemoryUsageMailer < ApplicationMailer
+  default from: 'mitsui.seimitsu.iatf16949@gmail.com'
 
-<p>アプリの現在のメモリ使用量: <%= @current_memory %> MB</p>
-<p>過去1時間の最大メモリ使用量: <%= @max_memory %> MB</p>
-<p>過去1時間の最小メモリ使用量: <%= @min_memory %> MB</p>
-<p>過去1時間の平均メモリ使用量: <%= @avg_memory %> MB</p>
-<p><%= @backup_message %></p>
+  def send_memory_usage_with_success_message(email, current_memory, max_memory, min_memory, avg_memory, stackprof_results, backup_message)
+    @current_memory = current_memory
+    @max_memory = max_memory
+    @min_memory = min_memory
+    @avg_memory = avg_memory
+    @backup_message = backup_message
+    @stackprof_results = stackprof_results
 
-<!-- StackProfの結果を表示 -->
-<pre><%= @stackprof_results %></pre>
-
-<!-- Estackprofの結果を表示 --> <!-- 追加 
-<pre><%= @estackprof_results %></pre>
--->
-
-
-
+    mail(to: email, subject: 'アプリのメモリ使用量の統計とデータベースバックアップの通知')
+  end
+end

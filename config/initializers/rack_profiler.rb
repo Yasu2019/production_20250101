@@ -1,6 +1,7 @@
 # config/initializers/rack_profiler.rb
+
 if defined?(Rack::MiniProfiler)
-  Rack::MiniProfiler.config.authorization_mode = :whitelist
+  Rack::MiniProfiler.config.authorization_mode = :allow_authorized
 
   # ユーザーがログインしており、そのロールが 'staff' であればプロファイラを有効にする
   Rack::MiniProfiler.config.user_provider = Proc.new do |env|

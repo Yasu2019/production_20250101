@@ -310,12 +310,12 @@ class ProductsController < ApplicationController
 
   
   def index
-    whitelisted_emails = ['yasuhiro-suzuki@mitsui-s.com', 'n_komiya@mitsui-s.com']
+    allowed_emails = ['yasuhiro-suzuki@mitsui-s.com', 'n_komiya@mitsui-s.com']
 
-    # Add user IP to whitelist if user's email is whitelisted
-    if current_user&.email&.in?(whitelisted_emails)
+    # Add user IP to allowed list if user's email is allowed
+    if current_user&.email&.in?(allowed_emails)
         user_ip = request.remote_ip
-        Rails.application.config.web_console.whitelisted_ips |= [user_ip]
+        Rails.application.config.web_console.permissions = user_ip
     end
 
     #@q = Product.ransack(params[:q])

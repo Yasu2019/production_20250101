@@ -97,19 +97,3 @@ scheduler.every '60m' do
     Rails.logger.error "メールの送信に失敗しました: #{e.message}"
   end
 end
-
-# メーラーのクラス（メール送信メソッド含む）
-class MemoryUsageMailer < ApplicationMailer
-  default from: 'mitsui.seimitsu.iatf16949@gmail.com'
-
-  def send_memory_usage_with_success_message(email, current_memory, max_memory, min_memory, avg_memory, stackprof_results, backup_message)
-    @current_memory = current_memory
-    @max_memory = max_memory
-    @min_memory = min_memory
-    @avg_memory = avg_memory
-    @backup_message = backup_message
-    @stackprof_results = stackprof_results
-
-    mail(to: email, subject: 'アプリのメモリ使用量の統計とデータベースバックアップの通知')
-  end
-end

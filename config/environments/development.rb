@@ -4,7 +4,7 @@ Rails.application.configure do
 
 
   #全てのIPからのアクセスを許可する場合
-  #config.web_console.whitelisted_ips = %w(0.0.0.0/0 ::/0)
+  #config.web_console.allow_authorized_ips = %w(0.0.0.0/0 ::/0)
 
   #ミツイ精密社内からだけのアクセスを許可する場合
   config.web_console.permissions = '180.11.97.245'
@@ -13,7 +13,7 @@ Rails.application.configure do
   #自宅からだけのアクセスを許可する場合
 
   #ミツイ精密および、個人pcからのアクセスを許可する場合
-  #config.web_console.whitelisted_ips = ['192.168.5.0/24', '8.8.8.8', 'YOUR_PC_IP_ADDRESS']
+  #config.web_console.allow_authorized_ips = ['192.168.5.0/24', '8.8.8.8', 'YOUR_PC_IP_ADDRESS']
 
 
   #letter_opener_web gem は、開発環境で送信されるメールをブラウザ上で確認できるようにするためのgemです。

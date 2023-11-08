@@ -1,13 +1,14 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "2.7.3"
+
+ruby '3.1.2'
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 7.0.4"
 
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
-gem "sprockets-rails"
+#gem "sprockets-rails"
 
 # Use postgresql as the database for Active Record
 gem "pg", "~> 1.1"
@@ -92,7 +93,7 @@ gem 'dotenv-rails'
 #https://qiita.com/345dvl/items/4bafb05964281079033e
 #gem 'cssbundling-rails'
 
-gem "sass-rails", "~> 6"
+#gem "sass-rails", "~> 6"
 #gem "sass-rails", "~> 5"
 
 gem "puma_worker_killer"
@@ -117,7 +118,7 @@ gem 'rubyzip', '2.3.0'
 
 #https://techtechmedia.com/turbolinks-rails/
 #【Rails】初心者向け！画面遷移の高速化を行うTurbolinksについて図を用いて詳しく解説
-gem 'jquery-turbolinks'
+#gem 'jquery-turbolinks'
 
 #Webpacker から importmap-rails に移行した
 #https://qiita.com/mishina2228/items/d4b9af22d0096ee451d7

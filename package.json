@@ -1,4 +1,17 @@
 {
   "name": "app",
-  "private": "true"
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/input.css -o ./dist/output.css --minify"
+  },
+  "dependencies": {
+    "tailwindcss": "^3.0.0",
+    "daisyui": "^3.9.4",
+    "@tailwindcss/line-clamp": "^0.4.4"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.0.0",
+    "postcss": "^8.0.0"
+  }
 }

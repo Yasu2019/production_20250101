@@ -1,0 +1,50 @@
+# Rubyの公式3.1.2イメージをベースに使用
+FROM ruby:3.1.2
+
+# Node.js 16.x をインストール
+# NodeSourceの新しいセットアップスクリプトを使用
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install -g yarn
+
+# その他の依存関係をインストール
+RUN apt-get update -qq && \
+    apt-get install -y postgresql-client vim libvips42 && \
+    apt-get install -y build-essential libgirepository1.0-dev && \
+    apt-get install -y poppler-utils libpoppler-glib-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# コンテナ内で作業ディレクトリを設定
+WORKDIR /myapp
+
+# GemfileとGemfile.lockをコンテナの/myappにコピー
+COPY Gemfile /myapp/Gemfile
+COPY Gemfile.lock /myapp/Gemfile.lock
+
+# Bundlerの指定されたバージョンをインストールし、bundle installを実行
+RUN gem install bundler -v '2.1.4' && \
+    bundle _2.1.4_ install
+
+# package.jsonとpackage-lock.jsonをコンテナの/myappにコピー
+COPY package.json /myapp/package.json
+COPY package-lock.json /myapp/package-lock.json
+
+# npmの依存関係をインストール
+RUN npm install
+
+# ホストからイメージファイルシステムにアプリの残りのソースコードをコピー
+COPY . /myapp
+
+# ビルド中にジェムがキャッシュされることを確認するためにダミーデータを提供
+RUN if [ -f "config/database.yml" ]; then \
+    bundle exec rake assets:precompile; \
+    else \
+    echo "No config/database.yml file, skipping asset precompilation"; \
+    fi
+
+# コンテナがランタイムで指定されたポートをリスニングしていることをDockerに通知
+EXPOSE 3000
+
+# イメージ実行時にメインプロセスを実行するように設定
+CMD ["rails", "server", "-b", "0.0.0.0"]

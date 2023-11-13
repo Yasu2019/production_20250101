@@ -36,14 +36,6 @@ services:
       - db
       - redis
 
-  node:
-    build:
-      context: .
-      dockerfile: Dockerfile.node  # Node.js用のDockerfile
-    volumes:
-      - .:/myapp  # 必要に応じてボリュームをマウント
-    # その他の設定...
-
 volumes:
   postgresql-data:
     driver: local

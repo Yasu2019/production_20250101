@@ -1,4 +1,4 @@
-# Rubyの公式3.1.2イメージをベースに使用
+## Rubyの公式3.1.2イメージをベースに使用
 FROM ruby:3.1.2
 
 # Node.js 16.x をインストール
@@ -29,21 +29,11 @@ COPY Gemfile.lock /myapp/Gemfile.lock
 RUN gem install bundler -v '2.1.4' && \
     bundle _2.1.4_ install
 
-# package.jsonをコンテナの/myappにコピー
-COPY package.json /myapp/package.json
-
-# npmの依存関係をインストール
-RUN npm install
-
 # ホストからイメージファイルシステムにアプリの残りのソースコードをコピー
 COPY . /myapp
 
-# ビルド中にジェムがキャッシュされることを確認するためにダミーデータを提供
-#RUN if [ -f "config/database.yml" ]; then \
-#    bundle exec rake assets:precompile; \
-#    else \
-#    echo "No config/database.yml file, skipping asset precompilation"; \
-#    fi
+# npmの依存関係をインストール
+RUN npm install
 
 # コンテナがランタイムで指定されたポートをリスニングしていることをDockerに通知
 EXPOSE 3000

@@ -1,6 +1,3 @@
-
-#【Ruby on Rails】CSVインポート
-#https://qiita.com/seitarooodayo/items/c9d6955a12ca0b1fd1d4
 require 'rails/all'
 require 'csv'
 
@@ -26,42 +23,20 @@ Bundler.require(*Rails.groups)
 
 module Myapp
   class Application < Rails::Application
-
-   
-
-
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.0
 
-    # Configuration for the application, engines, and railties goes here.
-    #
-    # These settings can be overridden in specific environments using the files
-    # in config/environments, which are processed later.
-    #
-    # config.time_zone = "Central Time (US & Canada)"
-    # config.eager_load_paths << Rails.root.join("extras")
+    # Configure npm as the JavaScript package manager for cssbundling-rails
+    #config.cssbundling.install_command = "npm install"
 
-    # Don't generate system test files.
-    config.generators.system_tests = nil
-
-    #【Rails】日本語化のやり方
-    #https://qiita.com/mmaumtjgj/items/93ab3ef8cbcf9591fc30
+    # Other configuration settings...
     config.i18n.default_locale = :ja
-
-    #Railsタイムゾーンまとめ
-    #https://qiita.com/aosho235/items/a31b895ce46ee5d3b444
-
-    #【Rails】Time.currentとTime.nowの違い
-    #https://qiita.com/kodai_0122/items/111457104f83f1fb2259
     config.time_zone = 'Tokyo'
     config.active_record.default_timezone = :local
-
-    #【Rails】devise-two-factorを使った2段階認証の実装方法【初学者】
-    #https://autovice.jp/articles/172
-    #chatGPT指示
     config.active_record.encryption.key_derivation_salt = ENV['KEY_DERIVATION_SALT']
     config.active_record.encryption.primary_key = ENV['PRIMARY_KEY']
 
-
+    # Don't generate system test files.
+    config.generators.system_tests = nil
   end
 end

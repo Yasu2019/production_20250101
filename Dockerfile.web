@@ -4,8 +4,7 @@ FROM ruby:3.1.2
 # Node.js 16.x をインストール
 # NodeSourceの新しいセットアップスクリプトを使用
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
-    apt-get install -y nodejs && \
-    npm install -g yarn
+    apt-get install -y nodejs
 
 # PostgreSQLの公式リポジトリの追加
 RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main' > /etc/apt/sources.list.d/pgdg.list
@@ -30,9 +29,8 @@ COPY Gemfile.lock /myapp/Gemfile.lock
 RUN gem install bundler -v '2.1.4' && \
     bundle _2.1.4_ install
 
-# package.jsonとpackage-lock.jsonをコンテナの/myappにコピー
+# package.jsonをコンテナの/myappにコピー
 COPY package.json /myapp/package.json
-COPY package-lock.json /myapp/package-lock.json
 
 # npmの依存関係をインストール
 RUN npm install
@@ -41,11 +39,11 @@ RUN npm install
 COPY . /myapp
 
 # ビルド中にジェムがキャッシュされることを確認するためにダミーデータを提供
-RUN if [ -f "config/database.yml" ]; then \
-    bundle exec rake assets:precompile; \
-    else \
-    echo "No config/database.yml file, skipping asset precompilation"; \
-    fi
+#RUN if [ -f "config/database.yml" ]; then \
+#    bundle exec rake assets:precompile; \
+#    else \
+#    echo "No config/database.yml file, skipping asset precompilation"; \
+#    fi
 
 # コンテナがランタイムで指定されたポートをリスニングしていることをDockerに通知
 EXPOSE 3000

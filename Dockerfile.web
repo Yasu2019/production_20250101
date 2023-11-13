@@ -1,4 +1,4 @@
-## Rubyの公式3.1.2イメージをベースに使用
+# Rubyの公式3.1.2イメージをベースに使用
 FROM ruby:3.1.2
 
 # Node.js 16.x をインストール
@@ -29,11 +29,14 @@ COPY Gemfile.lock /myapp/Gemfile.lock
 RUN gem install bundler -v '2.1.4' && \
     bundle _2.1.4_ install
 
-# ホストからイメージファイルシステムにアプリの残りのソースコードをコピー
-COPY . /myapp
+# package.jsonとpackage-lock.jsonをコピー
+COPY package*.json /myapp/
 
 # npmの依存関係をインストール
 RUN npm install
+
+# アプリケーションの残りのソースコードをコピー
+COPY . /myapp
 
 # コンテナがランタイムで指定されたポートをリスニングしていることをDockerに通知
 EXPOSE 3000

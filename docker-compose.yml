@@ -9,7 +9,7 @@ services:
     volumes:
       - postgresql-data:/var/lib/postgresql/data
     environment:
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}  # .envファイルから読み込む
     tty: true
     stdin_open: true
 

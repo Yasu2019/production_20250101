@@ -1,9 +1,9 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  host: db  
-  username: postgres  
-  password: password  
+  host: db
+  username: postgres
+  password: <%= ENV['POSTGRES_PASSWORD'] %>  # 環境変数からパスワードを読み込む
   pool: 5
 
 development:
@@ -17,6 +17,6 @@ test:
 production:
   <<: *default
   database: myapp_production
-  host: db  
-  username: postgres  
-  password: password
+  host: db
+  username: postgres
+  password: <%= ENV['POSTGRES_PASSWORD'] %>  # 環境変数からパスワードを読み込む

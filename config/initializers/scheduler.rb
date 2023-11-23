@@ -80,6 +80,13 @@ scheduler.every '60m' do
     backup_message = backup_result[:error] + "。エラーの詳細を確認してください。"
   end
 
+  # キャッシュカウントの取得
+cache_counts = {
+  'Product' => Rails.cache.read("products_all")&.count || 0,
+  'Touan' => User.all.sum { |user| (Rails.cache.read("touans_#{user.id}")&.count) || 0 },
+  # 他のモデルも同様に追加
+}
+
   # メール送信
   begin
     MemoryUsageMailer.send_memory_usage_with_success_message(
@@ -89,7 +96,8 @@ scheduler.every '60m' do
       min_memory,
       avg_memory,
       stackprof_results,
-      backup_message
+      backup_message,
+      cache_counts  # 追加した引数
     ).deliver_now
 
     Rails.logger.info "メールが正常に送信されました"

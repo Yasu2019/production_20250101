@@ -123,46 +123,53 @@ class TouansController < ApplicationController
     end
   end
 
+  def iatf_csr_mitsui
+    @products = Product.where.not(documentnumber: nil).includes(:documents_attachments)
+    @csrs = Csr.all
+    @iatflists = Iatflist.all
+    @mitsuis = Mitsui.all
 
-    def index
-      @user = current_user
-      @owner_select = params[:owner_select]
 
-      
+  end
 
-      @products = Product.where.not(documentnumber: nil).includes(:documents_attachments)
-      
-      
 
-      # キャッシュからproductsを取得
-      #if Rails.cache.exist?("products_#{current_user.id}")
-      #  @products = Rails.cache.read("products_#{current_user.id}")
-      #  Rails.logger.info("Loaded products from cache for user ID: #{@user.id}")
-      #else
-      #  Rails.logger.warn("Cache for products not found for user ID: #{@user.id}. Loading from database.")
-      #  @products = Product.where.not(documentnumber: nil).includes(:documents_attachments)
-      #end
 
-      
-    
+
+  def index
+    @user = current_user
+    @owner_select = params[:owner_select]
+
+        # キャッシュからproductsを取得
+      if Rails.cache.exist?("products_#{current_user.id}")
+        @products = Rails.cache.read("products_#{current_user.id}")
+        Rails.logger.info("Loaded products from cache for user ID: #{@user.id}")
+      else
+        Rails.logger.warn("Cache for products not found for user ID: #{@user.id}. Loading from database.")
+        @products = Product.where.not(documentnumber: nil).includes(:documents_attachments)
+        Rails.logger.info("Loaded products from database for user ID: #{@user.id}")
+      end
+
       # キャッシュからtouansを取得
-      #if Rails.cache.exist?("touans_#{current_user.id}")
-      #  @touans = Rails.cache.read("touans_#{current_user.id}")
-      #  Rails.logger.info("Loaded touans from cache for user ID: #{@user.id}")
-      #else
-      #  Rails.logger.warn("Cache for touans not found for user ID: #{@user.id}. Loading from database.")
-      #  @touans = Touan.where(user_id: current_user.id)
-      #  CacheDataJob.perform_async(@user.id) # キャッシュジョブを呼び出す
-      #end
+      if Rails.cache.exist?("touans_#{current_user.id}")
+        @touans = Rails.cache.read("touans_#{current_user.id}")
+        Rails.logger.info("Loaded touans from cache for user ID: #{@user.id}")
+      else
+        Rails.logger.warn("Cache for touans not found for user ID: #{@user.id}. Loading from database.")
+        @touans = Touan.where(user_id: current_user.id)
+        CacheDataJob.perform_async(@user.id) # キャッシュジョブを呼び出す
+        Rails.logger.info("Loaded touans from database for user ID: #{@user.id}")
+      end
 
       @touans = Touan.where(user_id: current_user.id)
+      #@touans = Touan.where(user_id: current_user.id).page(params[:page]).per(10)
     
       @auditor = current_user.auditor
       #@iatf_data_audit = Iatf.where(audit: "2")
       #@iatf_data_audit_sub = Iatf.where(audit: "1")
+
       @csrs = Csr.all
       @iatflists = Iatflist.all
-      @mitsuis = Mitsui.all
+      #@mitsuis = Mitsui.all
       
       owner_mapping = {
           'sales' => ['sales', '営業プロセス'],
@@ -185,6 +192,8 @@ class TouansController < ApplicationController
           key, process_name = owner_mapping[@user.owner]
           @iatf_data = Iatf.where("#{key}": "2")
           @iatf_data_sub = Iatf.where("#{key}": "1")
+          #@iatf_data = Iatf.where("#{key}": "2").page(params[:page]).per(10)
+          #@iatf_data_sub = Iatf.where("#{key}": "1").page(params[:page]).per(10)
           @process_name = process_name
       end
 
@@ -194,6 +203,9 @@ class TouansController < ApplicationController
         key, process_name = owner_mapping[@owner_select]
         @iatf_data_audit = Iatf.where("#{key}": "2")
         @iatf_data_audit_sub = Iatf.where("#{key}": "1")
+        #@iatf_data_audit = Iatf.where("#{key}": "2").page(params[:page]).per(10)
+        #@iatf_data_audit_sub = Iatf.where("#{key}": "1").page(params[:page]).per(10)
+
         #@select_process_name = @owner_select
     end
 

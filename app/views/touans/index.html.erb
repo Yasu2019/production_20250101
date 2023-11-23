@@ -78,7 +78,7 @@
 		<label class="tab1_label" for="tab1">テスト結果</label>
         <label class="tab2_label" for="tab2"><%= @owner_select_jp %>が主管の箇条番号</label>
         <label class="tab3_label" for="tab3"><%= @owner_select_jp %>が関係する箇条番号</label>
-        <label class="tab4_label" for="tab4">顧客固有要求事項/IATF規格要求/ミツイ品質マニュアル一覧</label>
+        <label class="tab4_label" for="tab4">未使用</label>
         <label class="tab5_label" for="tab5">未使用</label>
         <label class="tab6_label" for="tab6">未使用</label>
 
@@ -243,6 +243,7 @@
                 csrs: @csrs,
                 touans: @touans
                 } %>
+            
         </div>
     </section>
    
@@ -298,6 +299,7 @@
                 csrs: @csrs,
                 touans: @touans
                 } %>
+            
         </div>
     </section>
    
@@ -305,83 +307,13 @@
 
 
 <!-- ----------------------------------Panel4-------------------------------------------- -->
+
 <div id="panel4" class="tab_panel">
 
 <section class="container flex items-stretch justify-between">
-    <div class="sm:inline-block w-full mx-4">
-        <table class="sticky_table table-striped table-hover border-separate border-spacing-1 border-2 border-blue-900 bg-gray-100">
-            <thead>
-            <tr>
-                <th class="border-2 border-blue-900"><%= "箇条" %></th>
-                <th class="border-2 border-blue-900"><%= "MEK様品質ガイドラインVer2" %></th>
-                <th class="border-2 border-blue-900"><%= "IATF規格要求事項" %></th>
-                <th class="border-2 border-blue-900"><%= "ミツイ精密 品質マニュアル" %></th>
-                <th class="border-2 border-blue-900"><%= "添付ファイル" %></th> <!-- 新しい列を追加 -->
-            </tr>
-            </thead>
-
-            <% 
-            number_all = []
-            csr_content_all = []
-            iatf_content_all = []
-            mitsui_content_all = []
-
-            # CSR
-            @csrs.each do |c|
-                number_all << c.csr_number
-                csr_content_all << c.csr_content
-
-                corresponding_iatf = @iatflists.find { |i| i.iatf_number == c.csr_number }
-                iatf_content_all << (corresponding_iatf ? corresponding_iatf.iatf_content : "")
-
-                corresponding_mitsui = @mitsuis.find { |m| m.mitsui_number == c.csr_number }
-                mitsui_content_all << (corresponding_mitsui ? corresponding_mitsui.mitsui_content : "")
-            end
-
-            # IATF
-            @iatflists.each do |i|
-                unless number_all.include?(i.iatf_number)
-                    number_all << i.iatf_number
-                    csr_content_all << ""
-                    iatf_content_all << i.iatf_content
-
-                    corresponding_mitsui = @mitsuis.find { |m| m.mitsui_number == i.iatf_number }
-                    mitsui_content_all << (corresponding_mitsui ? corresponding_mitsui.mitsui_content : "")
-                end
-            end
-
-            # Mitsui
-            @mitsuis.each do |m|
-                unless number_all.include?(m.mitsui_number)
-                    number_all << m.mitsui_number
-                    csr_content_all << ""
-                    iatf_content_all << ""
-                    mitsui_content_all << m.mitsui_content
-                end
-            end
-
-            sorted_indices = number_all.map.with_index.sort.map { |_, idx| idx }
-
-            sorted_indices.each do |idx|
-            %>
-                <tr>
-                <td class="vertical-align-top"><%= number_all[idx] %></td>
-                <td class="vertical-align-top"><%= safe_join(h(csr_content_all[idx]).split("*"), tag(:br)) %></td>
-                <td class="vertical-align-top"><%= safe_join(h(iatf_content_all[idx]).split("*"), tag(:br)) %></td>
-                <td class="vertical-align-top"><%= safe_join(h(mitsui_content_all[idx]).split("*"), tag(:br)) %></td>
-                <td class="vertical-align-top">
-                <% @products.each do |doc_check| %>
-                    <% if doc_check.documents.attached? && doc_check.documentnumber == number_all[idx] %>
-                        <% matching_product = doc_check %>
-                        <%= render partial: "attached_file_touan", locals: { matching_product: matching_product, fullfilename: rails_blob_path(matching_product.documents.first), ext: File.extname(rails_blob_path(matching_product.documents.first)).downcase, image: matching_product.documents.first } %>
-                    <% end %>
-                <% end %>
-            </td>
-                </tr>
-            <% end %>
-        </table>
-    </div>
+    
 </section>
+
 
 </div>
 

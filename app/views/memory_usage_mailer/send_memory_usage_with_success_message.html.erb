@@ -29,6 +29,13 @@
   </style>
 </head>
 <body>
+  <div class="cache-counts">
+    <h2>キャッシュ数の統計</h2>
+    <% @cache_counts.each do |model, count| %>
+      <p><%= model %>のキャッシュ数: <%= count %></p>
+    <% end %>
+  </div>
+  
   <div class="statistics">
     <h2>メモリ使用量の統計</h2>
     <p>現在のメモリ使用量: <%= @current_memory %> MB</p>

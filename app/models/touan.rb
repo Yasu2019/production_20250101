@@ -1,4 +1,5 @@
 class Touan < ApplicationRecord
+    after_save :update_cache
   # バリデーション
   validates :kaito, presence: true
 

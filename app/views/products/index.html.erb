@@ -421,11 +421,16 @@ $(document).ready(function(){
                             ['顧客満足プロセス', 'satisfaction'],
                             ['内部監査プロセス', 'audit'],
                             ['改善プロセス', 'corrective_action']
-                         
- 
+            
                         ], {}, class: "form-control" %>
 
                     <%= form.submit "IATF評価テスト",class:"btn btn-secondary btn-sm" %>
+                    <% end %>
+                    </li>
+
+                    <li class="py-1 border-b-2">
+                    <%= form_with(url: iatf_csr_mitsui_touan_path, method: :get, local: true) do|form| %>
+                    <%= form.submit "IATF規格_CSR_ミツイ品質マニュアル比較",class:"btn btn-secondary btn-sm" %>
                     <% end %>
                     </li>
 

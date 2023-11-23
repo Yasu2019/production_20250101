@@ -45,6 +45,10 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   # root "articles#index"
 
+
+  
+  get 'touans/iatf_csr_mitsui' => 'touans#iatf_csr_mitsui',           as: 'iatf_csr_mitsui_touan'
+  
   get 'touans/testmondai' => 'touans#testmondai',                 as: 'testmondai_touan' # テストの結果表示ページ
   #post 'touans/test_save' => 'touans#test_save',      as: 'test_save_touan'
   get 'touans/index' => 'touans#index',                 as: 'index_touan' # IATF要求事項説明ページ

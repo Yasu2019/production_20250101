@@ -29,17 +29,11 @@ class TwoStepVerificationsController < ApplicationController
       .to_data_url
     
     # キャッシュジョブの開始をログに記録
-    #Rails.logger.info("Starting CacheDataJob for user ID: #{@user.id}")
+    Rails.logger.info("Starting CacheDataJob for user ID: #{@user.id}")
 
     # QRコードが生成された直後にキャッシュジョブを呼び出す
-    #if CacheDataJob.perform_async(@user.id)
-    # キャッシュの読み込みが成功した場合のログ
-    #Rails.logger.info("Successfully started CacheDataJob for user ID: #{@user.id}")
-    #else
-    # キャッシュの読み込みが失敗した場合のログ
-    #Rails.logger.error("Failed to start CacheDataJob for user ID: #{@user.id}")
-    #end
-  
+    CacheDataJob.perform_async(@user.id)
+    Rails.logger.info("Successfully started CacheDataJob for user ID: #{@user.id}")
 
     Rails.logger.debug("QR Code: #{@qr_code}")
   end

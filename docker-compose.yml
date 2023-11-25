@@ -1,6 +1,16 @@
 version: '3.9'
 
 services:
+  nodered:
+    build:
+      context: .
+      dockerfile: Dockerfile.nodered
+    volumes:
+      - shared_data:/myapp/db/record
+    ports:
+      - '1880:1880'
+    command: ["node-red"]
+
   db:
     image: postgres:16.0
     env_file: .env
@@ -30,6 +40,7 @@ services:
       - KEY_DERIVATION_SALT=${KEY_DERIVATION_SALT}
     volumes:
       - .:/myapp:delegated
+      - shared_data:/myapp/db/record
       - /myapp/node_modules
     ports:
       - '3000:3000'
@@ -50,6 +61,7 @@ services:
     env_file: .env
 
 volumes:
+  shared_data:
   postgresql-data:
     driver: local
 

@@ -64,6 +64,9 @@ class TouansController < ApplicationController
   end
 
   def new 
+  @touan = Touan.new
+  @owner_select = session[:owner_select]
+
   @user = current_user
   @testmondais = Testmondai.where(kajyou: params[:kajyou])
 
@@ -101,22 +104,18 @@ class TouansController < ApplicationController
     @user = current_user # 追加
     @touans = TouanCollection.new(touans_params, [],@user)
     if @touans.save
-    #  redirect_to touans_url
-    #else
-    #  render :new
-    #end
       grouped_touans = @touans.collection.group_by { |touan| [touan.user_id, touan.created_at.change(usec: 0)] }
-
+  
       grouped_touans.each do |(user_id, created_at), touans|
         total = touans.size
         correct_answers = touans.select { |touan| touan.kaito == touan.seikai }.size
         seikairitsu = correct_answers.to_f / total.to_f
-
+  
         touans.each do |touan|
           touan.update_attribute(:seikairitsu, seikairitsu)
         end
       end
-
+  
       redirect_to touans_url
     else
       render :new
@@ -137,7 +136,14 @@ class TouansController < ApplicationController
 
   def index
     @user = current_user
-    @owner_select = params[:owner_select]
+    if params[:owner_select].present?
+      session[:owner_select] = params[:owner_select]
+      @owner_select = params[:owner_select]
+    else
+      @owner_select = session[:owner_select]
+    end
+    
+    
 
         # キャッシュからproductsを取得
       if Rails.cache.exist?("products_#{current_user.id}")

@@ -13,7 +13,7 @@ class CacheUpdateJob
       Rails.cache.write("touans_#{user.id}", touans)
     end
   end
-
+end
 # app/models/touan.rb
 class Touan < ApplicationRecord
   after_save :update_cache

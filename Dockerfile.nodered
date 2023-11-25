@@ -1,0 +1,8 @@
+# Dockerfile.nodered
+FROM node:14
+
+# 作業ディレクトリを設定する
+WORKDIR /usr/src/nodered
+
+# Node-REDをグローバルにインストールする
+RUN npm install -g --unsafe-perm node-red

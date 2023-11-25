@@ -92,8 +92,8 @@ class ProductsController < ApplicationController
     #https://maku77.github.io/ruby/io/file-exist.html
     data = []
     data_temp = []
-    if File.file?('/myapp/db/record/'+timetoday+'SHT31Temp.csv')
-        CSV.foreach('/myapp/db/record/'+timetoday+'SHT31Temp.csv', headers: true) do |row|
+    if File.file?('/myapp/db/record/iot/'+timetoday+'SHT31Temp.csv')
+        CSV.foreach('/myapp/db/record/iot/'+timetoday+'SHT31Temp.csv', headers: true) do |row|
           data=[row[0],row[1]]
           data_temp.push(data)
         end
@@ -103,8 +103,8 @@ class ProductsController < ApplicationController
 
     data = []
     data_humi = []
-    if File.file?('/myapp/db/record/'+timetoday+'SHT31Humi.csv')
-        CSV.foreach('/myapp/db/record/'+timetoday+'SHT31Humi.csv', headers: true) do |row|
+    if File.file?('/myapp/db/record/iot/'+timetoday+'SHT31Humi.csv')
+        CSV.foreach('/myapp/db/record/iot/'+timetoday+'SHT31Humi.csv', headers: true) do |row|
           data=[row[0],row[1]]
           data_humi.push(data)
         end
@@ -115,8 +115,8 @@ class ProductsController < ApplicationController
 
     data = []
     data_komatsu25t3_shot = []
-    if File.file?('/myapp/db/record/'+timetoday+'ShotKomatsu25t3.csv')
-        CSV.foreach('/myapp/db/record/'+timetoday+'ShotKomatsu25t3.csv', headers: true) do |row|
+    if File.file?('/myapp/db/record/iot/'+timetoday+'ShotKomatsu25t3.csv')
+        CSV.foreach('/myapp/db/record/iot/'+timetoday+'ShotKomatsu25t3.csv', headers: true) do |row|
           data=[row[0],row[1]]
           data_komatsu25t3_shot.push(data)
         end
@@ -125,8 +125,8 @@ class ProductsController < ApplicationController
 
     data = []
     data_komatsu25t3_spm = []
-    if File.file?('/myapp/db/record/'+timetoday+'SPMKomatsu25t3.csv')
-        CSV.foreach('/myapp/db/record/'+timetoday+'SPMKomatsu25t3.csv', headers: true) do |row|
+    if File.file?('/myapp/db/record/iot/'+timetoday+'SPMKomatsu25t3.csv')
+        CSV.foreach('/myapp/db/record/iot/'+timetoday+'SPMKomatsu25t3.csv', headers: true) do |row|
           data=[row[0],row[1]]
           data_komatsu25t3_spm.push(data)
         end
@@ -135,8 +135,8 @@ class ProductsController < ApplicationController
 
     data = []
     data_komatsu25t3_chokotei = []
-    if File.file?('/myapp/db/record/'+timetoday+'StampingchokoteiKomatsu25t3.csv')
-        CSV.foreach('/myapp/db/record/'+timetoday+'StampingchokoteiKomatsu25t3.csv', headers: true) do |row|
+    if File.file?('/myapp/db/record/iot/'+timetoday+'StampingchokoteiKomatsu25t3.csv')
+        CSV.foreach('/myapp/db/record/iot/'+timetoday+'StampingchokoteiKomatsu25t3.csv', headers: true) do |row|
           data=[row[0],row[1]]
           data_komatsu25t3_chokotei.push(data)
         end
@@ -145,8 +145,8 @@ class ProductsController < ApplicationController
 
     data = []
     data_komatsu25t3_jyotai = []
-    if File.file?('/myapp/db/record/'+timetoday+'JYOTAIKomatsu25t3.csv')
-        CSV.foreach('/myapp/db/record/'+timetoday+'JYOTAIKomatsu25t3.csv', headers: true) do |row|
+    if File.file?('/myapp/db/record/iot/'+timetoday+'JYOTAIKomatsu25t3.csv')
+        CSV.foreach('/myapp/db/record/iot/'+timetoday+'JYOTAIKomatsu25t3.csv', headers: true) do |row|
           data=[row[0],row[1]]
           data_komatsu25t3_jyotai.push(data)
         end
@@ -157,8 +157,8 @@ class ProductsController < ApplicationController
 
     data = []
     data_chokoteiDobby30t4 = []
-    if File.file?('/myapp/db/record/'+timetoday+'chokoteiDobby30t4.csv')
-        CSV.foreach('/myapp/db/record/'+timetoday+'chokoteiDobby30t4.csv', headers: true) do |row|
+    if File.file?('/myapp/db/record/iot/'+timetoday+'chokoteiDobby30t4.csv')
+        CSV.foreach('/myapp/db/record/iot/'+timetoday+'chokoteiDobby30t4.csv', headers: true) do |row|
           data=[row[0],row[1]]
           data_chokoteiDobby30t4.push(data)
         end
@@ -167,8 +167,8 @@ class ProductsController < ApplicationController
 
     data = []
     data_JYOTAIDobby30t4 = []
-    if File.file?('/myapp/db/record/'+timetoday+'JYOTAIDobby30t4.csv')
-        CSV.foreach('/myapp/db/record/'+timetoday+'JYOTAIDobby30t4.csv', headers: true) do |row|
+    if File.file?('/myapp/db/record/iot/'+timetoday+'JYOTAIDobby30t4.csv')
+        CSV.foreach('/myapp/db/record/iot/'+timetoday+'JYOTAIDobby30t4.csv', headers: true) do |row|
           data=[row[0],row[1]]
           data_JYOTAIDobby30t4.push(data)
         end
@@ -179,8 +179,8 @@ class ProductsController < ApplicationController
 
     data = []
     data_StampingJYOTAIAmada80t3 = []
-    if File.file?('/myapp/db/record/'+timetoday+'StampingJYOTAIAmada80t3.csv')
-        CSV.foreach('/myapp/db/record/'+timetoday+'StampingJYOTAIAmada80t3.csv', headers: true) do |row|
+    if File.file?('/myapp/db/record/iot/'+timetoday+'StampingJYOTAIAmada80t3.csv')
+        CSV.foreach('/myapp/db/record/iot/'+timetoday+'StampingJYOTAIAmada80t3.csv', headers: true) do |row|
           data=[row[0],row[1]]
           data_StampingJYOTAIAmada80t3.push(data)
         end
@@ -189,8 +189,8 @@ class ProductsController < ApplicationController
 
     data = []
     data_StampingchokoteiAmada80t3 = []
-    if File.file?('/myapp/db/record/'+timetoday+'StampingchokoteiAmada80t3.csv')
-        CSV.foreach('/myapp/db/record/'+timetoday+'StampingchokoteiAmada80t3.csv', headers: true) do |row|
+    if File.file?('/myapp/db/record/iot/'+timetoday+'StampingchokoteiAmada80t3.csv')
+        CSV.foreach('/myapp/db/record/iot/'+timetoday+'StampingchokoteiAmada80t3.csv', headers: true) do |row|
           data=[row[0],row[1]]
           data_StampingchokoteiAmada80t3.push(data)
         end
@@ -199,8 +199,8 @@ class ProductsController < ApplicationController
 
     data = []
     data_SPMAmada80t3 = []
-    if File.file?('/myapp/db/record/'+timetoday+'SPMAmada80t3.csv')
-        CSV.foreach('/myapp/db/record/'+timetoday+'SPMAmada80t3.csv', headers: true) do |row|
+    if File.file?('/myapp/db/record/iot/'+timetoday+'SPMAmada80t3.csv')
+        CSV.foreach('/myapp/db/record/iot/'+timetoday+'SPMAmada80t3.csv', headers: true) do |row|
           data=[row[0],row[1]]
           data_SPMAmada80t3.push(data)
         end
@@ -209,8 +209,8 @@ class ProductsController < ApplicationController
 
     data = []
     data_ShotAmada80t3 = []
-    if File.file?('/myapp/db/record/'+timetoday+'ShotAmada80t3.csv')
-        CSV.foreach('/myapp/db/record/'+timetoday+'ShotAmada80t3.csv', headers: true) do |row|
+    if File.file?('/myapp/db/record/iot/'+timetoday+'ShotAmada80t3.csv')
+        CSV.foreach('/myapp/db/record/iot/'+timetoday+'ShotAmada80t3.csv', headers: true) do |row|
           data=[row[0],row[1]]
           data_ShotAmada80t3.push(data)
         end
@@ -221,7 +221,7 @@ class ProductsController < ApplicationController
 
     #timetoday=Time.now.strftime("%Y_%m_%d")
     #file = Dir.glob("C:/Users/mec21/20230213_iot_csv_training_tailwind_daisyui_ancestry_importmap/db/record/"+timetoday+"SHT31Humi.csv")
-    #file = Dir.glob("/myapp/db/record/2023_02_18SHT31Temp.csv")
+    #file = Dir.glob("/myapp/db/record/iot/2023_02_18SHT31Temp.csv")
     #IOTデータページ
 
     #@iots=Iot.all 

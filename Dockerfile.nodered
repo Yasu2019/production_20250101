@@ -9,3 +9,4 @@ RUN npm install -g --unsafe-perm node-red
 
 # Vimをインストールする
 RUN apt-get update && apt-get install -y vim
+

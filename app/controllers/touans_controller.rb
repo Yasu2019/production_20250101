@@ -2,18 +2,37 @@
 class TouansController < ApplicationController
 
   def export_to_excel
-    @touans = Touan.all
+    @csrs = Csr.all
+    @iatflists = Iatflist.all
+    @mitsuis = Mitsui.all
   
-    Axlsx::Package.new do |p|
-      p.workbook.add_worksheet(name: "Touans") do |sheet|
-        sheet.add_row ["箇条", "MEK様品質ガイドラインVer2", "IATF規格要求事項", "ミツイ精密 品質マニュアル", "添付ファイル"]
-        @touans.each do |touan|
-          sheet.add_row [touan.kajo, touan.mek, touan.iatf, touan.mitsui, touan.attachment]
-        end
+    p = Axlsx::Package.new
+    wb = p.workbook
+  
+    wb.add_worksheet(name: "Basic Worksheet") do |sheet|
+      sheet.add_row ["箇条", "MEK様品質ガイドラインVer2", "IATF規格要求事項", "ミツイ精密 品質マニュアル"]
+  
+      # Set the width of columns B, C, and D to 80
+      sheet.column_widths 15, 40, 40, 40
+  
+      # データ行を追加
+      @csrs.each do |csr|
+        corresponding_iatflist = @iatflists.find { |i| i.iatf_number == csr.csr_number }
+        corresponding_mitsui = @mitsuis.find { |m| m.mitsui_number == csr.csr_number }
+  
+        sheet.add_row [
+          csr.csr_number, 
+          csr.csr_content, 
+          corresponding_iatflist ? corresponding_iatflist.iatf_content : "", 
+          corresponding_mitsui ? corresponding_mitsui.mitsui_content : ""
+        ]
       end
-      send_data p.to_stream.read, filename: "touans.xlsx", type: "application/xlsx", disposition: "attachment"
     end
+  
+    send_data p.to_stream.read, filename: "export.xlsx", type: "application/xlsx"
   end
+
+
 
   def member_current_status
     @touans = Touan.all

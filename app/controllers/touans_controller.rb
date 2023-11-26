@@ -1,6 +1,20 @@
 
 class TouansController < ApplicationController
 
+  def export_to_excel
+    @touans = Touan.all
+  
+    Axlsx::Package.new do |p|
+      p.workbook.add_worksheet(name: "Touans") do |sheet|
+        sheet.add_row ["箇条", "MEK様品質ガイドラインVer2", "IATF規格要求事項", "ミツイ精密 品質マニュアル", "添付ファイル"]
+        @touans.each do |touan|
+          sheet.add_row [touan.kajo, touan.mek, touan.iatf, touan.mitsui, touan.attachment]
+        end
+      end
+      send_data p.to_stream.read, filename: "touans.xlsx", type: "application/xlsx", disposition: "attachment"
+    end
+  end
+
   def member_current_status
     @touans = Touan.all
     @user = current_user

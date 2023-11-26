@@ -45,7 +45,7 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   # root "articles#index"
 
-
+  get 'touans/export_to_excel', to: 'touans#export_to_excel'
   
   get 'touans/iatf_csr_mitsui' => 'touans#iatf_csr_mitsui',           as: 'iatf_csr_mitsui_touan'
   

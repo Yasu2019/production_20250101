@@ -1,5 +1,5 @@
 <div class="sm:inline-block w-full mx-4" style="width: 80%;">
-
+        <%= link_to '一覧をExcelへ出力', touans_export_to_excel_path, class: 'btn btn-accent btn-sm' %>
         <table class="sticky_table table-striped table-hover border-separate border-spacing-1 border-2 border-blue-900 bg-gray-100">
             <thead>
             <tr>
@@ -73,5 +73,5 @@
         </table>
     </div>
     <br>
-    <%= link_to 'Export to Excel', touans_export_to_excel_path %>
+    <%= link_to '一覧をExcelへ出力', touans_export_to_excel_path, class: 'btn btn-accent btn-sm' %>
     <%= link_to '戻る', root_path, class: 'btn btn-accent btn-sm' %>

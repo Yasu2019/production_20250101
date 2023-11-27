@@ -15,22 +15,42 @@ class TouansController < ApplicationController
       # Set the width of columns B, C, and D to 80
       sheet.column_widths 15, 40, 40, 40
   
-      # データ行を追加
-      @csrs.each do |csr|
-        corresponding_iatflist = @iatflists.find { |i| i.iatf_number == csr.csr_number }
-        corresponding_mitsui = @mitsuis.find { |m| m.mitsui_number == csr.csr_number }
+      # データ行を配列に保存
+      rows = []
+      [@csrs, @iatflists, @mitsuis].each do |records|
+        records.each do |record|
+          number = record.respond_to?(:csr_number) ? record.csr_number : record.respond_to?(:iatf_number) ? record.iatf_number : record.mitsui_number
+          corresponding_csr = @csrs.find { |csr| csr.csr_number == number }
+          corresponding_iatflist = @iatflists.find { |i| i.iatf_number == number }
+          corresponding_mitsui = @mitsuis.find { |m| m.mitsui_number == number }
   
-        sheet.add_row [
-          csr.csr_number, 
-          csr.csr_content, 
-          corresponding_iatflist ? corresponding_iatflist.iatf_content : "", 
-          corresponding_mitsui ? corresponding_mitsui.mitsui_content : ""
-        ]
+          if corresponding_csr || corresponding_iatflist || corresponding_mitsui
+            rows << [
+              number, 
+              corresponding_csr ? corresponding_csr.csr_content : "", 
+              corresponding_iatflist ? corresponding_iatflist.iatf_content : "", 
+              corresponding_mitsui ? corresponding_mitsui.mitsui_content : ""
+            ]
+          end
+        end
+      end
+  
+      # 数字が低い順に並べ替え
+      sorted_rows = rows.sort_by { |row| row[0].split('.').map(&:to_i) }
+  
+      # 重複を削除
+      unique_rows = sorted_rows.uniq
+  
+      # ソートされ、重複が削除された行をシートに追加
+      unique_rows.each do |row|
+        sheet.add_row row
       end
     end
   
     send_data p.to_stream.read, filename: "export.xlsx", type: "application/xlsx"
   end
+
+  
 
 
 

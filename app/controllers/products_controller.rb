@@ -313,10 +313,10 @@ class ProductsController < ApplicationController
     allowed_emails = ['yasuhiro-suzuki@mitsui-s.com', 'n_komiya@mitsui-s.com']
 
     # Add user IP to allowed list if user's email is allowed
-    if current_user&.email&.in?(allowed_emails)
-        user_ip = request.remote_ip
-        Rails.application.config.web_console.permissions = user_ip
-    end
+    if Rails.env.development? && current_user&.email&.in?(allowed_emails)
+      user_ip = request.remote_ip
+      Rails.application.config.web_console.permissions = user_ip
+  end
 
     #@q = Product.ransack(params[:q])
     #@products_json = @q.result.to_json

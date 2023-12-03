@@ -1,5 +1,8 @@
 Rails.application.routes.draw do
 
+  get '/favicon.ico', to: 'public#favicon'
+  get '/robots.:format' => 'public#robots'
+
   #このルーティング設定がconfig/routes.rbに追加されていれば、http://localhost:3000/letter_opener 
   #にアクセスすると、letter_opener_webのインターフェースが表示されるはずです。
   if Rails.env.development?

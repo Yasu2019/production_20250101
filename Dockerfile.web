@@ -30,9 +30,6 @@ COPY package*.json /myapp/
 # npmの依存関係をインストール
 RUN npm install
 
-# postcssとautoprefixerをインストール
-RUN npm install postcss autoprefixer
-
 # アプリケーションの残りのソースコードをコピー
 COPY . /myapp
 

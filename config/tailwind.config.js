@@ -11,11 +11,16 @@ module.exports = {
     '../myapp/public/*.html',
 
     //'./app/helpers/**/*.rb',
-    '../myapp/app/helpers/**/*.rb',
+    '../myapp/app/helpers/*.rb',
    
 
     //'./app/javascript/**/*.js',
     '../myapp/app/javascript/**/*.js',
+
+
+    //'./app/javascript/*.js',
+    '../myapp/app/javascript/*.js',
+
 
 
     //'./app/views/**/*.{erb,haml,html,slim}'

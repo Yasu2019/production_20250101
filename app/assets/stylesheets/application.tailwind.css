@@ -13,3 +13,7 @@ https://qiita.com/masakinihirota/items/bd8c07aa54efad307588
 @import "~tailwindcss/components";
 @import "~tailwindcss/utilities";
 */
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';

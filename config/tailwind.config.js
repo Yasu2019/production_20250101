@@ -5,15 +5,19 @@ const defaultTheme = require('tailwindcss/defaultTheme')
 const plugin = require("tailwindcss/plugin");
 
 module.exports = {
-   content: [
-    '../myapp/public/*.html',
-    '../myapp/app/helpers/*.rb',
-    '../myapp/app/javascript/**/*.js',
-    '../myapp/app/javascript/*.js',
-    '../myapp/app/views/**/*.{html.erb,erb,haml,html,slim}',
-    '../myapp/app/views/devise/**/*.{html.erb,erb,haml,html,slim}'
-  ],
+  purge: {
+    content: [
+      '../myapp/app/views/**/*.*',
+      '../myapp/public/*.html',
+      '../myapp/app/helpers/*.rb',
+      '../myapp/app/javascript/**/*.js',
+      '../myapp/app/javascript/*.js',
+      '../myapp/app/views/**/*.{html.erb,erb,haml,html,slim}',
+      '../myapp/app/views/devise/**/*.{html.erb,erb,haml,html,slim}'
+    ],
+  },
   // その他の設定...
+}
 
 
 

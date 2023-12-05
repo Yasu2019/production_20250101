@@ -1,8 +1,11 @@
 FROM ruby:3.1.2
 
-# Node.js 16.x をインストール
+# Node.js 16.x と yarn をインストール
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
-    apt-get install -y nodejs
+    apt-get install -y nodejs && \
+    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
+    apt-get update && apt-get install yarn
 
 # PostgreSQLの公式リポジトリの追加
 RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main' > /etc/apt/sources.list.d/pgdg.list && \
@@ -24,11 +27,11 @@ COPY Gemfile.lock /myapp/Gemfile.lock
 RUN gem install bundler -v '2.1.4' && \
     bundle _2.1.4_ install
 
-# package.jsonとpackage-lock.jsonをコピー
-COPY package*.json /myapp/
+# package.jsonとyarn.lockをコピー
+COPY package.json yarn.lock ./ 
 
-# npmの依存関係をインストール
-RUN npm install
+# yarnの依存関係をインストール
+RUN yarn install
 
 # アプリケーションの残りのソースコードをコピー
 COPY . /myapp

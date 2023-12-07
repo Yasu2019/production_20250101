@@ -7,13 +7,9 @@ const plugin = require("tailwindcss/plugin");
 module.exports = {
   purge: {
     content: [
-      '../myapp/app/views/**/*.*',
-      '../myapp/public/*.html',
-      '../myapp/app/helpers/*.rb',
-      '../myapp/app/javascript/**/*.js',
-      '../myapp/app/javascript/*.js',
-      '../myapp/app/views/**/*.{html.erb,erb,haml,html,slim}',
-      '../myapp/app/views/devise/**/*.{html.erb,erb,haml,html,slim}'
+      './app/views/**/*.*',
+      './public/**/*.*',
+      './app/javascript/**/*.*'
     ],
   },
   // その他の設定...
@@ -37,7 +33,7 @@ module.exports = {
     require('daisyui'),    // ← 追加
     //【Tailwind CSS】長い文字列を三点リーダー（…）で省略する方法
     // https://zenn.dev/ilove/articles/8a93705d396e05
-    require('@tailwindcss/line-clamp'),
+    
 
 
 

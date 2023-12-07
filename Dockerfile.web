@@ -27,14 +27,14 @@ COPY Gemfile.lock /myapp/Gemfile.lock
 RUN gem install bundler -v '2.1.4' && \
     bundle _2.1.4_ install
 
-# package.jsonとyarn.lockをコピー
-COPY package.json yarn.lock ./ 
+# アプリケーションのソースコードをコピー
+COPY . /myapp
 
 # yarnの依存関係をインストール
 RUN yarn install
 
-# アプリケーションの残りのソースコードをコピー
-COPY . /myapp
+# Tailwind CSSをビルド
+RUN yarn tailwindcss build
 
 # コンテナがランタイムで指定されたポートをリスニングしていることをDockerに通知
 EXPOSE 3000

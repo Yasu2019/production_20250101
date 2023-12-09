@@ -6,13 +6,12 @@ const plugin = require("tailwindcss/plugin");
 
 module.exports = {
   
-    content: [
-      './app/views/**/*.*',
-      './public/**/*.*',
-      './app/javascript/**/*.*'
-    ],
-  
-  // その他の設定...
+  content: [
+    './app/views/**/*.html.erb',
+    './app/javascript/**/*.js'
+  ],
+
+
 
 
 

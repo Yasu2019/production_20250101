@@ -5,13 +5,13 @@ const defaultTheme = require('tailwindcss/defaultTheme')
 const plugin = require("tailwindcss/plugin");
 
 module.exports = {
-  purge: {
+  
     content: [
       './app/views/**/*.*',
       './public/**/*.*',
       './app/javascript/**/*.*'
     ],
-  },
+  
   // その他の設定...
 
 

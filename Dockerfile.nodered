@@ -1,12 +1,14 @@
 # Dockerfile.nodered
-FROM node:14
+FROM node:20
 
 # 作業ディレクトリを設定する
 WORKDIR /usr/src/nodered
+
+# npmを最新バージョンにアップデートする
+RUN npm install -g npm@latest
 
 # Node-REDをグローバルにインストールする
 RUN npm install -g --unsafe-perm node-red
 
 # Vimをインストールする
 RUN apt-get update && apt-get install -y vim
-

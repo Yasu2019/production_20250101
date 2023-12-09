@@ -1,11 +1,11 @@
 FROM ruby:3.1.2
 
-# Node.js 16.x と yarn をインストール
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
+# Node.jsとyarnをインストール
+RUN apt-get update -qq && \
+    apt-get install -y curl apt-transport-https wget && \
+    curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
     apt-get install -y nodejs && \
-    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
-    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
-    apt-get update && apt-get install yarn
+    npm install --global yarn
 
 # PostgreSQLの公式リポジトリの追加
 RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main' > /etc/apt/sources.list.d/pgdg.list && \

@@ -1,8 +1,4 @@
-require 'rails/all'
-require 'csv'
-
 require_relative "boot"
-
 require "rails"
 # Pick the frameworks you want:
 require "active_model/railtie"
@@ -21,8 +17,13 @@ require "action_cable/engine"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+require 'rails/all'
+require 'csv'
+#require "importmap/rails"
+
 module Myapp
   class Application < Rails::Application
+    config.assets.enabled = false
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.0
 

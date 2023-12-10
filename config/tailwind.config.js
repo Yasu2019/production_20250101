@@ -4,11 +4,76 @@ const defaultTheme = require('tailwindcss/defaultTheme')
 //https://tech-lab.sios.jp/archives/31882#:~:text=Tailwind%20CSS%20%E7%B8%A6%E6%9B%B8%E3%81%8D%E5%AF%BE%E5%BF%9C%20%3Awriting-mode%201%20%E4%BA%8B%E5%89%8D%E6%BA%96%E5%82%99%20Tailwind%20CSS%E3%81%AE%E7%92%B0%E5%A2%83%E6%A7%8B%E7%AF%89%E3%81%AF%E3%80%81,...%203%20Plugin%E3%81%A7%E8%A9%A6%E3%81%99%E7%B8%A6%E6%9B%B8%E3%81%8D%E5%AF%BE%E5%BF%9C%20%E3%81%93%E3%81%A1%E3%82%89%E3%81%AF%E3%80%81%E3%80%8Ctailwind.config.js%E3%80%8D%E3%81%AB%E8%BF%BD%E8%A8%98%E3%81%99%E3%82%8B%E3%81%93%E3%81%A8%E3%81%A7%E5%AE%9F%E7%8F%BE%E3%81%99%E3%82%8B%E3%81%93%E3%81%A8%E3%81%8C%E3%81%A7%E3%81%8D%E3%81%BE%E3%81%99%E3%80%82%20...%204%20%E7%B5%82%E3%82%8F%E3%82%8A%E3%81%AB%20
 const plugin = require("tailwindcss/plugin");
 
+
+
+
 module.exports = {
+
   
   content: [
-    './app/views/**/*.html.erb',
-    './app/javascript/**/*.js'
+
+//'../../app/views/**/*.html.erb',
+//'../../app/javascript/**/*.js',
+    
+
+    '../../app/views/devise/confirmations/new.html.erb',
+    '../../app/views/devise/passwords/edit.html.erb',
+    '../../app/views/devise/passwords/new.html.erb',
+    '../../app/views/devise/registrations/edit.html.erb',
+    '../../app/views/devise/registrations/new.html.erb',
+    '../../app/views/devise/sessions/new.html.erb',
+    '../../app/views/devise/unlocks/new.html.erb',
+    '../../app/views/kaminari/_first_page.html.erb',
+    '../../app/views/kaminari/_gap.html.erb',
+    '../../app/views/kaminari/_last_page.html.erb',
+    '../../app/views/kaminari/_next_page.html.erb',
+    '../../app/views/kaminari/_page.html.erb',
+    '../../app/views/kaminari/_paginator.html.erb',
+    '../../app/views/kaminari/_prev_page.html.erb',
+    '../../app/views/layouts/application.html.erb',
+    '../../app/views/measurementequipments/_form.html.erb',
+    '../../app/views/measurementequipments/_measurementequipment.html.erb',
+    '../../app/views/measurementequipments/edit.html.erb',
+    '../../app/views/measurementequipments/index.html.erb',
+    '../../app/views/measurementequipments/new.html.erb',
+    '../../app/views/measurementequipments/show.html.erb',
+    '../../app/views/memory_usage_mailer/send_memory_usage_with_success_message.html.erb',
+    '../../app/views/products/_form.html.erb',
+    '../../app/views/products/_form3.html.erb',
+    '../../app/views/products/_form9.html.erb',
+    '../../app/views/products/_input.html.erb',
+    '../../app/views/products/calendar.html.erb',
+    '../../app/views/products/edit.html.erb',
+    '../../app/views/products/graph.html.erb',
+    '../../app/views/products/index.html.erb',
+    '../../app/views/products/index2.html.erb',
+    '../../app/views/products/index3.html.erb',
+    '../../app/views/products/index4.html.erb',
+    '../../app/views/products/index8.html.erb',
+    '../../app/views/products/index9.html.erb',
+    '../../app/views/products/iot.html.erb',
+    '../../app/views/products/show.html.erb',
+    '../../app/views/products/training.html.erb',
+    '../../app/views/suppliers/_form.html.erb',
+    '../../app/views/suppliers/_supplier.html.erb',
+    '../../app/views/suppliers/edit.html.erb',
+    '../../app/views/suppliers/index.html.erb',
+    '../../app/views/suppliers/new.html.erb',
+    '../../app/views/suppliers/show.html.erb',
+    '../../app/views/touans/_table.html.erb',
+    '../../app/views/touans/iatf_csr_mitsui.html.erb',
+    '../../app/views/touans/index.html.erb',
+    '../../app/views/touans/kekka.html.erb',
+    '../../app/views/touans/member_current_status.html.erb',
+    '../../app/views/touans/new.html.erb',
+    '../../app/views/touans/pending_show.html.erb',
+    '../../app/views/touans/test.html.erb',
+    '../../app/views/touans/testes.html.erb',
+    '../../app/views/touans/testmondai.html.erb',
+    '../../app/views/two_step_verifications/create.html.erb',
+    '../../app/views/two_step_verifications/new.html.erb',
+ 
+
   ],
 
 

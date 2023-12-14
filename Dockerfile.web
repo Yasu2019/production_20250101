@@ -40,7 +40,7 @@ RUN yarn tailwindcss build
 ENV RAILS_ENV=production
 
 # アセットのプリコンパイル
-RUN bundle exec rails assets:precompile || true
+RUN bundle exec rails assets:precompile
 
 # コンテナがランタイムで指定されたポートをリスニングしていることをDockerに通知
 EXPOSE 3000

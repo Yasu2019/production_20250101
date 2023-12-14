@@ -31,7 +31,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: Dockerfile.web
+      dockerfile: Dockerfile.production.web
     command: bash -c "rm -f tmp/pids/server.pid && bundle exec chmod +x bin/rails && npm run build:css && bundle exec bin/rails s -p 3000 -b '0.0.0.0'"
     tty: true
     stdin_open: true
@@ -53,7 +53,7 @@ services:
   sidekiq:
     build:
       context: .
-      dockerfile: Dockerfile.web
+      dockerfile: Dockerfile.production.web
     command: bundle exec sidekiq
     volumes:
       - .:/myapp

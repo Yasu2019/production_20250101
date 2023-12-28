@@ -58,30 +58,30 @@ xl	1280px	@media (min-width: 1280px) { ... }
 
                     <li class="py-0 "><a>
                     <%= form_with(url: index4_product_path, method: :get, local: true) do|form| %>
-                    <%= form.submit "IATF要求事項説明",class:"btn btn-secondary btn-sm" %>
+                    <%= form.submit "IATF要求事項説明",class:"btn btn-primary btn-sm" %>
                     <% end %>
                     </a></li>
 
                     <li class="py-0 "><a>
                     <%= form_with(url: graph_product_path, method: :get, local: true) do|form| %>
-                    <%= form.submit "IATF進捗グラフ",class:"btn btn-secondary btn-sm" %>
+                    <%= form.submit "IATF進捗グラフ",class:"btn btn-primary btn-sm" %>
                     <% end %>
                     </a></li>
 
                     <li class="py-0 "><a>
                     <%= form_with(url: calendar_product_path, method: :get, local: true) do|form| %>
-                    <%= form.submit "IATF進捗カレンダー",class:"btn btn-secondary btn-sm" %>
+                    <%= form.submit "IATF進捗カレンダー",class:"btn btn-primary btn-sm" %>
                     <% end %>
                     </a></li>
 
                     <li class="py-0 "><a>
                     <%= form_with(url: training_product_path, method: :get, local: true) do|form| %>
-                    <%= form.submit "IATF教材",class:"btn btn-secondary btn-sm" %>
+                    <%= form.submit "IATF教材",class:"btn btn-primary btn-sm" %>
                     <% end %>
                     </a></li>
 
                     <li class="py-0 "><a>
-                    <%= link_to "Excel出力", xlsx_product_path(@product, format: :xlsx),class:"btn btn-secondary btn-sm" %>
+                    <%= link_to "Excel出力", xlsx_product_path(@product, format: :xlsx),class:"btn btn-primary btn-sm" %>
                     </a></li>
 
                     <li class="py-1 border-b-2"><a>
@@ -91,19 +91,19 @@ xl	1280px	@media (min-width: 1280px) { ... }
                     <%= file_field_tag :file , class: "hidden"%>
                     </label>
 
-                    <%= submit_tag "インポート",class:"btn btn-secondary btn-sm"  %>
+                    <%= submit_tag "インポート",class:"btn btn-primary btn-sm"  %>
                     <% end %>
                     </a></li>
 
                     <li class="py-0 border-b-2"><a>
                     <%= form_with(url: iot_product_path, method: :get, local: true) do|form| %>
-                    <%= form.submit "IOTデータ",class:"btn btn-secondary btn-sm" %>
+                    <%= form.submit "IOTデータ",class:"btn btn-primary btn-sm" %>
                     <% end %>
                     </a></li>
 
                     <li class="py-0 border-b-2"><a>
                     <%= form_with(url: index_touan_path, method: :get, local: true) do|form| %>
-                    <%= form.submit "IATF評価テスト",class:"btn btn-secondary btn-sm" %>
+                    <%= form.submit "IATF評価テスト",class:"btn btn-primary btn-sm" %>
                     <% end %>
                     </a></li>
 
@@ -344,25 +344,25 @@ $(document).ready(function(){
 
                     <li class="py-1 border-b-2"><a>
                     <%= form_with(url: index4_product_path, method: :get, local: true) do|form| %>
-                    <%= form.submit "IATF要求事項説明",class:"btn btn-secondary btn-sm" %>
+                    <%= form.submit "IATF要求事項説明",class:"btn btn-primary btn-sm" %>
                     <% end %>
                     </a></li>
 
                     <li class="py-1 border-b-2"><a>
                     <%= form_with(url: graph_product_path, method: :get, local: true) do|form| %>
-                    <%= form.submit "IATF進捗グラフ",class:"btn btn-secondary btn-sm" %>
+                    <%= form.submit "IATF進捗グラフ",class:"btn btn-primary btn-sm" %>
                     <% end %>
                     </a></li>
 
                     <li class="py-1 border-b-2"><a>
                     <%= form_with(url: calendar_product_path, method: :get, local: true) do|form| %>
-                    <%= form.submit "IATF進捗カレンダー",class:"btn btn-secondary btn-sm" %>
+                    <%= form.submit "IATF進捗カレンダー",class:"btn btn-primary btn-sm" %>
                     <% end %>
                     </a></li>
 
                     <li class="py-1 border-b-2"><a>
                     <%= form_with(url: training_product_path, method: :get, local: true) do|form| %>
-                    <%= form.submit "IATF教材",class:"btn btn-secondary btn-sm" %>
+                    <%= form.submit "IATF教材",class:"btn btn-primary btn-sm" %>
                     <% end %>
                     </a></li>
                     
@@ -380,7 +380,7 @@ $(document).ready(function(){
 
 
                     <li class="py-1 border-b-2">
-                    <%= link_to "Excel出力", xlsx_product_path(@product, format: :xlsx),class:"btn btn-secondary btn-sm" %>
+                    <%= link_to "Excel出力", xlsx_product_path(@product, format: :xlsx),class:"btn btn-primary btn-sm" %>
                     </li>
 
                     <!--
@@ -395,14 +395,14 @@ $(document).ready(function(){
                     <%= file_field_tag :file , class: "hidden"%>
                     </label>
 
-                    <%= submit_tag "インポート",class:"btn btn-secondary btn-sm"  %>
+                    <%= submit_tag "インポート",class:"btn btn-primary btn-sm"  %>
                     <% end %>
                     </li>
                     
 
                     <li class="py-1 border-b-2">
                     <%= form_with(url: iot_product_path, method: :get, local: true) do|form| %>
-                    <%= form.submit "IOTデータ",class:"btn btn-secondary btn-sm" %>
+                    <%= form.submit "IOTデータ",class:"btn btn-primary btn-sm" %>
                     <% end %>
                     </li>
 
@@ -424,26 +424,26 @@ $(document).ready(function(){
             
                         ], {}, class: "form-control" %>
 
-                    <%= form.submit "IATF評価テスト",class:"btn btn-secondary btn-sm" %>
+                    <%= form.submit "IATF評価テスト",class:"btn btn-primary btn-sm" %>
                     <% end %>
                     </li>
 
                     <li class="py-1 border-b-2">
                     <%= form_with(url: iatf_csr_mitsui_touan_path, method: :get, local: true) do|form| %>
-                    <%= form.submit "IATF規格_CSR_ミツイ品質マニュアル比較",class:"btn btn-secondary btn-sm" %>
+                    <%= form.submit "IATF規格_CSR_ミツイ品質マニュアル比較",class:"btn btn-primary btn-sm" %>
                     <% end %>
                     </li>
 
 
                     <li class="py-1 border-b-2">
                     <%= form_with(url: index_suppliers_path, method: :get, local: true) do|form| %>
-                    <%= form.submit "供給者リスト",class:"btn btn-secondary btn-sm" %>
+                    <%= form.submit "供給者リスト",class:"btn btn-primary btn-sm" %>
                     <% end %>
                     </li>
 
                     <li class="py-1 border-b-2">
                     <%= form_with(url: index_measurementequipments_path, method: :get, local: true) do|form| %>
-                    <%= form.submit "測定機器リスト",class:"btn btn-secondary btn-sm" %>
+                    <%= form.submit "測定機器リスト",class:"btn btn-primary btn-sm" %>
                     <% end %>
                     </li>
                 
@@ -451,19 +451,19 @@ $(document).ready(function(){
                       <%= form.label :"図番選択" %>
                       <%= form.collection_select(:partnumber, @produc, :partnumber, :partnumber)%> <br>
                     <% end %>
-                    <%= button_to "製造工程設計計画／実績書", "#", id: "design_submit-button", class: "btn btn-secondary" %>
+                    <%= button_to "製造工程設計計画／実績書", "#", id: "design_submit-button", class: "btn btn-primary" %>
                     
                     <%= form_with(url: rubyxl_apqp_plan_report_product_path, method: :get, local: true, html: { id: 'apqp_plan-form' }) do |form| %>
                       <%= form.label :"図番選択" %>
                       <%= form.collection_select(:partnumber, @produc, :partnumber, :partnumber)%> <br>
                     <% end %>
-                    <%= button_to "APQP計画書", "#", id: "apqp_plan_submit-button", class: "btn btn-secondary" %>
+                    <%= button_to "APQP計画書", "#", id: "apqp_plan_submit-button", class: "btn btn-primary" %>
                     
                     <%= form_with(url: rubyxl_apqp_approved_report_product_path, method: :get, local: true, html: { id: 'apqp_approved-form' }) do |form| %>
                       <%= form.label :"図番選択" %>
                       <%= form.collection_select(:partnumber, @produc, :partnumber, :partnumber)%> <br>
                     <% end %>
-                    <%= button_to "APQP総括・承認書", "#", id: "apqp_approved_submit-button", class: "btn btn-secondary" %>
+                    <%= button_to "APQP総括・承認書", "#", id: "apqp_approved_submit-button", class: "btn btn-primary" %>
 
    
 

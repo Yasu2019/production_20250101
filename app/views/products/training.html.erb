@@ -47,24 +47,26 @@
                                               <h2 class="text-lg text-gray-900 font-medium title-font mb-4"><%= pro.documentname %></h2>
                                               <p class="leading-relaxed text-base"><%= pro.description %></p>
                                               <%= link_to image.blob.filename  ,rails_blob_path(image)%>
-
+                                              <!--
                                               <% @products.each do |doc_check| %>
                                                 <% if doc_check.documents.attached?%>
-                                                  <% if doc_check.description==pro.documentnumber %>
+                                                  <% if doc_check.documentnumber==pro.documentnumber %>
                                                     <% doc_check.documents.each do |image1| %> 
                                                       <% fullfilename = rails_blob_path(image1) %>
                                                       <% ext = File.extname(fullfilename).downcase %>
-                                                      <% if ext!=".mp4" %>
+                                                      <% if ext!=".mp4"  && doc_check.documentnumber==pro.documentnumber %>
                                                         <br>
                                                         <%= "関連資料" %>
                                                         <br>
+                                                        <%= doc_check.documentnumber %>
+                                                        <%= pro.documentnumber %>
                                                         <%= link_to image1.blob.filename  ,rails_blob_path(image1)%> <br>
                                                       <% end %>
                                                     <% end %>
                                                   <% end %>
                                                 <% end %>
                                               <% end %>
-                                          
+                                              -->
                                             </div>
                                           </div>
                                       <% end %>

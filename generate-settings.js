@@ -16,12 +16,4 @@ const settings = {
   }
 };
 
-const dir = '/root/.node-red';
-const file = path.join(dir, 'settings.js');
-
-// ディレクトリが存在しない場合は作成する
-if (!fs.existsSync(dir)){
-    fs.mkdirSync(dir, { recursive: true });
-}
-
-fs.writeFileSync(file, `module.exports = ${JSON.stringify(settings, null, 2)}`);
+fs.writeFileSync('/usr/src/nodered/settings.js', 'module.exports = ' + JSON.stringify(settings));

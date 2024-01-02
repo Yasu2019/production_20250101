@@ -27,3 +27,6 @@ COPY generate-settings.js /usr/src/nodered
 
 # Node-REDの設定ファイルを生成する
 RUN node generate-settings.js
+
+# Node-REDを起動する
+CMD ["node-red"]

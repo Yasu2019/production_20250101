@@ -465,10 +465,31 @@ $(document).ready(function(){
                     <% end %>
                     <%= button_to "APQP総括・承認書", "#", id: "apqp_approved_submit-button", class: "btn btn-primary" %>
 
-   
+<br>
 
+<div class="bg-gray-800">
+<% if @pdf_links.present? && @days_since_published.present? && @publish_dates.present? %>
+  <h2 class="text-lg underline mb-4 text-center">IATF SIs FQAs Links</h2>
+  <div class="flex justify-center space-x-8">
+    <div class="text-center">
+      <% if @pdf_links[0].include?('SIs') %>
+        <%= link_to 'SIs Link', @pdf_links[0], class: "btn btn-accent", target: "_blank" %>
+        <p>発行日: <%= I18n.l(@publish_dates[0], format: :year_month) %></p>
+        <p>発行後<%= @days_since_published[0] %>日</p>
+      <% end %>
+    </div>
+    <div style="width: 2em;"></div> <!-- 2文字分のスペース -->
+    <div class="text-center">
+      <% if @pdf_links[1].include?('FAQs') %>
+        <%= link_to 'FAQs Link', @pdf_links[1], class: "btn btn-accent", target: "_blank" %>
+        <p>発行日: <%= I18n.l(@publish_dates[1], format: :year_month) %></p>
+        <p>発行後<%= @days_since_published[1] %>日</p>
+       <% end %>
+    </div>
+  </div>
+<% end %>
+</div>
 
-                    
                     
                     <script>
                     $(document).ready(function() {

@@ -3055,19 +3055,25 @@ def apqp_approved_report_insert_rows_to_excel_template_msa
     @pdf_links = []
     @days_since_published = []
     @publish_dates = [] # 発行日を格納するための配列を追加
-  
+
     urls.each do |url|
-      html = URI.open(url)
-      doc = Nokogiri::HTML(html)
-      links = doc.css('a')
-      links.each do |link|
-        if link['href'].include?('pdf') && link['href'].include?('ja')
-          @pdf_links << link['href']
-          file_name = link['href'].split('/').last
-          days, publish_date = days_since_published(file_name) # 経過日数と発行日を取得
-          @days_since_published << days
-          @publish_dates << publish_date # 発行日を配列に追加
+      begin
+        html = URI.open(url, open_timeout: 5, read_timeout: 10) # タイムアウトを設定
+        doc = Nokogiri::HTML(html)
+        links = doc.css('a')
+        links.each do |link|
+          if link['href'].include?('pdf') && link['href'].include?('ja')
+            @pdf_links << link['href']
+            file_name = link['href'].split('/').last
+            days, publish_date = days_since_published(file_name) # 経過日数と発行日を取得
+            @days_since_published << days
+            @publish_dates << publish_date # 発行日を配列に追加
+          end
         end
+      rescue OpenURI::HTTPError => e
+        Rails.logger.error "HTTPエラーが発生しました: #{e.message}"
+      rescue StandardError => e
+        Rails.logger.error "その他のエラーが発生しました: #{e.message}"
       end
     end
   end
@@ -3076,15 +3082,15 @@ def apqp_approved_report_insert_rows_to_excel_template_msa
     if file_name =~ /([A-Za-z]+)[_-](\d{4})_ja\.pdf$/
       month_name = $1  # "May"
       year = $2.to_i  # "2022"
-  
+
       # 月の名前を数字に変換
       month = Date::MONTHNAMES.index(month_name.capitalize)
-  
+
       # 月の名前が有効であることを確認
       if month
         # 年と月から日付オブジェクトを作成（月の最初の日を使用）
         published_date = Date.new(year, month)
-  
+
         # 現在の日付との差を計算
         days_since = (Date.today - published_date).to_i
         return days_since, published_date # 経過日数と発行日を返す

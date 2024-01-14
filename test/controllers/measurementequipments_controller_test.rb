@@ -3,6 +3,7 @@ require "test_helper"
 class MeasurementequipmentsControllerTest < ActionDispatch::IntegrationTest
   setup do
     @measurementequipment = measurementequipments(:one)
+    sign_in users(:one) # users(:one) はテスト用のユーザーフィクスチャを指します
   end
 
   test "should get index" do

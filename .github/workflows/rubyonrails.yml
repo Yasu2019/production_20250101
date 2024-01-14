@@ -35,6 +35,8 @@ jobs:
           sudo apt-get install -y libpoppler-glib-dev gir1.2-poppler-0.18
       - name: Set permissions for Rails scripts
         run: chmod +x bin/rails
+      - name: Set permissions for Rake
+        run: chmod +x bin/rake
       - name: Set up database schema
         run: bin/rails db:schema:load
       - name: Run tests
@@ -56,6 +58,8 @@ jobs:
           sudo apt-get install -y libpoppler-glib-dev gir1.2-poppler-0.18
       - name: Set permissions for Rails scripts
         run: chmod +x bin/rails
+      - name: Set permissions for Rake
+        run: chmod +x bin/rake
       - name: Security audit dependencies
         run: bin/bundler-audit --update
       - name: Security audit application code

@@ -29,6 +29,8 @@ jobs:
         with:
           ruby-version: 3.1.2
           bundler-cache: true
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y libpoppler-glib-dev
       - name: Set permissions for Rails scripts
         run: chmod +x bin/rails
       - name: Set up database schema
@@ -46,6 +48,8 @@ jobs:
         with:
           ruby-version: 3.1.2
           bundler-cache: true
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y libpoppler-glib-dev
       - name: Set permissions for Rails scripts
         run: chmod +x bin/rails
       - name: Security audit dependencies

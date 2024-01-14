@@ -1,6 +1,7 @@
 require "test_helper"
 
 class MeasurementequipmentsControllerTest < ActionDispatch::IntegrationTest
+  include Devise::Test::IntegrationHelpers # Deviseのテストヘルパーをインクルード
   setup do
     @measurementequipment = measurementequipments(:one)
     sign_in users(:one) # users(:one) はテスト用のユーザーフィクスチャを指します

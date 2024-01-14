@@ -54,7 +54,7 @@ class MeasurementequipmentsControllerTest < ActionDispatch::IntegrationTest
     patch measurementequipment_url(@measurementequipment), params: { measurementequipment: {
       categories: 'UpdatedCategory',
       equipment_model_name: 'UpdatedModelName',
-      // 他の属性も必要に応じて更新
+      #他の属性も必要に応じて更新
     } }
     assert_redirected_to measurementequipment_path(@measurementequipment)
   end

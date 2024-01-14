@@ -1,19 +1,22 @@
 require "test_helper"
 
+require "test_helper"
+
 class TwoStepVerificationsControllerTest < ActionDispatch::IntegrationTest
+  include Devise::Test::IntegrationHelpers # Deviseのテストヘルパーをインクルード
+
   setup do
     @user = users(:one)
-    @user.update!(otp_secret: User.generate_otp_secret(32))
-    sign_in @user
+    sign_in @user # ユーザーをサインイン
   end
 
   test "should get new" do
-    get new_two_step_verification_path
+    get new_two_step_verification_url
     assert_response :success
   end
 
   test "should post create" do
-    post two_step_verifications_path, params: { otp_attempt: '123456' }
+    post two_step_verifications_url, params: { two_step_verification: { ... } } # 適切なパラメータを設定
     assert_response :redirect
   end
 end

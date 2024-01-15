@@ -14,13 +14,13 @@ yasuhiro_suzuki:
 valid_token_user:
   email: valid_user@example.com
   encrypted_password: <%= Devise::Encryptor.digest(User, 'password') %>
-  # 以下、必要に応じて他の属性を追加
   verification_token: <%= SecureRandom.hex(10) %>
   token_created_at: <%= Time.current %>
+  token_expiry: <%= 10.minutes.from_now %> # 有効期限を10分後に設定
 
 expired_token_user:
   email: expired_user@example.com
   encrypted_password: <%= Devise::Encryptor.digest(User, 'password') %>
-  # 以下、必要に応じて他の属性を追加
   verification_token: <%= SecureRandom.hex(10) %>
   token_created_at: <%= 2.days.ago %>
+  token_expiry: <%= 2.days.ago %> # 有効期限を2日前に設定して「期限切れ」を表現

@@ -1,7 +1,5 @@
 require "test_helper"
 
-require "test_helper"
-
 class TwoStepVerificationsControllerTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers # Deviseのテストヘルパーをインクルード
 

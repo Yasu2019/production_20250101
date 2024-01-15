@@ -7,7 +7,7 @@ class VerificationControllerTest < ActionDispatch::IntegrationTest
   setup do
     @user_with_valid_token = users(:valid_token_user)
     @user_with_expired_token = users(:expired_token_user)
-    sign_in @user_with_valid_token
+    sign_out @user_with_valid_token # ユーザーをログアウトさせる
   end
 
   test "should verify user with valid token" do

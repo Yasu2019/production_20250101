@@ -6,6 +6,7 @@ class VerificationControllerTest < ActionDispatch::IntegrationTest
   setup do
     @user_with_valid_token = users(:valid_token_user)
     @user_with_expired_token = users(:expired_token_user)
+    sign_out :user # Deviseのヘルパーメソッドを使用して、すべてのユーザーをログアウトさせる
   end
 
   test "verify user with a valid token" do

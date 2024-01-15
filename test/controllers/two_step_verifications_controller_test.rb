@@ -14,7 +14,7 @@ class TwoStepVerificationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should post create" do
-    post two_step_verifications_url, params: { two_step_verification: { ... } } # 適切なパラメータを設定
+    post two_step_verifications_url, params: { otp_attempt: '123456' }
     assert_response :redirect
   end
 end

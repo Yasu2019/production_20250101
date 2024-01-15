@@ -31,3 +31,4 @@ class VerificationControllerTest < ActionDispatch::IntegrationTest
     assert_equal "トークンが存在しません。", flash[:alert]
   end
 end
+#test

@@ -1,20 +1,34 @@
+# test/controllers/verification_controller_test.rb
 require "test_helper"
 
-class TwoStepVerificationsControllerTest < ActionDispatch::IntegrationTest
-  include Devise::Test::IntegrationHelpers # Deviseのテストヘルパーをインクルード
+class VerificationControllerTest < ActionDispatch::IntegrationTest
+  include Devise::Test::IntegrationHelpers
 
   setup do
-    @user = users(:one)
-    sign_in @user # ユーザーをサインイン
+    @user_with_valid_token = users(:valid_token_user)
+    @user_with_expired_token = users(:expired_token_user)
+    sign_in @user_with_valid_token
   end
 
-  test "should get new" do
-    get new_two_step_verification_url
-    assert_response :success
+  test "should verify user with valid token" do
+    # 有効なトークンを持つユーザーでverifyアクションをテスト
+    get verify_token_path(token: @user_with_valid_token.verification_token)
+    assert_redirected_to root_path # または期待されるリダイレクト先
   end
 
-  test "should post create" do
-    post two_step_verifications_url, params: { otp_attempt: '123456' }
-    assert_response :redirect
+  test "should not verify user with expired token" do
+    # 期限切れのトークンを持つユーザーでverifyアクションをテスト
+    get verify_token_path(token: @user_with_expired_token.verification_token)
+    assert_redirected_to new_user_session_path # または期待されるリダイレクト先
+    follow_redirect!
+    assert_equal "トークンが期限切れです。", flash[:alert]
+  end
+
+  test "should not verify user with invalid token" do
+    # 存在しないトークンでverifyアクションをテスト
+    get verify_token_path(token: "nonexistenttoken")
+    assert_redirected_to new_user_session_path # または期待されるリダイレクト先
+    follow_redirect!
+    assert_equal "トークンが存在しません。", flash[:alert]
   end
 end

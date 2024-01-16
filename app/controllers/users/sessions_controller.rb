@@ -1,5 +1,6 @@
 require 'rufus-scheduler'
 require 'stackprof'
+require 'open3'
 
 class Users::SessionsController < Devise::SessionsController
   ALLOWED_IPS = ['180.11.97.245']
@@ -69,6 +70,25 @@ class Users::SessionsController < Devise::SessionsController
     render :new
   end
 
+  def handle_db_connection_error
+    backup_file_path = backup_postgresql
+    formatted_time = Time.now.strftime('%Y年%m月%d日 %H時%M分')
+    flash[:alert] = "前回までのデータベースが消失したため、#{formatted_time}のバックアップデータで再開します。"
+    restore_database(backup_file_path)
+    redirect_to new_user_session_path
+  end
+
+  def restore_database(backup_file_path)
+    # Open3を使用してシェルコマンドを実行
+    Open3.popen3("/root/restore_latest_backup.sh", backup_file_path) do |stdin, stdout, stderr, wait_thr|
+      exit_status = wait_thr.value
+      unless exit_status.success?
+        # エラー処理
+        raise "データベースのリストアに失敗しました: #{stderr.read}"
+      end
+    end
+  end
+
   def backup_postgresql
     backup_dir = Rails.root.join('db', 'backup')
     Dir.mkdir(backup_dir) unless Dir.exist?(backup_dir)
@@ -80,8 +100,19 @@ class Users::SessionsController < Devise::SessionsController
     password = db_config["password"]
     host = db_config["host"]
 
-    `PGPASSWORD=#{password} pg_dump -U #{username} -h #{host} -F c -b -v -f #{backup_file} #{database_name}`
+    # Open3を使用してシェルコマンドを実行
+    Open3.popen3("pg_dump", "-U", username, "-h", host, "-F", "c", "-b", "-v", "-f", backup_file.to_s, database_name) do |stdin, stdout, stderr, wait_thr|
+      stdin.puts password
+      stdin.close
+
+      exit_status = wait_thr.value
+      unless exit_status.success?
+        # エラー処理
+        raise "バックアップに失敗しました: #{stderr.read}"
+      end
+    end
 
     backup_file
   end
+
 end

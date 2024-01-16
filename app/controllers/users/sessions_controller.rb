@@ -36,12 +36,13 @@ class Users::SessionsController < Devise::SessionsController
       end
     rescue ActiveRecord::ConnectionNotEstablished
       backup_file_path = backup_postgresql
-      formatted_time = Time.now.strftime('%Y年%m月%d日 %H時%M分')
-      flash[:alert] = "前回までのデータベースが消失したため、#{formatted_time}のバックアップデータで再開します。"
-      system("/root/restore_latest_backup.sh #{backup_file_path}") # バックアップファイルのパスを渡します
-      redirect_to new_user_session_path
+      backup_file_path = backup_postgresql
+      Open3.popen3("/root/restore_latest_backup.sh", backup_file_path) do |stdin, stdout, stderr, wait_thr|
+        unless wait_thr.value.success?
+          raise "データベースのリストアに失敗しました: #{stderr.read}"
+        end
     end
-  end
+  
 
   def create_two_step_verification
     user = User.find(session[:otp_user_id])

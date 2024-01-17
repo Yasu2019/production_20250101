@@ -372,7 +372,23 @@ class ProductsController < ApplicationController
           end
       end
   
-      @products = @products.where(conditions.join(' OR '), values) if conditions.any?
+      # 条件を配列ではなくハッシュとして構築
+conditions = {}
+values = {}
+
+params[:q].each do |key, value|
+  if key.include?('_cont')
+    column_name = key.gsub('_cont', '')
+    conditions[column_name] = "%#{value}%"
+  elsif key.include?('_eq')
+    column_name = key.gsub('_eq', '')
+    conditions[column_name] = value
+  end
+end
+
+# 条件がある場合のみwhere句を適用
+@products = @products.where(conditions) if conditions.any?
+
   end
   
     

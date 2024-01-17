@@ -98,7 +98,20 @@ class Users::SessionsController < Devise::SessionsController
     env = {'PGPASSWORD' => password}
   
     # Open3を使用してシェルコマンドを実行
-    Open3.popen3(env, "pg_dump", "-U", username, "-h", host, "-F", "c", "-b", "-v", "-f", backup_file.to_s, database_name) do |stdin, stdout, stderrame) do |stdin, stdout, stderr, wait_thr|
+# app/controllers/users/sessions_controller.rb
+# ...
+env = {'PGPASSWORD' => password}
+command = ["pg_dump", "-U", username, "-h", host, "-F", "c", "-b", "-v", "-f", backup_file.to_s, database_name]
+
+Open3.popen3(env, *command) do |stdin, stdout, stderr, wait_thr|
+  stdin.close  # stdinは使用しないため閉じる
+  # コマンドの実行結果を待つ
+  exit_status = wait_thr.value
+  unless exit_status.success?
+    # エラー処理
+    raise "バックアップに失敗しました: #{stderr.read}"
+  end
+end
       # パスワードの入力は不要になるため、stdinを閉じる
       stdin.close
 

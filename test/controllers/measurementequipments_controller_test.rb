@@ -1,8 +1,11 @@
 require "test_helper"
 
 class MeasurementequipmentsControllerTest < ActionDispatch::IntegrationTest
+  include Devise::Test::IntegrationHelpers
+
   setup do
     @measurementequipment = measurementequipments(:one)
+    sign_in users(:one)
   end
 
   test "should get index" do
@@ -16,11 +19,25 @@ class MeasurementequipmentsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should create measurementequipment" do
-    assert_difference("Measurementequipment.count") do
-      post measurementequipments_url, params: { measurementequipment: { calibration_in_house_external: @measurementequipment.calibration_in_house_external, categories: @measurementequipment.categories, control_no: @measurementequipment.control_no, external_calibration_laboratory: @measurementequipment.external_calibration_laboratory, laboratory_environmental_conditions: @measurementequipment.laboratory_environmental_conditions, manufacturer: @measurementequipment.manufacturer, measurement_accuracy: @measurementequipment.measurement_accuracy, measuring_instrument_test_equipment: @measurementequipment.measuring_instrument_test_equipment, measuring_range: @measurementequipment.measuring_range, model_name: @measurementequipment.model_name, product_measurement_item: @measurementequipment.product_measurement_item, reference_document_no: @measurementequipment.reference_document_no, remarks: @measurementequipment.remarks, scope_of_internal_testing_laboratories: @measurementequipment.scope_of_internal_testing_laboratories } }
+    assert_difference('Measurementequipment.count') do
+      post measurementequipments_url, params: { measurementequipment: {
+        categories: 'Category',
+        scope_of_internal_testing_laboratories: 'Scope',
+        product_measurement_item: 'Item',
+        measuring_range: 'Range',
+        measuring_instrument_test_equipment: 'Equipment',
+        manufacturer: 'Manufacturer',
+        equipment_model_name: 'ModelName',
+        control_no: 'ControlNo',
+        measurement_accuracy: 'Accuracy',
+        reference_document_no: 'DocumentNo',
+        calibration_in_house_external: 'InHouse',
+        laboratory_environmental_conditions: 'Conditions',
+        external_calibration_laboratory: 'ExternalLab',
+        remarks: 'Remarks'
+      } }
     end
-
-    assert_redirected_to measurementequipment_url(Measurementequipment.last)
+    assert_redirected_to measurementequipment_path(Measurementequipment.last)
   end
 
   test "should show measurementequipment" do
@@ -34,15 +51,18 @@ class MeasurementequipmentsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should update measurementequipment" do
-    patch measurementequipment_url(@measurementequipment), params: { measurementequipment: { calibration_in_house_external: @measurementequipment.calibration_in_house_external, categories: @measurementequipment.categories, control_no: @measurementequipment.control_no, external_calibration_laboratory: @measurementequipment.external_calibration_laboratory, laboratory_environmental_conditions: @measurementequipment.laboratory_environmental_conditions, manufacturer: @measurementequipment.manufacturer, measurement_accuracy: @measurementequipment.measurement_accuracy, measuring_instrument_test_equipment: @measurementequipment.measuring_instrument_test_equipment, measuring_range: @measurementequipment.measuring_range, model_name: @measurementequipment.model_name, product_measurement_item: @measurementequipment.product_measurement_item, reference_document_no: @measurementequipment.reference_document_no, remarks: @measurementequipment.remarks, scope_of_internal_testing_laboratories: @measurementequipment.scope_of_internal_testing_laboratories } }
-    assert_redirected_to measurementequipment_url(@measurementequipment)
+    patch measurementequipment_url(@measurementequipment), params: { measurementequipment: {
+      categories: 'UpdatedCategory',
+      equipment_model_name: 'UpdatedModelName',
+      #他の属性も必要に応じて更新
+    } }
+    assert_redirected_to measurementequipment_path(@measurementequipment)
   end
 
   test "should destroy measurementequipment" do
-    assert_difference("Measurementequipment.count", -1) do
+    assert_difference('Measurementequipment.count', -1) do
       delete measurementequipment_url(@measurementequipment)
     end
-
     assert_redirected_to measurementequipments_url
   end
 end

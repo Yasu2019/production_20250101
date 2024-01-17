@@ -21,8 +21,18 @@ def backup_postgresql
   host = db_config["host"]
 
   # バックアップコマンドの実行
-  backup_command = "PGPASSWORD=#{password} pg_dump -U #{username} -h #{host} -F c -b -v -f #{backup_file} #{database_name}"
-  system(backup_command)
+# バックアップコマンドの実行
+# config/initializers/scheduler.rb
+
+# バックアップコマンドの実行
+Open3.popen3("pg_dump", "-U", username, "-h", host, "-F", "c", "-b", "-v", "-f", backup_file.to_s, database_name) do |stdin, stdout, stderr, wait_thr|
+  unless wait_thr.value.success?
+    error_message = "Backup failed: #{backup_file} with error: #{stderr.read}"
+    Rails.logger.error error_message
+    return { success: false, error: error_message }
+  end
+end
+
 
   # バックアップコマンドの成功を確認
   if $?.success? && File.exist?(backup_file) && File.size?(backup_file) > 0

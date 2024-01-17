@@ -6,8 +6,14 @@ require 'rubyXL/convenience_methods'
 require 'rubyXL/convenience_methods/worksheet'
 require 'rubyXL/convenience_methods/cell'
 require 'csv'
+require 'open-uri'
+require 'nokogiri'
+require 'net/http'
+require 'uri'
+require 'date'
 
 class ProductsController < ApplicationController
+
   before_action :set_product, only: %i[ show edit update destroy ]
   before_action :phase, only: %i[ apqp_approved_report apqp_plan_report process_design_plan_report graph calendar new edit show index index2 index3 index8 index9 download xlsx generate_xlsx]
   #before_action :restrict_ip_address
@@ -310,6 +316,10 @@ class ProductsController < ApplicationController
 
   
   def index
+    
+    # PDFリンクの取得
+    get_pdf_links(['https://www.iatfglobaloversight.org/iatf-169492016/iatf-169492016-sis/', 'https://www.iatfglobaloversight.org/iatf-169492016/iatf-169492016-faqs/'])
+
     allowed_emails = ['yasuhiro-suzuki@mitsui-s.com', 'n_komiya@mitsui-s.com']
 
     # Add user IP to allowed list if user's email is allowed
@@ -2832,11 +2842,6 @@ def insert_rows_to_excel_template_msa
 
 
 
-
-
-
-
-
   end
 
 
@@ -3024,63 +3029,82 @@ def apqp_approved_report_insert_rows_to_excel_template_msa
   end
 
   def phase
-
     #@phases=Phase.all
     @phases = Phase.where(ancestry: nil)
     @pha=Phase.all
-
-    
+  
     #ドロップダウンリストの表示が数字のため、単語で表示するためにdropdownlistを設定。※なぜか288行が勝手に追加されるためSKIPで回避
     dropdownlist=[]
     dropdownlist.push("0")
     @pha.each do |p|
-        if p.name!="SKIP" 
-            dropdownlist.push(p.name)
-        end
+      if p.name!="SKIP" 
+        dropdownlist.push(p.name)
+      end
     end 
     @dropdownlist=dropdownlist
-
+  
     phases_test=[]
     @pha.each do |p|
-    phases_test.push(Phase.find(p.id).children)
-    #@phases_test=Phase.find(p.id).children
+      phases_test.push(Phase.find(p.id).children)
+      #@phases_test=Phase.find(p.id).children
     end
     @phases_test=phases_test
-
-    
-    #@phases1= Phase.find(1).children   # 製品
-    #@phases2= Phase.find(2).children   # 文書
-    #@phases3= Phase.find(3).children   # フェーズ1
-    #@phases4= Phase.find(4).children # フェーズ2
-    #@phases5= Phase.find(5).children # フェーズ3
-    #@phases6= Phase.find(6).children # フェーズ4
-    #@phases7= Phase.find(7).children # フェーズ5
-    #@phases8= Phase.find(8).children # PPAP
-    #@phases9= Phase.find(9).children # 8.3設計・開発
-    #@phases10= Phase.find(10).children # 文書計画
-    #@phases11= Phase.find(11).children # プロセス管理図
-    #@phases12= Phase.find(12).children # 規定
-    #@phases13= Phase.find(13).children # フロー
-    #@phases14= Phase.find(14).children # 手順書
-    #@phases15= Phase.find(15).children # 新規見直し記録
-    #@phases16= Phase.find(16).children # 営業部
-    #@phases17= Phase.find(17).children # 管理部
-    #@phases18= Phase.find(18).children # 生産技術課
-    #@phases19= Phase.find(19).children # 設計課
-    #@phases20= Phase.find(20).children # プレス
-    #@phases21= Phase.find(21).children # 表面処理
-    #@phases22= Phase.find(22).children # 品質保証部
-    #@phases23= Phase.find(23).children # 金型課
-    #@phases24= Phase.find(24).children # 内部監査
-    #@phases25= Phase.find(25).children # 購買先管理
-    #@phases26= Phase.find(26).children # 顧客固有要求事項/外部文書
-    #@phases27= Phase.find(27).children # 材料仕様書
-    #@phases28= Phase.find(28).children # 顧客満足/SPR
-    #@phases29= Phase.find(29).children # スキルマップ
-
-
-  
   end
 
+  def get_pdf_links(urls)
+    @pdf_links = []
+    @days_since_published = []
+    @publish_dates = [] # 発行日を格納するための配列を追加
 
+    urls.each do |url|
+      begin
+        html = URI.open(url, open_timeout: 5, read_timeout: 10) # タイムアウトを設定
+        doc = Nokogiri::HTML(html)
+        links = doc.css('a')
+        links.each do |link|
+          if link['href'].include?('pdf') && link['href'].include?('ja')
+            @pdf_links << link['href']
+            file_name = link['href'].split('/').last
+            days, publish_date = days_since_published(file_name) # 経過日数と発行日を取得
+            @days_since_published << days
+            @publish_dates << publish_date # 発行日を配列に追加
+          end
+        end
+      rescue OpenURI::HTTPError => e
+        Rails.logger.error "HTTPエラーが発生しました: #{e.message}"
+      rescue StandardError => e
+        Rails.logger.error "その他のエラーが発生しました: #{e.message}"
+      end
+    end
+  end
+
+  def days_since_published(file_name)
+    if file_name =~ /([A-Za-z]+)[_-](\d{4})_ja\.pdf$/
+      month_name = $1  # "May"
+      year = $2.to_i  # "2022"
+
+      # 月の名前を数字に変換
+      month = Date::MONTHNAMES.index(month_name.capitalize)
+
+      # 月の名前が有効であることを確認
+      if month
+        # 年と月から日付オブジェクトを作成（月の最初の日を使用）
+        published_date = Date.new(year, month)
+
+        # 現在の日付との差を計算
+        days_since = (Date.today - published_date).to_i
+        return days_since, published_date # 経過日数と発行日を返す
+      else
+        Rails.logger.info "Invalid month name: #{month_name}"
+        return nil, nil
+      end
+    else
+      Rails.logger.info "Could not extract date from file name: #{file_name}"
+      return nil, nil
+    end
+  end
+
+  
 end
+
+

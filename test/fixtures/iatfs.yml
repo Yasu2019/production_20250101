@@ -12,7 +12,7 @@ one:
   policy: MyString
   satisfaction: MyString
   audit: MyString
-  correctiveaction: MyString
+  corrective_action: MyString
 
 two:
   sales: MyString
@@ -26,4 +26,4 @@ two:
   policy: MyString
   satisfaction: MyString
   audit: MyString
-  correctiveaction: MyString
+  corrective_action: MyString

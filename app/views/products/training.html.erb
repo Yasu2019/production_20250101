@@ -1,17 +1,29 @@
+<div class="flex flex-wrap" id="tabs-id">
+  <div class="w-full">
+    <ul class="flex mb-0 list-none flex-wrap pt-3 pb-4 flex-row">
+      <li class="-mb-px mr-2 last:mr-0 flex-auto text-center">
+        <a class="text-xs font-bold uppercase px-5 py-3 shadow-lg rounded block leading-normal text-white bg-lightBlue-600" onclick="changeAtiveTab(event,'tab-profile')">
+           ビデオ教材
+        </a>
+      </li>
+      <li class="-mb-px mr-2 last:mr-0 flex-auto text-center">
+        <a class="text-xs font-bold uppercase px-5 py-3 shadow-lg rounded block leading-normal text-lightBlue-600 bg-white" onclick="changeAtiveTab(event,'tab-settings')">
+           ドキュメント教材
+        </a>
+      </li>
+      <li class="-mb-px mr-2 last:mr-0 flex-auto text-center">
+        <a class="text-xs font-bold uppercase px-5 py-3 shadow-lg rounded block leading-normal text-lightBlue-600 bg-white" onclick="changeAtiveTab(event,'tab-options')">
+           その他
+        </a>
+      </li>
+    </ul>
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+      <div class="px-4 py-5 flex-auto">
+        <div class="tab-content tab-space">
+          <div class="block" id="tab-profile">
+          <div class="btn btn-primary"> <%= link_to "戻る", products_path %></div>
 
-<div class="tab_wrap">
-	<input id="tab1" type="radio" name="tab_btn" checked>
-	<input id="tab2" type="radio" name="tab_btn">
-
-	<div class="tab_area">
-		<label class="tab1_label" for="tab1">ビデオ教材</label>
-		<label class="tab2_label" for="tab2">ドキュメント教材</label>
-  </div>
-
-      <div class="panel_area">
-	      	<div id="panel1" class="tab_panel">
-
-              <section class="text-gray-600 body-font">
+          <section class="text-gray-600 body-font">
                 <div class="container px-5 py-24 mx-auto">
                   <div class="flex flex-wrap w-full mb-20">
                     <div class="lg:w-1/2 w-full mb-6 lg:mb-0">
@@ -77,10 +89,17 @@
                   </div>
                 </div>
               </section>
-         </div>
+            
 
-         <div id="panel2" class="tab_panel">
-             <section class="text-gray-600 body-font">
+
+
+
+
+          </div>
+          <div class="hidden" id="tab-settings">
+          <div class="btn btn-primary"> <%= link_to "戻る", products_path %></div>
+
+          <section class="text-gray-600 body-font">
                 <div class="container px-5 py-24 mx-auto">
                   <div class="flex flex-wrap w-full mb-20">
                     <div class="lg:w-1/2 w-full mb-6 lg:mb-0">
@@ -118,32 +137,54 @@
                 
                 </div>
              </section>
-         </div>
+         
+
+
+
+          </div>
+          <div class="hidden" id="tab-options">
+            <p>
+              Efficiently unleash cross-media information without
+              cross-media value. Quickly maximize timely deliverables for
+              real-time schemas.
+              <br />
+              <br />
+              Dramatically maintain clicks-and-mortar solutions
+              without functional solutions.
+            </p>
+            <div class="btn btn-primary"> <%= link_to "戻る", products_path %></div>
+          </div>
+        </div>
       </div>
-
-
-
+    </div>
+  </div>
 </div>
+<script type="text/javascript">
+  function changeAtiveTab(event,tabID){
+    let element = event.target;
+    while(element.nodeName !== "A"){
+      element = element.parentNode;
+    }
+    ulElement = element.parentNode.parentNode;
+    aElements = ulElement.querySelectorAll("li > a");
+    tabContents = document.getElementById("tabs-id").querySelectorAll(".tab-content > div");
+    for(let i = 0 ; i < aElements.length; i++){
+      aElements[i].classList.remove("text-white");
+      aElements[i].classList.remove("bg-lightBlue-600");
+      aElements[i].classList.add("text-lightBlue-600");
+      aElements[i].classList.add("bg-white");
+      tabContents[i].classList.add("hidden");
+      tabContents[i].classList.remove("block");
+    }
+    element.classList.remove("text-lightBlue-600");
+    element.classList.remove("bg-white");
+    element.classList.add("text-white");
+    element.classList.add("bg-lightBlue-600");
+    document.getElementById(tabID).classList.remove("hidden");
+    document.getElementById(tabID).classList.add("block");
+  }
+</script>
 
 
 
-
-<div class="btn btn-primary"> <%= link_to "戻る", products_path %></div>
-
-
-<style>
-.tab_wrap{width:1200px; margin:80px auto;}
-input[type="radio"]{display:none;}
-.tab_area{font-size:0; margin:0 10px;}
-.tab_area label{width:150px; margin:0 5px; display:inline-block; padding:12px 0; color:#999; background:#ddd; text-align:center; font-size:13px; cursor:pointer; transition:ease 0.2s opacity;}
-.tab_area label:hover{opacity:0.5;}
-.panel_area{background:#fff;}
-.tab_panel{width:100%; padding:80px 0; display:none;}
-.tab_panel p{font-size:14px; letter-spacing:1px; text-align:center;}
-
-#tab1:checked ~ .tab_area .tab1_label{background:#fff; color:#000;}
-#tab1:checked ~ .panel_area #panel1{display:block;}
-#tab2:checked ~ .tab_area .tab2_label{background:#fff; color:#000;}
-#tab2:checked ~ .panel_area #panel2{display:block;}
-</style>
 

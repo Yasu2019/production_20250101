@@ -103,10 +103,15 @@ GEM
       debug_inspector (>= 0.0.1)
     bootsnap (1.17.0)
       msgpack (~> 1.2)
+    brakeman (6.1.1)
+      racc
     builder (3.2.4)
     bullet (7.1.3)
       activesupport (>= 3.0.0)
       uniform_notifier (~> 1.11)
+    bundler-audit (0.9.1)
+      bundler (>= 1.2.0, < 3)
+      thor (~> 1.0)
     byebug (11.1.3)
     cairo (1.17.12)
       native-package-installer (>= 1.0.3)
@@ -433,7 +438,9 @@ DEPENDENCIES
   better_errors
   binding_of_caller
   bootsnap
+  brakeman
   bullet
+  bundler-audit
   caxlsx
   caxlsx_rails
   chartable
@@ -453,6 +460,7 @@ DEPENDENCIES
   kaminari
   letter_opener_web
   memory_profiler
+  nokogiri
   pg (~> 1.1)
   poppler
   propshaft

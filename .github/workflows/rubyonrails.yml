@@ -1,0 +1,51 @@
+name: "Ruby on Rails CI"
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install Ruby and gems
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.1.2
+          bundler-cache: true
+      # 以下にテストに必要なステップを追加します
+      - name: Setup database
+        run: |
+          # データベースのセットアップコマンドをここに記述
+      - name: Run tests
+        run: |
+          # テストを実行するコマンドをここに記述
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install Ruby and gems
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.1.2
+          bundler-cache: true
+      - name: Install Poppler and GObject introspection data
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpoppler-glib-dev gir1.2-poppler-0.18
+      - name: Set permissions for Rails scripts
+        run: chmod +x bin/rails
+      - name: Set permissions for Rake
+        run: chmod +x bin/rake
+      - name: Security audit dependencies
+        run: bundle exec bundler-audit update
+      - name: Security audit application code
+        run: bundle exec brakeman -q -w2
+      - name: Lint Ruby files
+        run: bin/rubocop --parallel

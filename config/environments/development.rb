@@ -2,6 +2,9 @@ require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
 
+  # ログレベルをデバッグに設定
+  config.log_level = :debug
+
 
   #全てのIPからのアクセスを許可する場合
   #config.web_console.allow_authorized_ips = %w(0.0.0.0/0 ::/0)

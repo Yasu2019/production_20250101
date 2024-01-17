@@ -1,5 +1,6 @@
 require 'rufus-scheduler'
 require 'stackprof'
+require 'open3'
 
 # メモリ使用量の履歴を保存する配列（600エントリー分）
 $memory_usages = []
@@ -21,39 +22,36 @@ def backup_postgresql
   host = db_config["host"]
 
   # バックアップコマンドの実行
-# バックアップコマンドの実行
-# config/initializers/scheduler.rb
-
-# バックアップコマンドの実行
-Open3.popen3("pg_dump", "-U", username, "-h", host, "-F", "c", "-b", "-v", "-f", backup_file.to_s, database_name) do |stdin, stdout, stderr, wait_thr|
-  unless wait_thr.value.success?
-    error_message = "Backup failed: #{backup_file} with error: #{stderr.read}"
-    Rails.logger.error error_message
-    return { success: false, error: error_message }
+  env = {'PGPASSWORD' => password}
+  Open3.popen3(env, "pg_dump", "-U", username, "-h", host, "-F", "c", "-b", "-v", "-f", backup_file.to_s, database_name) do |stdin, stdout, stderr, wait_thr|
+    stdin.close # stdinは使用しないため閉じる
+    unless wait_thr.value.success?
+      error_message = "Backup failed: #{backup_file} with error: #{stderr.read}"
+      Rails.logger.error error_message
+      return { success: false, error: error_message }
+    end
   end
-end
-
 
   # バックアップコマンドの成功を確認
-  if $?.success? && File.exist?(backup_file) && File.size?(backup_file) > 0
+  if File.exist?(backup_file) && File.size?(backup_file) > 0
     file_size = File.size(backup_file)
     Rails.logger.info "Backup created successfully: #{backup_file}"
-    return { success: true, file: backup_file, size: file_size }
+    { success: true, file: backup_file, size: file_size }
   else
     error_message = "Backup failed: #{backup_file}"
     Rails.logger.error error_message
-    return { success: false, error: error_message }
+    { success: false, error: error_message }
   end
 end
 
-# 10秒ごとにメモリの使用量を取得
+# 60秒ごとにメモリの使用量を取得
 scheduler.every '60s' do
   memory_usage = `ps -o rss= -p #{Process.pid}`.to_i / 1024  # MB単位
   $memory_usages << memory_usage
   $memory_usages.shift if $memory_usages.length > 600  # 過去1時間（600エントリー）のデータのみ保持
 end
 
-# 60分ごとにメモリの使用量の統計とstackprofの結果を計算してメールを送信
+# 360分ごとにメモリの使用量の統計とstackprofの結果を計算してメールを送信
 scheduler.every '360m' do
   current_memory = $memory_usages.last
   max_memory = $memory_usages.max
@@ -91,11 +89,11 @@ scheduler.every '360m' do
   end
 
   # キャッシュカウントの取得
-cache_counts = {
-  'Product' => Rails.cache.read("products_all")&.count || 0,
-  'Touan' => User.all.sum { |user| (Rails.cache.read("touans_#{user.id}")&.count) || 0 },
-  # 他のモデルも同様に追加
-}
+  cache_counts = {
+    'Product' => Rails.cache.read("products_all")&.count || 0,
+    'Touan' => User.all.sum { |user| (Rails.cache.read("touans_#{user.id}")&.count) || 0 },
+    # 他のモデルも同様に追加
+  }
 
   # メール送信
   begin
@@ -115,3 +113,5 @@ cache_counts = {
     Rails.logger.error "メールの送信に失敗しました: #{e.message}"
   end
 end
+
+  # バックアップの成功/失敗に応じてメ

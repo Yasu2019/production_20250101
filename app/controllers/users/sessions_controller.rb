@@ -41,8 +41,9 @@ class Users::SessionsController < Devise::SessionsController
         unless wait_thr.value.success?
           raise "データベースのリストアに失敗しました: #{stderr.read}"
         end
+      end
     end
-  
+  end
 
   def create_two_step_verification
     user = User.find(session[:otp_user_id])
@@ -114,6 +115,6 @@ class Users::SessionsController < Devise::SessionsController
     end
 
     backup_file
+  
   end
-
 end

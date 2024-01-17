@@ -94,27 +94,27 @@ class Users::SessionsController < Devise::SessionsController
   def backup_postgresql
     backup_dir = Rails.root.join('db', 'backup')
     Dir.mkdir(backup_dir) unless Dir.exist?(backup_dir)
-
+  
     db_config = Rails.configuration.database_configuration[Rails.env]
     backup_file = backup_dir.join("backup_#{Time.now.strftime('%Y%m%d%H%M%S')}.sql")
     database_name = db_config["database"]
     username = db_config["username"]
     password = db_config["password"]
     host = db_config["host"]
-
+  
     # Open3を使用してシェルコマンドを実行
     Open3.popen3("pg_dump", "-U", username, "-h", host, "-F", "c", "-b", "-v", "-f", backup_file.to_s, database_name) do |stdin, stdout, stderr, wait_thr|
       stdin.puts password
       stdin.close
-
+  
       exit_status = wait_thr.value
       unless exit_status.success?
         # エラー処理
         raise "バックアップに失敗しました: #{stderr.read}"
       end
     end
-
-    backup_file
   
+    backup_file
   end
+  
 end

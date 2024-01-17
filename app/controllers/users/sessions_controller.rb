@@ -86,35 +86,23 @@ class Users::SessionsController < Devise::SessionsController
   def backup_postgresql
     backup_dir = Rails.root.join('db', 'backup')
     Dir.mkdir(backup_dir) unless Dir.exist?(backup_dir)
-  
+
     db_config = Rails.configuration.database_configuration[Rails.env]
     backup_file = backup_dir.join("backup_#{Time.now.strftime('%Y%m%d%H%M%S')}.sql")
     database_name = db_config["database"]
     username = db_config["username"]
     password = db_config["password"]
     host = db_config["host"]
-  
+
     # pg_dumpコマンドを実行するための環境変数を設定
     env = {'PGPASSWORD' => password}
-  
+
     # Open3を使用してシェルコマンドを実行
-# app/controllers/users/sessions_controller.rb
-# ...
-env = {'PGPASSWORD' => password}
-command = ["pg_dump", "-U", username, "-h", host, "-F", "c", "-b", "-v", "-f", backup_file.to_s, database_name]
+    command = ["pg_dump", "-U", username, "-h", host, "-F", "c", "-b", "-v", "-f", backup_file.to_s, database_name]
 
-Open3.popen3(env, *command) do |stdin, stdout, stderr, wait_thr|
-  stdin.close  # stdinは使用しないため閉じる
-  # コマンドの実行結果を待つ
-  exit_status = wait_thr.value
-  unless exit_status.success?
-    # エラー処理
-    raise "バックアップに失敗しました: #{stderr.read}"
-  end
-end
-      # パスワードの入力は不要になるため、stdinを閉じる
-      stdin.close
-
+    Open3.popen3(env, *command) do |stdin, stdout, stderr, wait_thr|
+      stdin.close  # stdinは使用しないため閉じる
+      # コマンドの実行結果を待つ
       exit_status = wait_thr.value
       unless exit_status.success?
         # エラー処理
@@ -124,4 +112,4 @@ end
 
     backup_file
   end
-end
+end # このendがクラスの終わりを示します

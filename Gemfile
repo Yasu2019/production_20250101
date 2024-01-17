@@ -241,3 +241,6 @@ gem 'redis'
 gem 'stackprof'
 
 gem 'rufus-scheduler'
+gem 'bundler-audit'
+
+gem 'brakeman'

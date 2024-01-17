@@ -25,6 +25,7 @@ def backup_postgresql
   env = {'PGPASSWORD' => db_config['password']}
 command = ["pg_dump", "-U", db_config['username'], "-h", db_config['host'], "-F", "c", "-b", "-v", "-f", backup_file.to_s, db_config['database']]
 
+# Open3.popen3の呼び出しで、コマンドとその引数を配列として渡す
 Open3.popen3(env, *command) do |stdin, stdout, stderr, wait_thr|
   stdin.close  # stdinは使用しないため閉じる
   # コマンドの実行結果を待つ

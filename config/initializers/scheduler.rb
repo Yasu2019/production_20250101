@@ -22,15 +22,19 @@ def backup_postgresql
   host = db_config["host"]
 
   # バックアップコマンドの実行
-  env = {'PGPASSWORD' => password}
-  Open3.popen3(env, "pg_dump", "-U", username, "-h", host, "-F", "c", "-b", "-v", "-f", backup_file.to_s, database_name) do |stdin, stdout, stderr, wait_thr|
-    stdin.close # stdinは使用しないため閉じる
-    unless wait_thr.value.success?
-      error_message = "Backup failed: #{backup_file} with error: #{stderr.read}"
-      Rails.logger.error error_message
-      return { success: false, error: error_message }
-    end
+  env = {'PGPASSWORD' => db_config['password']}
+command = ["pg_dump", "-U", db_config['username'], "-h", db_config['host'], "-F", "c", "-b", "-v", "-f", backup_file.to_s, db_config['database']]
+
+Open3.popen3(env, *command) do |stdin, stdout, stderr, wait_thr|
+  stdin.close  # stdinは使用しないため閉じる
+  # コマンドの実行結果を待つ
+  exit_status = wait_thr.value
+  unless exit_status.success?
+    # エラー処理
+    Rails.logger.error "バックアップに失敗しました: #{stderr.read}"
   end
+end
+  
 
   # バックアップコマンドの成功を確認
   if File.exist?(backup_file) && File.size?(backup_file) > 0

@@ -102,9 +102,12 @@ class Users::SessionsController < Devise::SessionsController
     password = db_config["password"]
     host = db_config["host"]
   
+    # pg_dumpコマンドを実行するための環境変数を設定
+    env = {'PGPASSWORD' => password}
+  
     # Open3を使用してシェルコマンドを実行
-    Open3.popen3("pg_dump", "-U", username, "-h", host, "-F", "c", "-b", "-v", "-f", backup_file.to_s, database_name) do |stdin, stdout, stderr, wait_thr|
-      stdin.puts password
+    Open3.popen3(env, "pg_dump", "-U", username, "-h", host, "-F", "c", "-b", "-v", "-f", backup_file.to_s, database_name) do |stdin, stdout, stderr, wait_thr|
+      # パスワードの入力は不要になるため、stdinを閉じる
       stdin.close
   
       exit_status = wait_thr.value
@@ -116,5 +119,5 @@ class Users::SessionsController < Devise::SessionsController
   
     backup_file
   end
-  
+
 end

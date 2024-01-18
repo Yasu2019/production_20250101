@@ -3,6 +3,7 @@ require 'rufus-scheduler'
 require 'stackprof'
 require 'open3'
 require 'ipaddr'
+require 'shellwords'
 
 class Users::SessionsController < Devise::SessionsController
   ALLOWED_IPS = ['180.11.97.245']
@@ -89,42 +90,41 @@ class Users::SessionsController < Devise::SessionsController
 
 private
 
-  def backup_postgresql
-    backup_dir = Rails.root.join('db', 'backup')
-    Dir.mkdir(backup_dir) unless Dir.exist?(backup_dir)
+def backup_postgresql
+  backup_dir = Rails.root.join('db', 'backup').to_s
+  Dir.mkdir(backup_dir) unless Dir.exist?(backup_dir)
 
-    db_config = Rails.configuration.database_configuration[Rails.env]
-    timestamp = Time.now.strftime('%Y%m%d%H%M%S')
-    backup_file_name = "backup_#{timestamp}.sql"
-    backup_file = backup_dir.join(backup_file_name)
+  db_config = Rails.configuration.database_configuration[Rails.env]
+  timestamp = Time.now.strftime('%Y%m%d%H%M%S')
+  backup_file_name = "backup_#{timestamp}.sql"
+  backup_file = File.join(backup_dir, backup_file_name)
 
-    # タイムスタンプが適切なフォーマットであることを確認
-    raise "Invalid filename" unless backup_file_name =~ /\Abackup_\d{14}\.sql\z/
+  # タイムスタンプが適切なフォーマットであることを確認
+  raise "Invalid filename" unless backup_file_name =~ /\Abackup_\d{14}\.sql\z/
 
-    database_name = db_config["database"]
-    username = db_config["username"]
-    password = db_config["password"]
-    host = db_config["host"]
+  database_name = db_config["database"]
+  username = Shellwords.escape(db_config["username"])
+  password = Shellwords.escape(db_config["password"])
+  host = Shellwords.escape(db_config["host"])
 
-    # pg_dumpコマンドを実行するための環境変数を設定
-    env = {'PGPASSWORD' => password}
+  # pg_dumpコマンドを実行するための環境変数を設定
+  env = {'PGPASSWORD' => password}
 
-    # Open3を使用してシェルコマンドを実行
-    command = ["pg_dump", "-U", username, "-h", host, "-F", "c", "-b", "-v", "-f", backup_file.to_s, database_name]
+  # Open3を使用してシェルコマンドを実行
+  command = ["pg_dump", "-U", username, "-h", host, "-F", "c", "-b", "-v", "-f", backup_file, database_name]
 
-    Open3.popen3(env, *command) do |stdin, stdout, stderr, wait_thr|
-      stdin.close  # stdinは使用しないため閉じる
-      # コマンドの実行結果を待つ
-      exit_status = wait_thr.value
-      unless exit_status.success?
-        # エラー処理
-        raise "バックアップに失敗しました: #{stderr.read}"
-      end
+  Open3.popen3(env, *command.map { |arg| Shellwords.escape(arg) }) do |stdin, stdout, stderr, wait_thr|
+    stdin.close  # stdinは使用しないため閉じる
+    # コマンドの実行結果を待つ
+    exit_status = wait_thr.value
+    unless exit_status.success?
+      # エラー処理
+      raise "バックアップに失敗しました: #{stderr.read}"
     end
-
-    backup_file
   end
-    
+
+  backup_file
+end
 
 
 

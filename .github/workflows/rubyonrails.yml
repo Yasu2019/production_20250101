@@ -42,6 +42,8 @@ jobs:
         run: chmod +x bin/rails
       - name: Set permissions for Rake
         run: chmod +x bin/rake
+      - name: Set permissions for brakeman.ignore
+        run: chmod 644 brakeman.ignore
       - name: Security audit dependencies
         run: bundle exec bundler-audit update
       - name: Security audit application code

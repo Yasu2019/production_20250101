@@ -5,6 +5,7 @@
   line: 116
   warning_type: 'Command Injection'
 
+
 - file: 'config/initializers/scheduler.rb'
   line: 33
   warning_type: 'Command Injection'

@@ -1,6 +1,3 @@
-# プロジェクトのルートディレクトリにこのファイルを作成
-# brakeman.ignore
-
 ---
 - file: 'app/controllers/users/sessions_controller.rb'
   line: 116

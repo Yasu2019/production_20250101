@@ -83,12 +83,24 @@ class Users::SessionsController < Devise::SessionsController
     end
   end
 
+  # app/controllers/users/sessions_controller.rb
+
+# ...
+
+private
+
   def backup_postgresql
     backup_dir = Rails.root.join('db', 'backup')
     Dir.mkdir(backup_dir) unless Dir.exist?(backup_dir)
 
     db_config = Rails.configuration.database_configuration[Rails.env]
-    backup_file = backup_dir.join("backup_#{Time.now.strftime('%Y%m%d%H%M%S')}.sql")
+    timestamp = Time.now.strftime('%Y%m%d%H%M%S')
+    backup_file_name = "backup_#{timestamp}.sql"
+    backup_file = backup_dir.join(backup_file_name)
+
+    # タイムスタンプが適切なフォーマットであることを確認
+    raise "Invalid filename" unless backup_file_name =~ /\Abackup_\d{14}\.sql\z/
+
     database_name = db_config["database"]
     username = db_config["username"]
     password = db_config["password"]
@@ -112,4 +124,8 @@ class Users::SessionsController < Devise::SessionsController
 
     backup_file
   end
+
+
+
+  
 end # このendがクラスの終わりを示します

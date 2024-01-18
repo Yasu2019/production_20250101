@@ -372,6 +372,7 @@ class ProductsController < ApplicationController
           end
       end
   
+      
       # 条件を配列ではなくハッシュとして構築
 conditions = {}
 values = {}

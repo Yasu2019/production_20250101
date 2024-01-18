@@ -245,4 +245,4 @@ gem 'stackprof'
 
 gem 'bundler-audit'
 
-gem 'brakeman'
+gem 'brakeman', require: false

@@ -1,16 +1,40 @@
 [
   {
-    "fingerprint": "1234567890abcdef",
-    "file": "app/controllers/users/sessions_controller.rb",
-    "line": 116,
     "warning_type": "Command Injection",
-    "note": "False positive - input is properly sanitized"
-  },
-  {
-    "fingerprint": "abcdef1234567890",
+    "warning_code": 14,
+    "fingerprint": "4ef9f6f162181e78eaf7aa6759363add67fe96854eb282fbb0f2d93adfc15597",
+    "check_name": "Execute",
+    "message": "Possible command injection",
     "file": "config/initializers/scheduler.rb",
     "line": 33,
+    "link": "https://brakemanscanner.org/docs/warning_types/command_injection/",
+    "code": "Open3.popen3(...)",
+    "render_path": null,
+    "location": null,
+    "user_input": "Time.now.strftime(\"%Y%m%d%H%M%S\")",
+    "confidence": "Medium",
+    "cwe_id": [77],
+    "note": "warning"
+  },
+  {
     "warning_type": "Command Injection",
-    "note": "Mitigated by another control"
+    "warning_code": 14,
+    "fingerprint": "a6026503b9db91597ff8a82a837e3c1e79f475600d446a539859efca0a1a87b6",
+    "check_name": "Execute",
+    "message": "Possible command injection",
+    "file": "app/controllers/users/sessions_controller.rb",
+    "line": 116,
+    "link": "https://brakemanscanner.org/docs/warning_types/command_injection/",
+    "code": "Open3.popen3(...)",
+    "render_path": null,
+    "location": {
+      "type": "method",
+      "class": "Users::SessionsController",
+      "method": "backup_postgresql"
+    },
+    "user_input": "Time.now.strftime(\"%Y%m%d%H%M%S\")",
+    "confidence": "Medium",
+    "cwe_id": [77],
+    "note": "warning"
   }
 ]

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateTouans < ActiveRecord::Migration[7.0]
   def change
     create_table :touans do |t|
@@ -14,8 +16,7 @@ class CreateTouans < ActiveRecord::Migration[7.0]
       t.integer :user_id
       t.integer :total_answers
       t.integer :correct_answers
-    
-     
+
       t.timestamps
     end
   end

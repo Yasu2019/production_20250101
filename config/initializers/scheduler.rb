@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rufus-scheduler'
 require 'stackprof'
 require 'open3'
@@ -9,40 +11,38 @@ scheduler = Rufus::Scheduler.singleton
 
 def backup_postgresql
   # Ensure the backup directory exists
-  backup_dir = Rails.root.join('db', 'backup')
+  backup_dir = Rails.root.join('db/backup')
   FileUtils.mkdir_p(backup_dir) unless Dir.exist?(backup_dir)
 
   # database.ymlの内容を読み込み
   db_config = Rails.configuration.database_configuration[Rails.env]
 
-  backup_file = backup_dir.join("backup_#{Time.now.strftime('%Y%m%d%H%M%S')}.sql")
-  database_name = db_config["database"]
-  username = db_config["username"]
-  password = db_config["password"]
-  host = db_config["host"]
+  backup_file = backup_dir.join("backup_#{Time.zone.now.strftime('%Y%m%d%H%M%S')}.sql")
+  db_config['database']
+  db_config['username']
+  db_config['password']
+  db_config['host']
 
   # バックアップコマンドの実行
-  env = {'PGPASSWORD' => db_config['password']}
-command = ["pg_dump", "-U", db_config['username'], "-h", db_config['host'], "-F", "c", "-b", "-v", "-f", backup_file.to_s, db_config['database']]
 
-# Open3.popen3の呼び出しで、コマンドとその引数を配列として渡す
-env = {'PGPASSWORD' => db_config['password']}
-command = ["pg_dump", "-U", db_config['username'], "-h", db_config['host'], "-F", "c", "-b", "-v", "-f", backup_file.to_s, db_config['database']]
+  # Open3.popen3の呼び出しで、コマンドとその引数を配列として渡す
+  env = { 'PGPASSWORD' => db_config['password'] }
+  command = ['pg_dump', '-U', db_config['username'], '-h', db_config['host'], '-F', 'c', '-b', '-v', '-f',
+             backup_file.to_s, db_config['database']]
 
-# Open3.popen3の呼び出しで、コマンドとその引数を配列として渡す
-Open3.popen3(env, *command) do |stdin, stdout, stderr, wait_thr|
-  stdin.close  # stdinは使用しないため閉じる
-  # コマンドの実行結果を待つ
-  exit_status = wait_thr.value
-  unless exit_status.success?
-    # エラー処理
-    Rails.logger.error "バックアップに失敗しました: #{stderr.read}"
+  # Open3.popen3の呼び出しで、コマンドとその引数を配列として渡す
+  Open3.popen3(env, *command) do |stdin, _stdout, stderr, wait_thr|
+    stdin.close # stdinは使用しないため閉じる
+    # コマンドの実行結果を待つ
+    exit_status = wait_thr.value
+    unless exit_status.success?
+      # エラー処理
+      Rails.logger.error "バックアップに失敗しました: #{stderr.read}"
+    end
   end
-end
-  
 
   # バックアップコマンドの成功を確認
-  if File.exist?(backup_file) && File.size?(backup_file) > 0
+  if File.exist?(backup_file) && File.size?(backup_file).positive?
     file_size = File.size(backup_file)
     Rails.logger.info "Backup created successfully: #{backup_file}"
     { success: true, file: backup_file, size: file_size }
@@ -55,9 +55,9 @@ end
 
 # 60秒ごとにメモリの使用量を取得
 scheduler.every '60s' do
-  memory_usage = `ps -o rss= -p #{Process.pid}`.to_i / 1024  # MB単位
+  memory_usage = `ps -o rss= -p #{Process.pid}`.to_i / 1024 # MB単位
   $memory_usages << memory_usage
-  $memory_usages.shift if $memory_usages.length > 600  # 過去1時間（600エントリー）のデータのみ保持
+  $memory_usages.shift if $memory_usages.length > 600 # 過去1時間（600エントリー）のデータのみ保持
 end
 
 # 360分ごとにメモリの使用量の統計とstackprofの結果を計算してメールを送信
@@ -91,16 +91,16 @@ scheduler.every '360m' do
   backup_result = backup_postgresql
 
   # バックアップの成功/失敗に応じてメールの内容を変更
-  if backup_result[:success]
-    backup_message = "バックアップに成功しました。ファイルサイズ: #{backup_result[:size]} bytes"
-  else
-    backup_message = backup_result[:error] + "。エラーの詳細を確認してください。"
-  end
+  backup_message = if backup_result[:success]
+                     "バックアップに成功しました。ファイルサイズ: #{backup_result[:size]} bytes"
+                   else
+                     "#{backup_result[:error]}。エラーの詳細を確認してください。"
+                   end
 
   # キャッシュカウントの取得
   cache_counts = {
-    'Product' => Rails.cache.read("products_all")&.count || 0,
-    'Touan' => User.all.sum { |user| (Rails.cache.read("touans_#{user.id}")&.count) || 0 },
+    'Product' => Rails.cache.read('products_all')&.count || 0,
+    'Touan' => User.all.sum { |user| Rails.cache.read("touans_#{user.id}")&.count || 0 }
     # 他のモデルも同様に追加
   }
 
@@ -114,13 +114,13 @@ scheduler.every '360m' do
       avg_memory,
       stackprof_results,
       backup_message,
-      cache_counts  # 追加した引数
+      cache_counts # 追加した引数
     ).deliver_now
 
-    Rails.logger.info "メールが正常に送信されました"
-  rescue => e
+    Rails.logger.info 'メールが正常に送信されました'
+  rescue StandardError => e
     Rails.logger.error "メールの送信に失敗しました: #{e.message}"
   end
 end
 
-  # バックアップの成功/失敗に応じてメ
+# バックアップの成功/失敗に応じてメ

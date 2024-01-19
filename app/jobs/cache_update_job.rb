@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # app/jobs/cache_update_job.rb
 class CacheUpdateJob
   include Sidekiq::Worker
@@ -5,7 +7,7 @@ class CacheUpdateJob
   def perform
     # Productモデルのデータを取得してキャッシュに保存
     products = Product.all.includes(:documents_attachments)
-    Rails.cache.write("products_all", products)
+    Rails.cache.write('products_all', products)
 
     # 全てのユーザーのTouanモデルのデータを取得してキャッシュに保存
     User.find_each do |user|
@@ -14,6 +16,7 @@ class CacheUpdateJob
     end
   end
 end
+
 # app/models/touan.rb
 class Touan < ApplicationRecord
   after_save :update_cache
@@ -22,7 +25,7 @@ class Touan < ApplicationRecord
 
   def update_cache
     # Touanが保存または更新されたときにキャッシュ更新ジョブをトリガー
-    CacheUpdateJob.perform_async(self.user_id)
+    CacheUpdateJob.perform_async(user_id)
   end
 end
 
@@ -37,4 +40,3 @@ class Product < ApplicationRecord
     CacheUpdateJob.perform_async
   end
 end
-

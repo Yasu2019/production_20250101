@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateIatfs < ActiveRecord::Migration[7.0]
   def change
     create_table :iatfs do |t|
@@ -15,7 +17,6 @@ class CreateIatfs < ActiveRecord::Migration[7.0]
       t.string :satisfaction
       t.string :audit
       t.string :corrective_action
-      
 
       t.timestamps
     end

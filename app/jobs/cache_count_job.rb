@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 class CacheCountJob
   include Sidekiq::Worker
 
   def perform(email)
-    products_cache = Rails.cache.read("products_all")
+    products_cache = Rails.cache.read('products_all')
     Rails.logger.info("Read #{products_cache.count} products from cache")
 
     touans_cache = User.all.map { |user| Rails.cache.read("touans_#{user.id}") }
@@ -14,7 +16,7 @@ class CacheCountJob
 
     cache_counts = {
       'Product' => products_cache.count,
-      'Touan' => touans_cache.sum(&:count),
+      'Touan' => touans_cache.sum(&:count)
       # 他のモデルも同様に追加
     }
 

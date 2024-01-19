@@ -1,39 +1,38 @@
+# frozen_string_literal: true
+
 # app/helpers/application_helper.rb
 module ApplicationHelper
   def icon_for_extension(ext)
     case ext
-    when ".xls", ".xlsx", ".xlsm"
+    when '.xls', '.xlsx', '.xlsm'
       'excel.png'
-    when ".pdf"
+    when '.pdf'
       'pdf.png'
-    when ".ppt", ".pptx"
+    when '.ppt', '.pptx'
       'ppt.png'
-    when ".jpg"
+    when '.jpg'
       'jpg.png'
-    when ".png"
+    when '.png'
       'png.png'
-    when ".dxf"
+    when '.dxf'
       'dxf.png'
-    when ".html"
+    when '.html'
       'html.png'
-    when ".accdb"
+    when '.accdb'
       'access.png'
-    when ".doc", ".docx"
+    when '.doc', '.docx'
       'word.png'
-    when ".zip"
+    when '.zip'
       'zip.png'
-    when ".stp", ".stl", ".step", ".igs", ".iges"
+    when '.stp', '.stl', '.step', '.igs', '.iges'
       '3dcad.png'
-    when ".dwg"
+    when '.dwg'
       'dwg.png'
-    when ".mp4"
+    when '.mp4'
       'mp4.png'
-    else
-      nil
     end
   end
 
-  
   def bootstrap_class_for(flash_type)
     {
       success: 'alert-success',
@@ -42,8 +41,4 @@ module ApplicationHelper
       notice: 'alert-info'
     }[flash_type.to_sym] || flash_type.to_s
   end
-  
-
-  
-
 end

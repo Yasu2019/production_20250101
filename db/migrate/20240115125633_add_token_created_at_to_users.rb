@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddTokenCreatedAtToUsers < ActiveRecord::Migration[7.0]
   def change
     add_column :users, :token_created_at, :datetime

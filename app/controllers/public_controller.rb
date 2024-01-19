@@ -1,5 +1,6 @@
-class PublicController < ApplicationController
+# frozen_string_literal: true
 
+class PublicController < ApplicationController
   def favicon
     send_file 'public/favicon.ico', type: 'image/x-icon', disposition: 'inline'
   end
@@ -7,5 +8,4 @@ class PublicController < ApplicationController
   def robots
     send_file 'public/robots.txt', type: 'text/plain', disposition: 'inline'
   end
-  
 end

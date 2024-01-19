@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # app/controllers/verification_controller.rb
 class VerificationController < ApplicationController
   skip_before_action :authenticate_user!, only: [:verify]
@@ -11,38 +13,36 @@ class VerificationController < ApplicationController
 
     # ユーザーが存在する場合のみ、詳細な情報をログに出力
     if user
-        Rails.logger.info("User's stored token: #{user.verification_token}")
-        Rails.logger.info("User's token expiry: #{user.token_expiry}")
-        Rails.logger.info("DEBUG: Token expiry time: #{user.token_expiry}")
+      Rails.logger.info("User's stored token: #{user.verification_token}")
+      Rails.logger.info("User's token expiry: #{user.token_expiry}")
+      Rails.logger.info("DEBUG: Token expiry time: #{user.token_expiry}")
     end
 
     Rails.logger.info("Called from: #{caller.first}")
 
     # /app/ ディレクトリからの呼び出しのみを取得
-    application_calls = caller.select { |line| line.include?("/app/") }[0,3]
+    application_calls = caller.select { |line| line.include?('/app/') }[0, 3]
     application_calls.each_with_index do |call, index|
-        Rails.logger.info("Call #{index + 1}: #{call}")
+      Rails.logger.info("Call #{index + 1}: #{call}")
     end
 
     if user.nil?
-      redirect_to new_user_session_path, alert: "トークンが存在しません。"
+      redirect_to new_user_session_path, alert: 'トークンが存在しません。'
       return
     end
 
     if user.token_expiry < Time.current
-      redirect_to new_user_session_path, alert: "トークンが期限切れです。"
+      redirect_to new_user_session_path, alert: 'トークンが期限切れです。'
       return
     end
 
     if user.token_expiry > Time.current
       # トークンをリセット
-      #user.update(verification_token: nil, token_expiry: nil)
+      # user.update(verification_token: nil, token_expiry: nil)
       sign_in(user)
       redirect_to root_path
     else
-      redirect_to new_user_session_path, alert: "トークンが無効です。"
+      redirect_to new_user_session_path, alert: 'トークンが無効です。'
     end
-end
-
-
+  end
 end

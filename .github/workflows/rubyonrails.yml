@@ -2,9 +2,9 @@ name: "Ruby on Rails CI"
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master" ]  # "master"から"main"に変更された場合
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master" ]  # "master"から"main"に変更された場合
 
 jobs:
   test:
@@ -42,8 +42,8 @@ jobs:
         run: chmod +x bin/rails
       - name: Set permissions for Rake
         run: chmod +x bin/rake
-      - name: Set permissions for brakeman.ignore
-        run: chmod 644 brakeman.ignore
+      - name: Set permissions for RuboCop
+        run: chmod +x bin/rubocop
       - name: Security audit dependencies
         run: bundle exec bundler-audit update
       - name: Security audit application code

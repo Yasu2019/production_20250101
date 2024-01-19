@@ -247,3 +247,5 @@ gem 'stackprof'
 gem 'bundler-audit'
 
 gem 'brakeman', require: false
+
+gem 'rubocop', require: false

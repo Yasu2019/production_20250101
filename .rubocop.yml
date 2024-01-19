@@ -464,3 +464,4 @@ Rails/WhereNot:
 
 Rails/WhereNotWithMultipleConditions:
   Enabled: true
+  

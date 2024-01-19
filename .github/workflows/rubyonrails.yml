@@ -2,9 +2,9 @@ name: "Ruby on Rails CI"
 
 on:
   push:
-    branches: [ "master" ]  # "master"から"main"に変更された場合
+    branches: [ "master" ]
   pull_request:
-    branches: [ "master" ]  # "master"から"main"に変更された場合
+    branches: [ "master" ]
 
 jobs:
   test:
@@ -50,3 +50,18 @@ jobs:
         run: bundle exec brakeman -q -w2 --ignore-config brakeman.ignore
       - name: Lint Ruby files
         run: bin/rubocop --parallel
+      - name: Auto-correct RuboCop offenses
+        run: bin/rubocop --auto-correct
+      - name: Commit changes
+        if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
+        run: |
+          git config --global user.name 'rubocop-autocorrect'
+          git config --global user.email 'rubocop-autocorrect@example.com'
+          git add -A
+          git commit -m 'Auto-correct RuboCop offenses' || true # 変更がなければコミットしない
+      - name: Push changes
+        if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}

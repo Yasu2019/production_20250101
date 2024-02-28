@@ -20,7 +20,7 @@ class TwoStepVerificationsController < ApplicationController
 
     uri = @user.otp_provisioning_uri(label, issuer:)
 
-    Rails.logger.debug("URI: #{uri}")
+    Rails.logger.debug { "URI: #{uri}" }
 
     @qr_code = RQRCode::QRCode.new(uri)
                               .as_png(resize_exactly_to: 200)
@@ -33,7 +33,7 @@ class TwoStepVerificationsController < ApplicationController
     CacheDataJob.perform_async(@user.id)
     Rails.logger.info("Successfully started CacheDataJob for user ID: #{@user.id}")
 
-    Rails.logger.debug("QR Code: #{@qr_code}")
+    Rails.logger.debug { "QR Code: #{@qr_code}" }
   end
 
   def create

@@ -105,81 +105,6 @@ class TouansController < ApplicationController
     redirect_to touans_url # 削除後にリダイレクトするパスを指定
   end
 
-  def destroy
-    @touan = Touan.find(params[:id])
-    @touan.destroy
-    respond_to do |format|
-      format.html { redirect_to touans_url, notice: 'Touan was successfully destroyed.' }
-      format.json { head :no_content }
-    end
-  end
-
-  def new
-    @touan = Touan.new
-    @owner_select = session[:owner_select]
-
-    @user = current_user
-    @testmondais = Testmondai.where(kajyou: params[:kajyou])
-
-    # 全ての Testmondai を取得
-    all_testmondais = Testmondai.where(kajyou: params[:kajyou])
-
-    # 各問題の seikairitsu と total_answers を計算
-    testmondai_stats = all_testmondais.map do |testmondai|
-      total_answers = Touan.where(mondai_no: testmondai.mondai_no, user_id: @user.id).count
-      correct_answers = Touan.where(mondai_no: testmondai.mondai_no, user_id: @user.id, seikai: true).count
-      seikairitsu = correct_answers.to_f / total_answers * 100 if total_answers.positive?
-
-      {
-        testmondai:,
-        seikairitsu: seikairitsu || 0,
-        total_answers:
-      }
-    end
-
-    # seikairitsu と total_answers が低い Testmondai を選ぶ
-    some_threshold_seikairitsu = 0.5
-    some_threshold_total_answers = 5
-
-    low_testmondai_stats = testmondai_stats.select do |stat|
-      stat[:seikairitsu] < some_threshold_seikairitsu && stat[:total_answers] < some_threshold_total_answers
-    end
-
-    # ランダムに10個の Testmondai を選ぶ
-    selected_testmondais = low_testmondai_stats.sample(10).map { |stat| stat[:testmondai] }
-
-    @touans = TouanCollection.new(selected_testmondais, @testmondais, @user)
-  end
-
-  def create
-    @user = current_user # 追加
-    @touans = TouanCollection.new(touans_params, [], @user)
-    if @touans.save
-      grouped_touans = @touans.collection.group_by { |touan| [touan.user_id, touan.created_at.change(usec: 0)] }
-
-      grouped_touans.each do |(_user_id, _created_at), touans|
-        total = touans.size
-        correct_answers = touans.select { |touan| touan.kaito == touan.seikai }.size
-        seikairitsu = correct_answers.to_f / total
-
-        touans.each do |touan|
-          touan.update_attribute(:seikairitsu, seikairitsu)
-        end
-      end
-
-      redirect_to touans_url
-    else
-      render :new
-    end
-  end
-
-  def iatf_csr_mitsui
-    @products = Product.where.not(documentnumber: nil).includes(:documents_attachments)
-    @csrs = Csr.all
-    @iatflists = Iatflist.all
-    @mitsuis = Mitsui.all
-  end
-
   def index
     @user = current_user
     if params[:owner_select].present?
@@ -265,13 +190,88 @@ class TouansController < ApplicationController
     @owner_select_jp = owner_mapping[@owner_select][1]
   end
 
+  def new
+    @touan = Touan.new
+    @owner_select = session[:owner_select]
+
+    @user = current_user
+    @testmondais = Testmondai.where(kajyou: params[:kajyou])
+
+    # 全ての Testmondai を取得
+    all_testmondais = Testmondai.where(kajyou: params[:kajyou])
+
+    # 各問題の seikairitsu と total_answers を計算
+    testmondai_stats = all_testmondais.map do |testmondai|
+      total_answers = Touan.where(mondai_no: testmondai.mondai_no, user_id: @user.id).count
+      correct_answers = Touan.where(mondai_no: testmondai.mondai_no, user_id: @user.id, seikai: true).count
+      seikairitsu = correct_answers.to_f / total_answers * 100 if total_answers.positive?
+
+      {
+        testmondai:,
+        seikairitsu: seikairitsu || 0,
+        total_answers:
+      }
+    end
+
+    # seikairitsu と total_answers が低い Testmondai を選ぶ
+    some_threshold_seikairitsu = 0.5
+    some_threshold_total_answers = 5
+
+    low_testmondai_stats = testmondai_stats.select do |stat|
+      stat[:seikairitsu] < some_threshold_seikairitsu && stat[:total_answers] < some_threshold_total_answers
+    end
+
+    # ランダムに10個の Testmondai を選ぶ
+    selected_testmondais = low_testmondai_stats.sample(10).pluck(:testmondai)
+
+    @touans = TouanCollection.new(selected_testmondais, @testmondais, @user)
+  end
+
+  def create
+    @user = current_user # 追加
+    @touans = TouanCollection.new(touans_params, [], @user)
+    if @touans.save
+      grouped_touans = @touans.collection.group_by { |touan| [touan.user_id, touan.created_at.change(usec: 0)] }
+
+      grouped_touans.each_value do |touans|
+        total = touans.size
+        correct_answers = touans.select { |touan| touan.kaito == touan.seikai }.size
+        seikairitsu = correct_answers.to_f / total
+
+        touans.each do |touan|
+          touan.update_attribute(:seikairitsu, seikairitsu)
+        end
+      end
+
+      redirect_to touans_url
+    else
+      render :new
+    end
+  end
+
+  def destroy
+    @touan = Touan.find(params[:id])
+    @touan.destroy
+    respond_to do |format|
+      format.html { redirect_to touans_url, notice: 'Touan was successfully destroyed.' }
+      format.json { head :no_content }
+    end
+  end
+
+  def iatf_csr_mitsui
+    @products = Product.where.not(documentnumber: nil).includes(:documents_attachments)
+    @csrs = Csr.all
+    @iatflists = Iatflist.all
+    @mitsuis = Mitsui.all
+  end
+
   def kekka
     @touans = Touan.where(created_at: Time.zone.parse(params[:created_at]) - 1.minute..Time.zone.parse(params[:created_at]) + 1.minute)
     @user = current_user
 
     @touans.each do |touan|
-      total_answers = Touan.where(kajyou: touan.kajyou, user_id: current_user.id).where('mondai_no = ?',
-                                                                                        touan.mondai_no).count
+      total_answers = Touan.where(kajyou: touan.kajyou,
+                                  user_id: current_user.id).where(mondai_no: touan.mondai_no).count
       correct_answers = Touan.where(kajyou: touan.kajyou, user_id: current_user.id).where(
         'id <= ? AND mondai_no = ? AND seikai = kaito', touan.id, touan.mondai_no
       ).count

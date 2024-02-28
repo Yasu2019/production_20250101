@@ -11,7 +11,7 @@ class ApplicationController < ActionController::Base
 
     # リストアスクリプトを実行して結果を確認
     if system('/root/restore_latest_backup.sh')
-      flash[:notice] = 'データベースをリストアしました。もし先ほどフォームを送信しようとした場合は、ページを再読み込みして再度送信をお試しください。'
+      flash[:notice] = I18n.t('application_controller.restore_notice')
       redirect_to request.referer || root_path
     else
       render plain: 'データベースのリストアに失敗しました。サポートに連絡してください。', status: :internal_server_error

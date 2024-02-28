@@ -223,6 +223,8 @@ gem 'letter_opener_web', group: :development
 # ログイン画面が表示されたときに、バックグラウンドでデータを事前に読み込み、
 # キャッシュするためには、以下の手順を実施する必要があります：
 
+gem 'rufus-scheduler', '3.6.0'
+
 gem 'redis'
 gem 'sidekiq'
 

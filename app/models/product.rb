@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-
+# comment
 class Product < ApplicationRecord
   has_many_attached :documents
 

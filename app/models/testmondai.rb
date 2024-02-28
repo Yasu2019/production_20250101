@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# このクラスはApplicationRecordを継承し、ActiveRecordの機能を使用しています。
 class Testmondai < ApplicationRecord
   # 【Ruby on Rails】CSVインポート
   # https://qiita.com/seitarooodayo/items/c9d6955a12ca0b1fd1d4

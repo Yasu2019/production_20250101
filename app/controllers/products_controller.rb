@@ -36,7 +36,7 @@ class ProductsController < ApplicationController
   def process_design_plan_report
     @products = Product.where(partnumber: params[:partnumber]) # link_to用
     @all_products = Product.all
-    Rails.logger.debug "params: #{params.inspect}" # 追加
+    Rails.logger.debug { "params: #{params.inspect}" } # 追加
     # @products = Product.where(partnumber: params[:product][:partnumber]) #form_to用
 
     create_data
@@ -50,7 +50,7 @@ class ProductsController < ApplicationController
   def apqp_plan_report
     @products = Product.where(partnumber: params[:partnumber]) # link_to用
     @all_products = Product.all
-    Rails.logger.debug "params: #{params.inspect}" # 追加
+    Rails.logger.debug { "params: #{params.inspect}" } # 追加
     # @products = Product.where(partnumber: params[:product][:partnumber]) #form_to用
 
     create_data_apqp_plan_report
@@ -64,7 +64,7 @@ class ProductsController < ApplicationController
   def apqp_approved_report
     @products = Product.where(partnumber: params[:partnumber]) # link_to用
     @all_products = Product.all
-    Rails.logger.debug "params: #{params.inspect}" # 追加
+    Rails.logger.debug { "params: #{params.inspect}" } # 追加
     # @products = Product.where(partnumber: params[:product][:partnumber]) #form_to用
 
     create_data_apqp_approved_report
@@ -296,10 +296,6 @@ class ProductsController < ApplicationController
     # @user = current_user
   end
 
-  def new
-    @product = Product.new
-  end
-
   def index
     # PDFリンクの取得
     get_pdf_links(['https://www.iatfglobaloversight.org/iatf-169492016/iatf-169492016-sis/', 'https://www.iatfglobaloversight.org/iatf-169492016/iatf-169492016-faqs/'])
@@ -346,7 +342,7 @@ class ProductsController < ApplicationController
       end
 
       # カラム名とデータ型の存在確認 & 排除するカラムか確認
-      next unless Product.column_names.include?(column_name) && !exclude_columns.include?(column_name)
+      next unless Product.column_names.include?(column_name) && exclude_columns.exclude?(column_name)
 
       column_type = Product.columns_hash[column_name].type
 
@@ -373,6 +369,21 @@ class ProductsController < ApplicationController
 
     # 条件がある場合のみwhere句を適用
     @products = @products.where(conditions) if conditions.any?
+  end
+
+  def show
+    # @product = Product.find(params[:id])
+    return unless @product.documents.attached?
+
+    @product.documents.each do |image|
+      fullfilename = rails_blob_path(image)
+      @ext = File.extname(fullfilename).downcase
+      @Attachment_file = @ext == '.jpg' || @ext == '.jpeg' || @ext == '.png' || @ext == '.gif'
+    end
+  end
+
+  def new
+    @product = Product.new
   end
 
   def index2
@@ -494,30 +505,6 @@ class ProductsController < ApplicationController
     temp_file.unlink
   end
 
-  def create
-    @product = Product.new(product_params)
-    if @product.save
-      redirect_to @product, notice: '登録しました。'
-    else
-      render :new
-    end
-  end
-
-  def show
-    # @product = Product.find(params[:id])
-    return unless @product.documents.attached?
-
-    @product.documents.each do |image|
-      fullfilename = rails_blob_path(image)
-      @ext = File.extname(fullfilename).downcase
-      @Attachment_file = if @ext == '.jpg' || @ext == '.jpeg' || @ext == '.png' || @ext == '.gif'
-                           true
-                         else
-                           false
-                         end
-    end
-  end
-
   def edit
     # @product = Product.find(params[:id])
     @title = Product.find(params[:id])
@@ -526,11 +513,16 @@ class ProductsController < ApplicationController
     @product.documents.each do |image|
       fullfilename = rails_blob_path(image)
       @ext = File.extname(fullfilename).downcase
-      @Attachment_file = if @ext == '.jpg' || @ext == '.jpeg' || @ext == '.png' || @ext == '.gif'
-                           true
-                         else
-                           false
-                         end
+      @Attachment_file = @ext == '.jpg' || @ext == '.jpeg' || @ext == '.png' || @ext == '.gif'
+    end
+  end
+
+  def create
+    @product = Product.new(product_params)
+    if @product.save
+      redirect_to @product, notice: '登録しました。'
+    else
+      render :new
     end
   end
 
@@ -1030,7 +1022,7 @@ class ProductsController < ApplicationController
               col = cell_address.gsub(/\d/, '')
               row = cell_address.gsub(/\D/, '').to_i
 
-              col_index = col.chars.map { |char| char.ord - 'A'.ord + 1 }.reduce(0) { |acc, val| acc * 26 + val }
+              col_index = col.chars.map { |char| char.ord - 'A'.ord + 1 }.reduce(0) { |acc, val| (acc * 26) + val }
               [row, col_index]
             end
 
@@ -1622,7 +1614,7 @@ class ProductsController < ApplicationController
     # @msa_crosstab_countの数だけ38行目と39行目の間に内容を挿入
     count.times do |i|
       # row_number = insert_row_number + i  # 正しい行番号を計算
-      row_number = insert_row_number + i * 4 # 正しい行番号を計算
+      row_number = insert_row_number + (i * 4) # 正しい行番号を計算
       worksheet.insert_row(row_number)
       worksheet.insert_row(row_number)
       worksheet.insert_row(row_number)
@@ -1969,7 +1961,7 @@ class ProductsController < ApplicationController
               col = cell_address.gsub(/\d/, '')
               row = cell_address.gsub(/\D/, '').to_i
 
-              col_index = col.chars.map { |char| char.ord - 'A'.ord + 1 }.reduce(0) { |acc, val| acc * 26 + val }
+              col_index = col.chars.map { |char| char.ord - 'A'.ord + 1 }.reduce(0) { |acc, val| (acc * 26) + val }
               [row, col_index]
             end
 
@@ -2352,7 +2344,7 @@ class ProductsController < ApplicationController
               col = cell_address.gsub(/\d/, '')
               row = cell_address.gsub(/\D/, '').to_i
 
-              col_index = col.chars.map { |char| char.ord - 'A'.ord + 1 }.reduce(0) { |acc, val| acc * 26 + val }
+              col_index = col.chars.map { |char| char.ord - 'A'.ord + 1 }.reduce(0) { |acc, val| (acc * 26) + val }
               [row, col_index]
             end
 

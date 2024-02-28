@@ -91,7 +91,7 @@ module Users
 
     def backup_postgresql
       backup_dir = Rails.root.join('db/backup').to_s
-      Dir.mkdir(backup_dir) unless Dir.exist?(backup_dir)
+      FileUtils.mkdir_p(backup_dir)
 
       db_config = Rails.configuration.database_configuration[Rails.env]
       timestamp = Time.zone.now.strftime('%Y%m%d%H%M%S')

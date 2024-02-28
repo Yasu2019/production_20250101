@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-
+# comment
 class DownloadMailer < ApplicationMailer
   default from: 'mitsui.seimitsu.iatf16949@gmail.com'
 

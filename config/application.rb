@@ -36,8 +36,8 @@ module Myapp
     config.i18n.default_locale = :ja
     config.time_zone = 'Tokyo'
     config.active_record.default_timezone = :local
-    config.active_record.encryption.key_derivation_salt = ENV['KEY_DERIVATION_SALT']
-    config.active_record.encryption.primary_key = ENV['PRIMARY_KEY']
+    config.active_record.encryption.key_derivation_salt = ENV.fetch('KEY_DERIVATION_SALT', nil)
+    config.active_record.encryption.primary_key = ENV.fetch('PRIMARY_KEY', nil)
 
     # Don't generate system test files.
     config.generators.system_tests = nil

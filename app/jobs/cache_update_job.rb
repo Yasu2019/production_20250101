@@ -6,7 +6,7 @@ class CacheUpdateJob
 
   def perform
     # Productモデルのデータを取得してキャッシュに保存
-    products = Product.all.includes(:documents_attachments)
+    products = Product.includes(:documents_attachments)
     Rails.cache.write('products_all', products)
 
     # 全てのユーザーのTouanモデルのデータを取得してキャッシュに保存

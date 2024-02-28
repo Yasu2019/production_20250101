@@ -2,19 +2,19 @@
 
 class DownloadsController < ApplicationController
   def verify_password
-    Rails.logger.debug("params[:blob_id]: #{params[:blob_id]}")
+    Rails.logger.debug { "params[:blob_id]: #{params[:blob_id]}" }
 
-    Rails.logger.debug("session[:download_blob_id]: #{session[:download_blob_id]}")
-    Rails.logger.debug("Entered password: #{params[:password]}")
-    Rails.logger.debug("Session password: #{session[:download_password]}")
+    Rails.logger.debug { "session[:download_blob_id]: #{session[:download_blob_id]}" }
+    Rails.logger.debug { "Entered password: #{params[:password]}" }
+    Rails.logger.debug { "Session password: #{session[:download_password]}" }
 
     @document = Product.find(params[:id])
     # ここにログ出力を追加
-    Rails.logger.debug("@document: #{@document.inspect}")
+    Rails.logger.debug { "@document: #{@document.inspect}" }
     session[:download_blob_id] = params[:blob_id]
 
     blob_id = session[:download_blob_id]
-    Rails.logger.debug("Blob ID: #{blob_id}")
+    Rails.logger.debug { "Blob ID: #{blob_id}" }
 
     entered_password = params[:password]
 

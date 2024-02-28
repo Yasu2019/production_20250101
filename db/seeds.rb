@@ -34,7 +34,7 @@ CSV.foreach(Rails.root.join('db/record/attachedfile.csv'), headers: true) do |ro
     if File.file?(file_path)
       product.documents = ActiveStorage::Blob.create_and_upload!(io: File.open(file_path), filename: row['filename'])
     else
-      Rails.logger.debug "Attached File not found: #{file_path}"
+      Rails.logger.debug { "Attached File not found: #{file_path}" }
     end
   else
     Rails.logger.debug 'Attached Filename is empty on csv data'
@@ -42,7 +42,7 @@ CSV.foreach(Rails.root.join('db/record/attachedfile.csv'), headers: true) do |ro
 
   unless product.save
     Rails.logger.error "製品の保存に失敗しました。ドキュメント番号: #{product.documentnumber}。" \
-  "エラー: #{product.errors.full_messages.join(', ')}"
+                       "エラー: #{product.errors.full_messages.join(', ')}"
   end
 end
 
@@ -60,9 +60,6 @@ end
 # 該当のIDのデータが存在するかどうかをチェックし、
 # 存在しない場合は新たに作成、存在する場合は更新を行うことができます。
 
-# CSV.foreach('db/record/login.csv') do |row|
-#  User.create(:id => row[0], :email => row[1], :password => row[2], :name => row[3], :role => row[4],:owner => row[5],:auditor => row[6])
-# end
 
 CSV.foreach('db/record/login.csv') do |row|
   user = User.find_or_initialize_by(id: row[0])
@@ -122,7 +119,7 @@ CSV.foreach(Rails.root.join('db/record/suppliers.csv'), headers: true) do |row|
       if File.file?(file_path)
         blob = ActiveStorage::Blob.create_and_upload!(io: File.open(file_path), filename:)
         supplier.documents.attach(blob)
-        supplier.document_name = document_name  # Update the supplier's document_name
+        supplier.document_name = document_name # Update the supplier's document_name
       else
         Rails.logger.info "ファイルが見つかりません: #{file_path}"
       end

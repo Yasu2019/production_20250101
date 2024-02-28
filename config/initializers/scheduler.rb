@@ -12,7 +12,7 @@ scheduler = Rufus::Scheduler.singleton
 def backup_postgresql
   # Ensure the backup directory exists
   backup_dir = Rails.root.join('db/backup')
-  FileUtils.mkdir_p(backup_dir) unless Dir.exist?(backup_dir)
+  FileUtils.mkdir_p(backup_dir)
 
   # database.ymlの内容を読み込み
   db_config = Rails.configuration.database_configuration[Rails.env]

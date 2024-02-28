@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# comment
 class CreateTouans < ActiveRecord::Migration[7.0]
   def change
     create_table :touans do |t|

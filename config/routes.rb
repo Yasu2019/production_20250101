@@ -18,7 +18,8 @@ Rails.application.routes.draw do
 
   get 'products/export_to_excel', to: 'products#export_to_excel', as: 'export_to_excel_product' # IATF要求事項説明ページ
 
-  get 'measurementequipments/index' => 'measurementequipments#index', as: 'index_measurementequipments' # サプライヤーのインデックスページ
+  get 'measurementequipments/index' => 'measurementequipments#index', as: 'index_measurementequipments'
+
   resources :measurementequipments
 
   get 'suppliers/index' => 'suppliers#index', as: 'index_suppliers' # サプライヤーのインデックスページ
@@ -65,9 +66,11 @@ Rails.application.routes.draw do
   end
   # 追加ここまで
 
-  get 'products/process_design_plan_report' => 'products#process_design_plan_report',    as: 'rubyxl_product' # IATF要求事項説明ページ
-  get 'products/apqp_plan_report'           => 'products#apqp_plan_report',              as: 'rubyxl_apqp_plan_report_product' # IATF要求事項説明ページ
-  get 'products/apqp_approved_report'       => 'products#apqp_approved_report',          as: 'rubyxl_apqp_approved_report_product' # IATF要求事項説明ページ
+  get 'products/process_design_plan_report' => 'products#process_design_plan_report', as: 'rubyxl_product'
+  get 'products/apqp_plan_report' => 'products#apqp_plan_report',
+      as: 'rubyxl_apqp_plan_report_product'
+  get 'products/apqp_approved_report' => 'products#apqp_approved_report',
+      as: 'rubyxl_apqp_approved_report_product'
 
   get 'products/iot' => 'products#iot',                   as: 'iot_product' # IATF要求事項説明ページ
   get 'products/graph' => 'products#graph',               as: 'graph_product'

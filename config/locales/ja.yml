@@ -8,6 +8,12 @@ ja:
       next: "次のページ "
       last: "最終ページ "
       truncate: " … "
+  alerts:
+    login_restricted: '管理者以外はミツイ精密社外からログインできません'
+    invalid_credentials: '無効なEmail又はパスワードです。'
+    token_not_found: 'トークンが存在しません。'
+    token_expired: 'トークンが期限切れです。'
+    token_invalid: 'トークンが無効です。'
   activerecord:
     #https://kossy-web-engineer.hatenablog.com/entry/2018/09/24/115552
     attributes:
@@ -152,6 +158,7 @@ ja:
       too_long: は%{count}文字以内で入力してください
       too_short: は%{count}文字以上で入力してください
       wrong_length: は%{count}文字で入力してください
+      invalid_password: "無効なパスワード"
     template:
       body: 次の項目を確認してください
       header:
@@ -167,7 +174,6 @@ ja:
         create: "保存する"
       login_form:
         create: "ログインする"
-    select:
       prompt: "選択してください。"
     links:
       show: "詳細"
@@ -229,9 +235,3 @@ ja:
       last_word_connector: "、"
       two_words_connector: "、"
       words_connector: "、"
-
-  
- 
-  
-  
-

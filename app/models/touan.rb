@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# このクラスはApplicationRecordを継承し、ActiveRecordの機能を使用しています。
 class Touan < ApplicationRecord
   after_save :update_cache
   # バリデーション

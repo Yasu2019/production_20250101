@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# app/helpers/application_helper.rb
 module ApplicationHelper
   def icon_for_extension(ext)
     case ext
@@ -30,6 +29,8 @@ module ApplicationHelper
       'dwg.png'
     when '.mp4'
       'mp4.png'
+    else
+      'default.png' # デフォルトのアイコンを追加
     end
   end
 

@@ -37,10 +37,10 @@ class DownloadableController < ApplicationController
 
   def verify_password
     Rails.logger.info('verify_password action called')
-    Rails.logger.debug("params[:blob_id]: #{params[:blob_id]}")
-    Rails.logger.debug("session[:download_blob_id]: #{session[:download_blob_id]}")
-    Rails.logger.debug("Entered password: #{params[:password]}")
-    Rails.logger.debug("Session password: #{session[:download_password]}")
+    Rails.logger.debug { "params[:blob_id]: #{params[:blob_id]}" }
+    Rails.logger.debug { "session[:download_blob_id]: #{session[:download_blob_id]}" }
+    Rails.logger.debug { "Entered password: #{params[:password]}" }
+    Rails.logger.debug { "Session password: #{session[:download_password]}" }
 
     # パスワードが提供されていない場合、パスワード入力ページをレンダリング
     unless params[:password]
@@ -50,7 +50,7 @@ class DownloadableController < ApplicationController
 
     session[:download_blob_id] = params[:blob_id]
     blob_id = session[:download_blob_id]
-    Rails.logger.debug("Blob ID: #{blob_id}")
+    Rails.logger.debug { "Blob ID: #{blob_id}" }
 
     entered_password = params[:password]
 

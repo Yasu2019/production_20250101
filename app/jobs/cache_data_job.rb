@@ -5,7 +5,7 @@ class CacheDataJob
 
   def perform(user_id)
     # データを取得
-    products = Product.all.includes(:documents_attachments)
+    products = Product.includes(:documents_attachments)
     Rails.logger.info("Fetched #{products.count} products")
 
     touans = Touan.where(user_id:)

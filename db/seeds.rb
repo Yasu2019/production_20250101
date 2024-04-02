@@ -31,13 +31,19 @@ CSV.foreach(Rails.root.join('db/record/attachedfile.csv'), headers: true) do |ro
 
   if row['filename'].present?
     file_path = Rails.root.join("db/documents/#{row['filename']}")
+
     if File.file?(file_path)
-      product.documents = ActiveStorage::Blob.create_and_upload!(io: File.open(file_path), filename: row['filename'])
+      begin
+        product.documents.attach(io: File.open(file_path), filename: row['filename'])
+        puts "ファイルが正常に添付されました: #{file_path}"
+      rescue => e
+        puts "ファイルの添付に失敗しました: #{file_path}、エラー: #{e.message}"
+      end
     else
-      Rails.logger.debug { "Attached File not found: #{file_path}" }
+      puts "ファイルが見つかりません: #{file_path}"
     end
   else
-    Rails.logger.debug 'Attached Filename is empty on csv data'
+    puts 'CSVデータにファイル名が指定されていません。'
   end
 
   unless product.save

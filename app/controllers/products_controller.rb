@@ -645,6 +645,28 @@ class ProductsController < ApplicationController
       stage = @dropdownlist[pro.stage.to_i]
       Rails.logger.info "pro.stage(number)= #{pro.stage}"
 
+      if stage == 'プロセスフロー図' || stage == 'プロセスフロー図(Phase3)'
+        @processflow_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @processflow_kanryou = pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @processflow_check = '?'
+          @processflow_filename = pro.documents.first.filename.to_s
+        else
+          #@processflow_check = '?'
+        end
+      end
+
+      if stage == 'フロアプランレイアウト'
+        @floor_plan_layout_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @floor_plan_layout_kanryou = pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @floor_plan_layout_check = '?'
+          @floor_plan_layout_filename = pro.documents.first.filename.to_s
+        else
+          #@floor_plan_layout_check = '?'
+        end
+      end
+
       if %w[量産コントロールプラン 試作コントロールプラン].include?(stage)
         @controlplan_yotei = pro.deadline_at.strftime('%y/%m/%d')
         @controlplan_kanryou = pro.end_at.strftime('%y/%m/%d')
@@ -686,9 +708,9 @@ class ProductsController < ApplicationController
             # したがって、セルX36を指定する場合:
             # 行番号: 36 - 1 = 35
             # 列番号: Xは24番目の列なので、24 - 1 = 23
-            @datou_result = worksheet.cell(36, 24)
+            @datou_result = worksheet.cell(36, 24).presence || worksheet.cell(41, 13)
             @datou_person_in_charge = worksheet.cell(39, 22)
-            @datou_kanryou = worksheet.cell(37, 6)
+            @datou_kanryou = worksheet.cell(37, 6).presence || worksheet.cell(43, 4)
             Rails.logger.info '妥当性確認' # 追加
             Rails.logger.info "@partnumber= #{@partnumber}" # 追加
             Rails.logger.info "@datou_result #{@datou_result}" # 追加
@@ -719,7 +741,7 @@ class ProductsController < ApplicationController
                              end
       end
 
-      if stage == 'プロセスFMEA'
+      if stage == 'プロセスFMEA' || stage == 'プロセス故障モード影響解析（PFMEA）'
         @pfmea_yotei = pro.deadline_at.strftime('%y/%m/%d')
         @pfmea_kanryou = pro.end_at.strftime('%y/%m/%d')
         @pfmea_check = if pro.documents.attached?
@@ -762,10 +784,10 @@ class ProductsController < ApplicationController
             # もちろん、空欄の場合に改行が登録されないようにコードを変更することができます。
             # 具体的には、セルの内容が空の文字列である場合、それを配列に含めないようにする必要があります。これを実現するために、配列の生成の際に compact メソッドと reject メソッドを使用して空の文字列を取り除きます。
             # 以下のように変更します：
-            @dr_kanagata_shiteki = (12..28).map { |row| worksheet.cell(row, 1)&.to_s }
-                                           .compact
-                                           .reject(&:empty?)
-                                           .join("\n")
+            
+            @dr_kanagata_shiteki = (12..28).map { |row| worksheet.cell(row, 1)&.to_s }.compact.reject(&:empty?).join("\n")
+            @dr_kanagata_shochi = (12..28).map { |row| worksheet.cell(row, 6)&.to_s }.compact.reject(&:empty?).join("\n")
+            @dr_kanagata_try_kekka = (12..28).map { |row| worksheet.cell(row, 11)&.to_s }.compact.reject(&:empty?).join("\n")
           end
 
           @dr_check = '☑'
@@ -1749,6 +1771,12 @@ class ProductsController < ApplicationController
     @feasibility_check = '☐'
     @kataken_check = '☐'
     @psw_check = '☐'
+    @special_check = '☐'
+    @pf_check = '☐'
+    @process_layout_check = '☐'
+    @crosstab_check = '☐'
+    @kataken_check = '☐'
+
 
     @products.each do |pro|
       @partnumber = pro.partnumber
@@ -1757,15 +1785,16 @@ class ProductsController < ApplicationController
       Rails.logger.info "@pro.stage= #{@dropdownlist[pro.stage.to_i]}"
       stage = @dropdownlist[pro.stage.to_i]
       Rails.logger.info "pro.stage(number)= #{pro.stage}"
+      Rails.logger.info "stage= #{stage}"
 
-      if %w[量産コントロールプラン 試作コントロールプラン].include?(stage)
+      if stage == '量産コントロールプラン' || stage == '試作コントロールプラン' || stage == "先行生産（Pre-launch,量産試作）コントロールプラン"
         @controlplan_yotei = pro.deadline_at.strftime('%y/%m/%d')
         @controlplan_kanryou = pro.end_at.strftime('%y/%m/%d')
         if pro.documents.attached?
           @cp_check = '☑'
           @cp_filename = pro.documents.first.filename.to_s
         else
-          @cp_check = '☐'
+          #@cp_check = '☐'
         end
       end
 
@@ -1774,42 +1803,47 @@ class ProductsController < ApplicationController
         @datou_kanryou = pro.end_at.strftime('%y/%m/%d')
         if pro.documents.attached?
           @datou_check = '☑'
-
+      
           # 変数の設定
           partnumber = pro.partnumber
           pattern = "/myapp/db/documents/*#{partnumber}*妥当性確認記録*"
           Rails.logger.info "Path= #{pattern}"
-
+      
           files = Dir.glob(pattern)
+          if files.empty?
+            Rails.logger.info "該当するファイルが見つかりませんでした。"
+          end
+      
           files.each do |file|
             workbook = nil
-            if File.extname(file) == '.xlsx'
+            case File.extname(file)
+            when '.xlsx'
               workbook = Roo::Excelx.new(file)
-            elsif File.extname(file) == '.xls'
+            when '.xls'
               workbook = Roo::Excel.new(file)
             else
-              break
+              next # 次のファイルへ
             end
-
-            # 最初のシートを取得
-            worksheet = workbook.sheet(0)
-
-            # X36のセルの値を取得
-            # RubyXLライブラリでExcelのセルを参照する際、行と列のインデックスは0から始まります。
-            # したがって、1行1列目のセルは worksheet.cell(1, 1) としてアクセスされます。
-            # したがって、セルX36を指定する場合:
-            # 行番号: 36 - 1 = 35
-            # 列番号: Xは24番目の列なので、24 - 1 = 23
-            @datou_result = worksheet.cell(36, 24)
-            @datou_person_in_charge = worksheet.cell(39, 22)
-            @datou_kanryou = worksheet.cell(37, 6)
-            @datou_filename = pro.documents.first.filename.to_s
-            Rails.logger.info '妥当性確認' # 追加
-            Rails.logger.info "@partnumber= #{@partnumber}" # 追加
-            Rails.logger.info "@datou_result #{@datou_result}" # 追加
+      
+            begin
+              # 最初のシートを取得
+              worksheet = workbook.sheet(0)
+      
+              # セルの値を取得
+              @datou_result = worksheet.cell(36, 24).presence || worksheet.cell(41, 13)
+              @datou_person_in_charge = worksheet.cell(39, 22)
+              @datou_kanryou = worksheet.cell(37, 6).presence || worksheet.cell(43, 4)
+              @datou_filename = pro.documents.first.filename.to_s
+              Rails.logger.info '妥当性確認'
+              Rails.logger.info "@partnumber= #{@partnumber}"
+              Rails.logger.info "@datou_result #{@datou_result}"
+            rescue => e
+              Rails.logger.error "ファイル処理中にエラーが発生しました: #{e.message}"
+            end
           end
         else
           @datou_check = '☐'
+          Rails.logger.info "添付ファイルがありません。"
         end
       end
 
@@ -1820,18 +1854,29 @@ class ProductsController < ApplicationController
           @feasibility_check = '☑'
           @feasibility_filename = pro.documents.first.filename.to_s
         else
-          @feasibility_check = '☐'
+          #@feasibility_check = '☐'
         end
       end
 
-      if stage == 'プロセスFMEA'
-        @pfmea_yotei = pro.deadline_at.strftime('%y/%m/%d')
-        @pfmea_kanryou = pro.end_at.strftime('%y/%m/%d')
+      if stage == 'プロセスフロー図' || stage == 'プロセスフロー図(Phase3)'
+        @processflow_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @processflow_kanryou = pro.end_at.strftime('%y/%m/%d')
         if pro.documents.attached?
-          @pfmea_check = '☑'
-          @pfmea_filename = pro.documents.first.filename.to_s
+          @processflow_check = '☑'
+          @processflow_filename = pro.documents.first.filename.to_s
         else
-          @pfmea_check = '☐'
+          #@processflow_check = '☐'
+        end
+      end
+
+      if stage == '測定システム解析（MSA)' # クロスタブ
+        @crosstab_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @crosstab_kanryou = pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @crosstab_check = '☑'
+          @crosstab_filename = pro.documents.first.filename.to_s
+        else
+          #@crosstab_check = '☐'
         end
       end
 
@@ -1841,13 +1886,131 @@ class ProductsController < ApplicationController
         Rails.logger.info "@psw_yotei #{@psw_yotei}" # 追加
         if pro.documents.attached?
           @psw_check = '☑'
-
+      
           # 変数の設定
           partnumber = pro.partnumber
-          pattern = "/myapp/db/documents/*#{partnumber}*部品提出保証書*"
-          Rails.logger.info "Path= #{pattern}"
+          # 部品提出保証書の前にpartnumberがあるケース
+          pattern1 = "/myapp/db/documents/*#{partnumber}部品提出保証書*"
+          # 部品提出保証書の後にpartnumberがあるケース
+          pattern2 = "/myapp/db/documents/*部品提出保証書*#{partnumber}*"
 
-          files = Dir.glob(pattern)
+          # ログにパターンを出力
+          Rails.logger.info "Pattern1= #{pattern1}"
+          Rails.logger.info "Pattern2= #{pattern2}"
+      
+          # 両方のパターンにマッチするファイルを検索
+          files = Dir.glob(pattern1) + Dir.glob(pattern2)
+          files.each do |file|
+            workbook = nil
+            if File.extname(file) == '.xlsx'
+              workbook = Roo::Excelx.new(file)
+            elsif File.extname(file) == '.xls'
+              workbook = Roo::Excel.new(file)
+            else
+              break
+            end
+      
+            # 最初のシートを取得
+            worksheet = workbook.sheet(0)
+      
+            # X36のセルの値を取得
+            (25..30).each do |row|
+              if worksheet.cell(row, 2)&.to_s == '■'
+                @psw_level = worksheet.cell(row, 3)&.to_s
+                break # 一度見つかったらループを終了
+              end
+            end
+          end # files.each do |file| の終了
+        end # if pro.documents.attached? の終了
+      end # if stage == '部品提出保証書（PSW)' の終了
+
+      if stage == '寸法測定結果' # 型検
+        @kataken_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @kataken_kanryou = pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @kataken_check = '☑'
+          @kataken_filename = pro.documents.first.filename.to_s
+        else
+         #@kataken_check = '☐'
+        end
+      end
+
+      if stage == 'プロセス故障モード影響解析（PFMEA）' ||   stage == 'プロセスFMEA'
+        @pfmea_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @pfmea_kanryou = pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @pfmea_check = '☑'
+          @pfmea_filename = pro.documents.first.filename.to_s
+        else
+          #@pfmea_check = '☐'
+        end
+      end
+
+      if stage == '特性マトリクス'
+        @special_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @special_kanryou = pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @special_check = '☑'
+          @special_filename = pro.documents.first.filename.to_s
+        else
+          #special_check = '☐'
+        end
+      end
+
+      if stage == '工程フロー図'
+        @pf_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @pf_kanryou = pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @pf_check = '☑'
+          @pf_filename = pro.documents.first.filename.to_s
+        else
+          #@pf_check = '☐'
+        end
+      end
+
+
+      if stage == 'フロアプランレイアウト'
+        @floor_plan_layout_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @floor_plan_layout_kanryou = pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @floor_plan_layout_check = '☑'
+          @floor_plan_layout_filename = pro.documents.first.filename.to_s
+        else
+          #@floor_plan_layout_check = '☐'
+        end
+      end
+
+      #if stage == 'プロセスFMEA'
+      #  @pfmea_yotei = pro.deadline_at.strftime('%y/%m/%d')
+      #  @pfmea_kanryou = pro.end_at.strftime('%y/%m/%d')
+      #  if pro.documents.attached?
+      #    @pfmea_check = '☑'
+      #    @pfmea_filename = pro.documents.first.filename.to_s
+      #  else
+      #    #@pfmea_check = '☐'
+      #  end
+      #end
+
+      if stage == '部品提出保証書（PSW)'
+        @psw_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @psw_kanryou = pro.end_at.strftime('%y/%m/%d')
+        Rails.logger.info "@psw_yotei #{@psw_yotei}" # 追加
+        if pro.documents.attached?
+          @psw_check = '☑'
+
+        # 変数の設定
+        partnumber = pro.partnumber
+        # 部品提出保証書の前にpartnumberがあるケース
+        pattern1 = "/myapp/db/documents/*#{partnumber}*部品提出保証書*"
+        # 部品提出保証書の後にpartnumberがあるケース
+        pattern2 = "/myapp/db/documents/*部品提出保証書*#{partnumber}*"
+
+        # ログにパターンを出力
+        Rails.logger.info "Pattern1= #{pattern1}"
+        Rails.logger.info "Pattern2= #{pattern2}"
+
+        # 両方のパターンにマッチするファイルを検索
+        files = Dir.glob(pattern1) + Dir.glob(pattern2)
           files.each do |file|
             workbook = nil
             if File.extname(file) == '.xlsx'
@@ -1878,7 +2041,7 @@ class ProductsController < ApplicationController
             @psw_filename = pro.documents.first.filename.to_s
           end
         else
-          @psw_check = '☐'
+          #@psw_check = '☐'
         end
       end
 
@@ -1915,16 +2078,15 @@ class ProductsController < ApplicationController
             # もちろん、空欄の場合に改行が登録されないようにコードを変更することができます。
             # 具体的には、セルの内容が空の文字列である場合、それを配列に含めないようにする必要があります。これを実現するために、配列の生成の際に compact メソッドと reject メソッドを使用して空の文字列を取り除きます。
             # 以下のように変更します：
-            @dr_kanagata_shiteki = (12..28).map { |row| worksheet.cell(row, 1)&.to_s }
-                                           .compact
-                                           .reject(&:empty?)
-                                           .join("\n")
+            @dr_kanagata_shiteki = (12..28).map { |row| worksheet.cell(row, 1)&.to_s }.compact.reject(&:empty?).join("\n")
+            @dr_kanagata_shochi = (12..28).map { |row| worksheet.cell(row, 6)&.to_s }.compact.reject(&:empty?).join("\n")
+            @dr_kanagata_try_kekka = (12..28).map { |row| worksheet.cell(row, 11)&.to_s }.compact.reject(&:empty?).join("\n")
           end
 
           @dr_check = '☑'
           @dr_check_filename = pro.documents.first.filename.to_s
         else
-          @dr_check = '☐'
+          #@dr_check = '☐'
         end
       end
 
@@ -2009,7 +2171,7 @@ class ProductsController < ApplicationController
           @cpk_check = '☑'
           @cpk_check_filename = pro.documents.first.filename.to_s
         else
-          @cpk_check = '☐'
+          #@cpk_check = '☐'
         end
       end
 
@@ -2114,7 +2276,7 @@ class ProductsController < ApplicationController
             @actual_scr_end = worksheet.cell(5, 6)
           end
         else
-          @scr_check = '☐'
+          #@scr_check = '☐'
         end
       end
 
@@ -2270,6 +2432,8 @@ class ProductsController < ApplicationController
     @pf_inspectoin_check = '☐'
     @pf_release_check = '☐'
     @pf_process_design_check = '☐'
+    @pf_check = '☐'
+    @process_layout_check = '☐'
 
     catch :found do
       @all_products.each do |all|

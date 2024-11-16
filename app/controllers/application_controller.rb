@@ -4,19 +4,21 @@ class ApplicationController < ActionController::Base
   helper ChartDataHelper # ChartDataHelper をインクルード
 
   # データベース関連のエラーを捕捉
-  rescue_from ActiveRecord::StatementInvalid, PG::Error do |exception|
-    # エラーをログに記録
-    Rails.logger.error exception.message
-    Rails.logger.error exception.backtrace.join("\n")
+=begin
+rescue_from ActiveRecord::StatementInvalid, PG::Error do |exception|
+  # エラーをログに記録
+  Rails.logger.error exception.message
+  Rails.logger.error exception.backtrace.join("\n")
 
-    # リストアスクリプトを実行して結果を確認
-    if system('/root/restore_latest_backup.sh')
-      flash[:notice] = I18n.t('application_controller.restore_notice')
-      redirect_to request.referer || root_path
-    else
-      render plain: 'データベースのリストアに失敗しました。サポートに連絡してください。', status: :internal_server_error
-    end
+  # リストアスクリプトを実行して結果を確認
+  if system('/root/restore_latest_backup.sh')
+    flash[:notice] = I18n.t('application_controller.restore_notice')
+    redirect_to request.referer || root_path
+  else
+    render plain: 'データベースのリストアに失敗しました。サポートに連絡してください。', status: :internal_server_error
   end
+end
+=end
 
   # ユーザー認証を要求する
   before_action :authenticate_user!

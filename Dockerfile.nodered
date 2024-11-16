@@ -1,14 +1,16 @@
 # Dockerfile.nodered
-FROM node:20
+FROM node:20.9.0
 
 # 作業ディレクトリを設定する
 WORKDIR /usr/src/nodered
 
-# npmを最新バージョンにアップデートする
-RUN npm install -g npm@latest
+# npmを特定のバージョンにアップデートする
+RUN npm install -g npm@9.8.1
 
-# Node-REDをグローバルにインストールする
-RUN npm install -g --unsafe-perm node-red
+# Node-REDをグローバルにインストールする（キャッシュとタイムアウトを使用）
+RUN --mount=type=cache,target=/root/.npm \
+    npm set cache /root/.npm && \
+    npm install -g --unsafe-perm node-red@3.0.2 --timeout=1000000
 
 # Vimをインストールする
 RUN apt-get update && apt-get install -y vim
@@ -20,10 +22,10 @@ RUN npm install bcryptjs dotenv
 ENV EDITOR=vim
 
 # .envファイルをコピーする
-COPY .env /usr/src/nodered
+COPY .env /usr/src/nodered/
 
 # Node-REDの設定ファイルを生成するスクリプトを追加する
-COPY generate-settings.js /usr/src/nodered
+COPY generate-settings.js /usr/src/nodered/
 
 # Node-REDの設定ファイルを生成する
 RUN node generate-settings.js

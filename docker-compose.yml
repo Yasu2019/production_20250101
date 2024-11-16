@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   nodered:
     build:
@@ -64,5 +62,3 @@ volumes:
   shared_data:
   postgresql-data:
     driver: local
-
-

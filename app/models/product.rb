@@ -1,33 +1,42 @@
 # frozen_string_literal: true
-# comment
+
 class Product < ApplicationRecord
   has_many_attached :documents
 
-  # Ransack needs attributes explicitly allowlisted as searchableとエラーが出た時の対処法
-  # https://zenn.dev/nagan/articles/e627918c192265
-
-  def self.ransackable_attributes(_auth_object = nil)
-    %w[category created_at deadline_at description documentcategory documentname documentnumber
-       documentrev documenttype end_at goal_attainment_level id materialcode object partnumber phase stage start_time status tasseido updated_at]
+  # Ransackable attributes
+  def self.ransackable_attributes(auth_object = nil)
+    %w[partnumber materialcode documentname description category phase stage status
+       start_time deadline_at end_at goal_attainment_level_eq]
   end
 
-  # 【Ruby on Rails】CSVインポート
-  # https://qiita.com/seitarooodayo/items/c9d6955a12ca0b1fd1d4
+  # Ransackable associations
+  def self.ransackable_associations(auth_object = nil)
+    []
+  end
 
+  # Ransackable scopes
+  def self.ransackable_scopes(auth_object = nil)
+    [:start_time_between, :deadline_at_between, :end_at_between, :goal_attainment_level_gteq]
+  end
+  
+  # Scopes for date and numeric fields
+  scope :start_time_between, ->(start_date, end_date) { where(start_time: start_date..end_date) }
+  scope :deadline_at_between, ->(start_date, end_date) { where(deadline_at: start_date..end_date) }
+  scope :end_at_between, ->(start_date, end_date) { where(end_at: start_date..end_date) }
+  scope :goal_attainment_level_gteq, ->(value) { where('goal_attainment_level >= ?', value) }
+
+  # CSV import method
   def self.import(file)
     CSV.foreach(file.path, headers: true) do |row|
-      # IDが見つかれば、レコードを呼び出し、見つかれなければ、新しく作成
       product = find_by(id: row['id']) || new
-      # CSVからデータを取得し、設定する
       product.attributes = row.to_hash.slice(*updatable_attributes)
-      # 保存する
       product.save
     end
   end
 
-  # 更新を許可するカラムを定義
+  # Updatable attributes for CSV import
   def self.updatable_attributes
-    %w[id partnumber materialcode documentname description category phase stage start_time
-       deadline_at end_at goal_attainment_level status]
+    %w[id partnumber materialcode documentname description category phase stage 
+       start_time deadline_at end_at goal_attainment_level status]
   end
 end

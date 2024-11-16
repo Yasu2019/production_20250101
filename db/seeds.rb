@@ -1,56 +1,78 @@
 # frozen_string_literal: true
+# frozen_string_literal: true
 
 require 'csv'
 
 # active storage使用時のseedファイル作成方法（ruby on rails）
 # https://qiita.com/taiki-nd/items/1dd37d6093b3f0f659ad
 
-CSV.foreach(Rails.root.join('db/record/attachedfile.csv'), headers: true) do |row|
-  product = Product.new
-  product.category = row['category']
-  product.partnumber = row['partnumber']
-  product.materialcode = row['materialcode']
-  product.phase = row['phase']
-  product.stage = row['stage']
-  product.description = row['description']
-  product.status = row['status']
-  product.documenttype = row['documenttype']
-  product.documentname = row['documentname']
-  product.documentrev = row['documentrev']
-  product.documentcategory = row['documentcategory']
+$row_count = 0
+$error_count = 0
 
-  # documentnumberが空白である場合はnilに設定
-  product.documentnumber = row['documentnumber'].present? ? row['documentnumber'].strip : nil
+ActiveRecord::Base.transaction do
+  CSV.foreach(Rails.root.join('db/record/attachedfile.csv'), headers: true) do |row|
+    $row_count += 1
+    begin
+      #puts "処理中の行: #{$row_count}"
 
-  product.start_time = row['start_time']
-  product.deadline_at = row['deadline_at']
-  product.end_at = row['end_at']
-  product.goal_attainment_level = row['goal_attainment_level']
-  product.tasseido = row['tasseido']
-  product.object = row['object']
+      product = Product.find_or_initialize_by(documentnumber: row['documentnumber'])
+      product.category = row['category']
+      product.partnumber = row['partnumber']
+      product.materialcode = row['materialcode']
+      product.phase = row['phase']
+      product.stage = row['stage']
+      product.description = row['description']
+      product.status = row['status']
+      product.documenttype = row['documenttype']
+      product.documentname = row['documentname']
+      product.documentrev = row['documentrev']
+      product.documentcategory = row['documentcategory']
+  
+      # documentnumberが空白である場合はnilに設定
+      product.documentnumber = row['documentnumber'].present? ? row['documentnumber'].strip : nil
+    
+      product.start_time = row['start_time']
+      product.deadline_at = row['deadline_at']
+      product.end_at = row['end_at']
+      product.goal_attainment_level = row['goal_attainment_level']
+      product.tasseido = row['tasseido']
+      product.object = row['object']
 
-  if row['filename'].present?
-    file_path = Rails.root.join("db/documents/#{row['filename']}")
+      if row['filename'].present?
+        file_path = Rails.root.join("db/documents/#{row['filename']}")
 
-    if File.file?(file_path)
-      begin
-        product.documents.attach(io: File.open(file_path), filename: row['filename'])
-        puts "ファイルが正常に添付されました: #{file_path}"
-      rescue => e
-        puts "ファイルの添付に失敗しました: #{file_path}、エラー: #{e.message}"
+        if File.file?(file_path)
+          begin
+            product.documents.attach(io: File.open(file_path), filename: row['filename'])
+            #puts "ファイルが正常に添付されました: #{file_path}"
+          rescue => e
+            puts "ファイルの添付に失敗しました: #{file_path}、エラー: #{e.message}"
+          end
+        else
+          puts "ファイルが見つかりません: #{file_path}"
+        end
+      else
+        puts 'CSVデータにファイル名が指定されていません。'
       end
-    else
-      puts "ファイルが見つかりません: #{file_path}"
+
+      unless product.save
+        $error_count += 1
+        puts "行 #{$row_count}: 製品の保存に失敗しました。ドキュメント番号: #{product.documentnumber}。" \
+             "エラー: #{product.errors.full_messages.join(', ')}"
+      end
+    rescue => e
+      $error_count += 1
+      puts "行 #{$row_count}: エラーが発生しました: #{e.message}"
     end
-  else
-    puts 'CSVデータにファイル名が指定されていません。'
   end
 
-  unless product.save
-    Rails.logger.error "製品の保存に失敗しました。ドキュメント番号: #{product.documentnumber}。" \
-                       "エラー: #{product.errors.full_messages.join(', ')}"
-  end
+  puts "処理完了。合計 #{$row_count} 行を処理しました。エラー数: #{$error_count}"
+
+  # ... (残りのコードは変更なし)
+
+  # 他のCSV処理も同様にこのトランザクション内に含めます
 end
+# ... (残りのコードは変更なし)
 
 # CSV.foreach('db/category.csv') do |row|
 #  Phase.create(:id => row[0], :name => row[1], :ancestry => row[2])

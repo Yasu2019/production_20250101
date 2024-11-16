@@ -167,7 +167,7 @@ xl	1280px	@media (min-width: 1280px) { ... }
 
                 <li><div class="text-gray-700 hover:text-indigo-600 text-xs lg:text-gray-700 hover:text-indigo-600 text-lg ">
                     <%= "図番" %> <br>
-                    <%= f.collection_select :partnumber_eq, Product.select(:partnumber).distinct.order(:partnumber), :partnumber, :partnumber,  include_blank: '指定なし'  %>
+                    <%= f.collection_select :partnumber_eq, Product.select(:partnumber).distinct.order(:partnumber), :partnumber, :partnumber, { include_blank: '指定なし' }, { class: 'form-control' } %>
                 </div></li>
 
                 <li><div class="text-gray-700 hover:text-indigo-600 text-xs lg:text-gray-700 hover:text-indigo-600 text-lg ">
@@ -211,73 +211,58 @@ xl	1280px	@media (min-width: 1280px) { ... }
     <div class="hidden lg:inline-block w-1/6 fixed top-0 left-0">
     -->
 
-    <div class="hidden lg:inline-block w-1/6">
-
-    <div class="bg-white py-3 px-4 rounded-lg flex justify-around items-center">
-    <!-- 検索フォームのname属性とid属性を追加 -->
+<div class="hidden lg:inline-block w-1/6">
+  
+  <div class="bg-white py-3 px-4 rounded-lg flex justify-around items-center">
     <input type="text" id="searchInput" placeholder="search" class="bg-gray-100 rounded-md outline-none pl-2 ring-indigo-700 w-full mr-2 p-2">
     <span id="searchTrigger">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path class="search-icon" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path class="search-icon" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
     </span>
-</div>
+  </div>
+  
 
-<div>
-<label>
-    <input type="radio" name="searchType" value="exact" checked> 完全一致検索
-</label>
-<label>
-    <input type="radio" name="searchType" value="contains"> 部分一致検索
-</label>
-</div>
 
 <script>
 $(document).ready(function(){
-    // 定数：すべての商品カラム
-    const allProductColumns = [
-        "category", "partnumber", "materialcode", "phase", "stage", "description", 
-        "status", "documenttype", "documentname", "documentrev", "documentcategory", 
-        "documentnumber", "start_time", "deadline_at", "end_at", 
-        "goal_attainment_level", "tasseido", "object"
-    ];
+  const allProductColumns = [
+    "category", "partnumber", "materialcode", "phase", "stage", "description", 
+    "status", "documenttype", "documentname", "documentrev", "documentcategory", 
+    "documentnumber", "start_time", "deadline_at", "end_at", 
+    "goal_attainment_level", "tasseido", "object"
+  ];
 
-    /**
-     * 検索クエリの構築
-     * @param {string} searchValue 検索値
-     * @param {string} searchType 検索タイプ（exactまたはcont）
-     * @returns {string} 構築されたクエリストリング
-     */
-    function buildSearchQuery(searchValue, searchType) {
-        return allProductColumns.map(column => {
-            const queryKey = searchType === 'exact' ? `q[${column}_eq]` : `q[${column}_cont]`;
-            return `${queryKey}=${encodeURIComponent(searchValue)}`;
-        }).join("&");
+  function buildSearchQuery(searchValue) {
+  const queryParts = allProductColumns.map(column => {
+    if (column === "goal_attainment_level") {
+      return `q[goal_attainment_level_eq]=${encodeURIComponent(searchValue)}`;
+    } else {
+      return `q[${column}_cont]=${encodeURIComponent(searchValue)}`;
     }
+  });
+  return `q[m]=or&${queryParts.join("&")}`;
+}
 
-    /**
-     * 検索を実行
-     */
-    function performSearch() {
-        const searchValue = $('#searchInput').val();
-        const searchType = $('input[name="searchType"]:checked').val();
-        const searchQuery = buildSearchQuery(searchValue, searchType);
+  function performSearch() {
+    const searchValue = $('#searchInput').val();
+    const searchQuery = buildSearchQuery(searchValue);
+    console.log("Search Query:", searchQuery);
+    console.log("Search value:", searchValue);
+    console.log("Generated search query:", searchQuery);
+    window.location.href = `/products?${searchQuery}`;
+  }
 
-        window.location.href = `/products?${searchQuery}`;
+  $('#searchInput').on('keyup', function(e){
+    if (e.key === "Enter" || e.keyCode === 13) {
+      performSearch();
     }
+  });
 
-    // イベントハンドラ：検索入力でEnterキーが押されたとき
-    $('#searchInput').on('keyup', function(e){
-        if (e.key === "Enter" || e.keyCode === 13) {
-            performSearch();
-        }
-    });
-
-    // イベントハンドラ：検索トリガがクリックされたとき
-    $('#searchTrigger').on('click', function(){
-        $('.search-icon').addClass('clicked');
-        performSearch();
-    });
+  $('#searchTrigger').on('click', function(){
+    $('.search-icon').addClass('clicked');
+    performSearch();
+  });
 });
 </script>
 
@@ -368,7 +353,7 @@ $(document).ready(function(){
 
 
                     <!--
-                    #RailsでAxlsxを使ってxlsxを生成
+                    #Railsて゛Axlsxを使ってxlsxを生成
                     #https://qiita.com/necojackarc/items/0dbd672b2888c30c5a38
                     -->
 
@@ -440,6 +425,18 @@ $(document).ready(function(){
                     <%= form.submit "測定機器リスト",class:"btn btn-primary btn-sm" %>
                     <% end %>
                     </li>
+
+                    <li class="py-1 border-b-2">
+                    <%= link_to "監査是正報告書", audit_correction_report_products_path, class: "btn btn-primary btn-sm" %>
+                    </li>
+
+                    <li class="py-1 border-b-2">
+                    <%= link_to "内部監査改善の機会一覧表", audit_improvement_opportunity_products_path, class: "btn btn-primary btn-sm" %>
+                    </li>
+
+                    <li class="py-1 border-b-2">
+                    <%= link_to "工程内不適合品管理票/是正・予防処置管理票", in_process_nonconforming_product_control_form_products_path, class: "btn btn-primary btn-sm" %>
+                    </li>
                 
                     <%= form_with(url: rubyxl_product_path, method: :get, local: true, html: { id: 'product-form' }) do |form| %>
                       <%= form.label :"図番選択" %>
@@ -459,30 +456,36 @@ $(document).ready(function(){
                     <% end %>
                     <%= button_to "APQP総括・承認書", "#", id: "apqp_approved_submit-button", class: "btn btn-primary" %>
 
-<br>
-
-<div class="bg-indigo-300">
-<% if @pdf_links.present? && @days_since_published.present? && @publish_dates.present? %>
-  <h2 class="text-lg underline mb-4 text-center">IATF SIs FQAs Links</h2>
-  <div class="flex justify-center space-x-8">
-    <div class="text-center">
-      <% if @pdf_links[0].include?('SIs') %>
-        <%= link_to 'SIs Link', @pdf_links[0], class: "btn btn-accent", target: "_blank" %>
-        <p>発行日: <%= I18n.l(@publish_dates[0], format: :year_month) %></p>
-        <p>発行後<%= @days_since_published[0] %>日</p>
-      <% end %>
+　　　　　<br>
+        
+<div class="bg-indigo-300 p-4 mt-4">
+  <% if @pdf_links.present? && @days_since_published.present? && @publish_dates.present? %>
+    <h2 class="text-lg font-bold underline mb-4 text-center">IATF SIs FQAs Links</h2>
+    <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8">
+      <div class="text-center">
+        <% if @pdf_links[0].present? && @pdf_links[0].include?('SIs') %>
+          <%= link_to 'SIs Link', @pdf_links[0], class: "btn btn-accent mb-2", target: "_blank" %>
+          <p class="text-sm">発行日: <%= I18n.l(@publish_dates[0], format: :year_month) %></p>
+          <p class="text-sm">発行後<%= @days_since_published[0] %>日</p>
+        <% else %>
+          <p class="text-sm font-semibold">SIs PDFが見つかりません</p>
+        <% end %>
+      </div>
+      <div class="text-center">
+        <% if @pdf_links[1].present? && @pdf_links[1].include?('FAQs') %>
+          <%= link_to 'FAQs Link', @pdf_links[1], class: "btn btn-accent mb-2", target: "_blank" %>
+          <p class="text-sm">発行日: <%= I18n.l(@publish_dates[1], format: :year_month) %></p>
+          <p class="text-sm">発行後<%= @days_since_published[1] %>日</p>
+        <% else %>
+          <p class="text-sm font-semibold">FAQs PDFが見つかりません</p>
+        <% end %>
+      </div>
     </div>
-    <div style="width: 2em;"></div> <!-- 2文字分のスペース -->
-    <div class="text-center">
-      <% if @pdf_links[1].include?('FAQs') %>
-        <%= link_to 'FAQs Link', @pdf_links[1], class: "btn btn-accent", target: "_blank" %>
-        <p>発行日: <%= I18n.l(@publish_dates[1], format: :year_month) %></p>
-        <p>発行後<%= @days_since_published[1] %>日</p>
-       <% end %>
-    </div>
-  </div>
-<% end %>
+  <% else %>
+    <p class="text-center text-sm font-semibold">IATF SIs FQAs情報が利用できません</p>
+  <% end %>
 </div>
+        
 
                     
                     <script>
@@ -544,79 +547,76 @@ $(document).ready(function(){
         </thead>
   
         <tbody>
-        <% @products.each do |pro| %>
-              <tr>
-                <% if pro.partnumber=="" || pro.partnumber==nil %>
-                    <td class="border-2 border-blue-900 "><%= "----" %></td>
-                <% else %>
-                    <td class="border-2 border-blue-900 "><%= pro.partnumber %></td>
-                <% end %>
-                
-                <% if pro.materialcode=="" || pro.materialcode==nil  %>
-                    <td class="border-2 border-blue-900 "><%= "----" %></td>
-                <% else %>
-                    <td class="border-2 border-blue-900 "><%= pro.materialcode %></td>
-                <% end %>
+  <% if @products.any? %>
+    <% @products.each_with_index do |pro, index| %>
+      <% if index == 0 %>
+        <tr>
+          <td colspan="16">
+            <div style="font-size: 0.8em; color: #666; overflow-wrap: break-word; word-wrap: break-word;">
+            <!--  Debug: <%= pro.attributes.inspect %> -->
+            </div>
+          </td>
+        </tr>
+      <% end %>
+      <tr>
+        <% if pro.partnumber=="" || pro.partnumber==nil %>
+            <td class="border-2 border-blue-900 "><%= "----" %></td>
+        <% else %>
+            <td class="border-2 border-blue-900 "><%= pro.partnumber %></td>
+        <% end %>
+        
+        <% if pro.materialcode=="" || pro.materialcode==nil  %>
+            <td class="border-2 border-blue-900 "><%= "----" %></td>
+        <% else %>
+            <td class="border-2 border-blue-900 "><%= pro.materialcode %></td>
+        <% end %>
 
-                <% if pro.documentname=="" || pro.documentname==nil  %>
-                    <td class="border-2 border-blue-900 "><%= "----" %></td>
-                <% else %>
-                    <td class="border-2 border-blue-900 "><%= pro.documentname %></td>
-                <% end %>
-                <% if pro.description=="" || pro.description==nil  %>
-                    <td class="border-2 border-blue-900 "><%= "----" %></td>
-                <% else %>
-                    <td class="border-2 border-blue-900 "><div class="line-clamp-3"><%= pro.description %></div></td>
-                <% end %>
+        <% if pro.documentname=="" || pro.documentname==nil  %>
+            <td class="border-2 border-blue-900 "><%= "----" %></td>
+        <% else %>
+            <td class="border-2 border-blue-900 "><%= pro.documentname %></td>
+        <% end %>
+        <% if pro.description=="" || pro.description==nil  %>
+            <td class="border-2 border-blue-900 "><%= "----" %></td>
+        <% else %>
+            <td class="border-2 border-blue-900 "><div class="line-clamp-3"><%= pro.description %></div></td>
+        <% end %>
 
-                <td class="border-2 border-blue-900 "><%= @dropdownlist[pro.category.to_i] %></td>
-                <td class="border-2 border-blue-900 "><div class="line-clamp-3"><%= @dropdownlist[pro.phase.to_i] %></div></td>
-                <!--
-                【Tailwind CSS】長い文字列を三点リーダー（…）で省略する方法
-                https://zenn.dev/ilove/articles/8a93705d396e05
-                -->
-                <td class="border-2 border-blue-900 "><div class="line-clamp-3"> <%= @dropdownlist[pro.stage.to_i] %></div></td>
-                <!--【初心者向け・動画付き】Railsで日時をフォーマットするときはstrftimeよりも、lメソッドを使おう
-                https://qiita.com/jnchito/items/831654253fb8a958ec25
-                -->
+        <td class="border-2 border-blue-900 "><%= @dropdownlist[pro.category.to_i] %></td>
+        <td class="border-2 border-blue-900 "><div class="line-clamp-3"><%= @dropdownlist[pro.phase.to_i] %></div></td>
+        <td class="border-2 border-blue-900 "><div class="line-clamp-3"> <%= @dropdownlist[pro.stage.to_i] %></div></td>
 
-                <!--
-                Tailwind CSS 縦書き対応 :writing-mode
-                https://tech-lab.sios.jp/archives/31882#:~:text=Tailwind%20CSS%20%E7%B8%A6%E6%9B%B8%E3%81%8D%E5%AF%BE%E5%BF%9C%20%3Awriting-mode%201%20%E4%BA%8B%E5%89%8D%E6%BA%96%E5%82%99%20Tailwind%20CSS%E3%81%AE%E7%92%B0%E5%A2%83%E6%A7%8B%E7%AF%89%E3%81%AF%E3%80%81,...%203%20Plugin%E3%81%A7%E8%A9%A6%E3%81%99%E7%B8%A6%E6%9B%B8%E3%81%8D%E5%AF%BE%E5%BF%9C%20%E3%81%93%E3%81%A1%E3%82%89%E3%81%AF%E3%80%81%E3%80%8Ctailwind.config.js%E3%80%8D%E3%81%AB%E8%BF%BD%E8%A8%98%E3%81%99%E3%82%8B%E3%81%93%E3%81%A8%E3%81%A7%E5%AE%9F%E7%8F%BE%E3%81%99%E3%82%8B%E3%81%93%E3%81%A8%E3%81%8C%E3%81%A7%E3%81%8D%E3%81%BE%E3%81%99%E3%80%82%20...%204%20%E7%B5%82%E3%82%8F%E3%82%8A%E3%81%AB%20
-                -->
-
-
-                <% if pro.start_time==nil %>
-                      <td class="border-2 border-blue-900 "><div class="vertical-rl lg:horizontal-tb"><%= "------"  %></div></td>
-                <% else %>
-                      <td class="border-2 border-blue-900 "><div class="vertical-rl lg:horizontal-tb"><%= pro.start_time.strftime('%y/%m/%d')  %></div></td>
-                <% end %>
-                <% if pro.deadline_at==nil %>
-                      <td class="border-2 border-blue-900 "><div class="vertical-rl lg:horizontal-tb"><%= "------"  %></div></td>
-                <% else %>
-                      <td class="border-2 border-blue-900 "><div class="vertical-rl lg:horizontal-tb"><%= pro.deadline_at.strftime('%y/%m/%d')  %></div></td>
-                <% end %>
-                <% if pro.end_at==nil %>
-                      <td class="border-2 border-blue-900 "><div class="vertical-rl lg:horizontal-tb"><%= "------"  %></div></td>
-                <% else %>
-                      <td class="border-2 border-blue-900 "><div class="vertical-rl lg:horizontal-tb"><%= pro.end_at.strftime('%y/%m/%d')  %></div></td>
-                <% end %>
-                
-                <td class="border-2 border-blue-900 "><%= pro.goal_attainment_level %></td>
-                <td class="border-2 border-blue-900 "><%= pro.status %></td>
-                <td class="inline-block"><div class="btn btn-accent btn-sm"><%= button_to '詳細表示', product_path(pro), { method: :get, params: pro }  %></div></td>
-                <td class="inline-block"><div class="btn btn-primary btn-sm"><%= button_to '編集', edit_product_path(pro), { method: :get, params: pro } %><div></td>
-                <!--https://katsushi-ougi.com/rails7-method-delete-->
-                <td class="inline-block"><div class="btn btn-secondary btn-sm"> <%= button_to '削除', pro, {method: :delete, data: { confirm: '本当に削除しますか？' } } %></div></td>
-                <!--https://y-i.jp/entry/rails7-form-data-confirm-->
-                <!--Rails7 で button_to の data-confirm の挙動が変わって data.confirm から form.data.confirm に変わってました
-                <td><%= button_to "削除", product_path(pro), { method: :delete, form: { data: { turbo_confirm: "本当に削除しますか？" } } } %></td>
-                -->
-                <td class="inline-block"><%= render partial: "attached_file", locals: { pro: pro }  %></td>
-              </tr>
-          <% end %>
-      <br>
-    </tbody>
+        <% if pro.start_time==nil %>
+              <td class="border-2 border-blue-900 "><div class="vertical-rl lg:horizontal-tb"><%= "------"  %></div></td>
+        <% else %>
+              <td class="border-2 border-blue-900 "><div class="vertical-rl lg:horizontal-tb"><%= pro.start_time.strftime('%y/%m/%d')  %></div></td>
+        <% end %>
+        <% if pro.deadline_at==nil %>
+              <td class="border-2 border-blue-900 "><div class="vertical-rl lg:horizontal-tb"><%= "------"  %></div></td>
+        <% else %>
+              <td class="border-2 border-blue-900 "><div class="vertical-rl lg:horizontal-tb"><%= pro.deadline_at.strftime('%y/%m/%d')  %></div></td>
+        <% end %>
+        <% if pro.end_at==nil %>
+              <td class="border-2 border-blue-900 "><div class="vertical-rl lg:horizontal-tb"><%= "------"  %></div></td>
+        <% else %>
+              <td class="border-2 border-blue-900 "><div class="vertical-rl lg:horizontal-tb"><%= pro.end_at.strftime('%y/%m/%d')  %></div></td>
+        <% end %>
+        
+        <td class="border-2 border-blue-900 "><%= pro.goal_attainment_level %></td>
+        <td class="border-2 border-blue-900 "><%= pro.status %></td>
+        <td class="inline-block"><div class="btn btn-accent btn-sm"><%= button_to '詳細表示', product_path(pro), { method: :get, params: pro }  %></div></td>
+        <td class="inline-block"><div class="btn btn-primary btn-sm"><%= button_to '編集', edit_product_path(pro), { method: :get, params: pro } %><div></td>
+        <td class="inline-block"><div class="btn btn-secondary btn-sm"> <%= button_to '削除', pro, {method: :delete, data: { confirm: '本当に削除しますか？' } } %></div></td>
+        <td class="inline-block"><%= render partial: "attached_file", locals: { pro: pro }  %></td>
+      </tr>
+    <% end %>
+  <% else %>
+    <tr>
+      <td colspan="16">検索結果がありません</td>
+    </tr>
+  <% end %>
+  <br>
+</tbody>
       </table>
       <%= paginate @products %>
       <br>

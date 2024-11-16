@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'active_support/core_ext/integer/time'
+require 'caxlsx'  # この行を追加
 
 Rails.application.configure do
   # ログレベルをデバッグに設定
@@ -34,7 +35,7 @@ Rails.application.configure do
   end
 
   config.after_initialize do
-    Bullet.enable        = true
+    Bullet.enable        = false
     Bullet.alert         = true
     Bullet.bullet_logger = true
     Bullet.console       = true

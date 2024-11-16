@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
+  Rails.logger.debug "ルーティングが読み込まれました"
   get '/favicon.ico', to: 'public#favicon'
   get '/robots.:format' => 'public#robots'
 
@@ -96,17 +97,17 @@ Rails.application.routes.draw do
 
   # resources :products, only: [:new, :create, :show, :edit] do
   resources :products, only: %i[index new create show edit update] do
-    collection { post :import }
+    collection do 
+      post :import
+      get 'export_phases_to_excel'
+      get 'audit_correction_report'  # この行を追加
+      get 'audit_improvement_opportunity'  # この行を追加
+      get 'in_process_nonconforming_product_control_form'  # この行を追加
+      
+    end
     member do
       get 'verify_password/:blob_id', to: 'downloadable#verify_password', as: :product_verify_password
       post 'verify_password/:blob_id', to: 'downloadable#verify_password_post', as: :product_verify_password_post
-      post 'download', to: 'downloadable#download'
-    end
-  end
-
-  resources :suppliers, only: [] do
-    member do
-      get 'verify_password/:blob_id', to: 'downloadable#verify_password', as: :supplier_verify_password
       post 'download', to: 'downloadable#download'
     end
   end

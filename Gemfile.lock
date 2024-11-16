@@ -89,10 +89,6 @@ GEM
       aws-sigv4 (~> 1.8)
     aws-sigv4 (1.8.0)
       aws-eventstream (~> 1, >= 1.0.2)
-    axlsx (1.3.6)
-      htmlentities (~> 4.3.1)
-      nokogiri (>= 1.4.1)
-      rubyzip (>= 0.9.5)
     bcrypt (3.1.20)
     better_errors (2.10.1)
       erubi (>= 1.0.0)
@@ -106,7 +102,7 @@ GEM
       msgpack (~> 1.2)
     brakeman (6.1.1)
       racc
-    builder (3.2.4)
+    builder (3.3.0)
     bullet (7.1.6)
       activesupport (>= 3.0.0)
       uniform_notifier (~> 1.11)
@@ -121,12 +117,12 @@ GEM
     cairo-gobject (4.2.0)
       cairo (>= 1.16.2)
       glib2 (= 4.2.0)
-    caxlsx (4.0.0)
+    caxlsx (4.1.0)
       htmlentities (~> 4.3, >= 4.3.4)
       marcel (~> 1.0)
       nokogiri (~> 1.10, >= 1.10.4)
       rubyzip (>= 1.3.0, < 3)
-    caxlsx_rails (0.6.3)
+    caxlsx_rails (0.6.4)
       actionpack (>= 3.1)
       caxlsx (>= 3.0)
     chartable (0.0.0.3)
@@ -136,7 +132,7 @@ GEM
     chronic (0.10.2)
     chunky_png (1.4.0)
     coderay (1.1.3)
-    concurrent-ruby (1.2.3)
+    concurrent-ruby (1.3.4)
     connection_pool (2.4.1)
     crass (1.0.6)
     cssbundling-rails (1.4.0)
@@ -165,7 +161,7 @@ GEM
       railties (>= 3.2)
     erb-formatter (0.7.1)
       syntax_tree (~> 6.0)
-    erubi (1.12.0)
+    erubi (1.13.0)
     et-orbi (1.2.7)
       tzinfo
     ffi (1.16.3)
@@ -190,7 +186,7 @@ GEM
       activesupport (>= 6.1)
     htmlbeautifier (1.4.2)
     htmlentities (4.3.4)
-    i18n (1.14.1)
+    i18n (1.14.6)
       concurrent-ruby (~> 1.0)
     image_processing (1.12.2)
       mini_magick (>= 4.9.5, < 5)
@@ -235,13 +231,13 @@ GEM
       net-imap
       net-pop
       net-smtp
-    marcel (1.0.2)
+    marcel (1.0.4)
     matrix (0.4.2)
     memory_profiler (1.0.1)
     method_source (1.0.0)
     mini_magick (4.12.0)
     mini_mime (1.1.5)
-    minitest (5.21.2)
+    minitest (5.25.1)
     msgpack (1.7.2)
     native-package-installer (1.1.9)
     net-imap (0.4.9.1)
@@ -254,7 +250,7 @@ GEM
     net-smtp (0.4.0.1)
       net-protocol
     nio4r (2.7.0)
-    nokogiri (1.16.0-x86_64-linux)
+    nokogiri (1.16.7-x86_64-linux)
       racc (~> 1.4)
     orm_adapter (0.5.0)
     parallel (1.24.0)
@@ -291,8 +287,8 @@ GEM
       get_process_mem (~> 0.2)
       puma (>= 2.7)
     raabro (1.4.0)
-    racc (1.7.3)
-    rack (2.2.8)
+    racc (1.8.1)
+    rack (2.2.9)
     rack-mini-profiler (3.3.0)
       rack (>= 1.2.0)
     rack-test (2.1.0)
@@ -437,7 +433,6 @@ DEPENDENCIES
   activestorage-office-previewer
   ancestry
   aws-sdk-s3
-  axlsx
   better_errors
   binding_of_caller
   bootsnap

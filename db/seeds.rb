@@ -1,58 +1,46 @@
 # frozen_string_literal: true
-# frozen_string_literal: true
 
 require 'csv'
 
-# active storage使用時のseedファイル作成方法（ruby on rails）
-# https://qiita.com/taiki-nd/items/1dd37d6093b3f0f659ad
-
+# グローバル変数を使用してカウンターを管理
 $row_count = 0
 $error_count = 0
 
+# ファイル添付用のヘルパーメソッド
+def attach_file(record, file_path, filename)
+  return unless File.file?(file_path)
+  
+  File.open(file_path) do |file|
+    begin
+      record.documents.attach(io: file, filename: filename)
+    rescue => e
+      puts "ファイルの添付に失敗しました: #{file_path}、エラー: #{e.message}"
+    end
+  end
+end
+
+# メインの製品データ処理
 ActiveRecord::Base.transaction do
   CSV.foreach(Rails.root.join('db/record/attachedfile.csv'), headers: true) do |row|
     $row_count += 1
     begin
-      #puts "処理中の行: #{$row_count}"
+      product = Product.find_or_initialize_by(documentnumber: row['documentnumber']&.strip)
+      
+      # 基本属性の設定
+      attributes = %w[
+        category partnumber materialcode phase stage description status
+        documenttype documentname documentrev documentcategory start_time
+        deadline_at end_at goal_attainment_level tasseido object
+      ]
+      
+      attributes.each do |attr|
+        product.send("#{attr}=", row[attr])
+      end
 
-      product = Product.find_or_initialize_by(documentnumber: row['documentnumber'])
-      product.category = row['category']
-      product.partnumber = row['partnumber']
-      product.materialcode = row['materialcode']
-      product.phase = row['phase']
-      product.stage = row['stage']
-      product.description = row['description']
-      product.status = row['status']
-      product.documenttype = row['documenttype']
-      product.documentname = row['documentname']
-      product.documentrev = row['documentrev']
-      product.documentcategory = row['documentcategory']
-  
-      # documentnumberが空白である場合はnilに設定
-      product.documentnumber = row['documentnumber'].present? ? row['documentnumber'].strip : nil
-    
-      product.start_time = row['start_time']
-      product.deadline_at = row['deadline_at']
-      product.end_at = row['end_at']
-      product.goal_attainment_level = row['goal_attainment_level']
-      product.tasseido = row['tasseido']
-      product.object = row['object']
-
+      # ファイル添付処理
       if row['filename'].present?
         file_path = Rails.root.join("db/documents/#{row['filename']}")
-
-        if File.file?(file_path)
-          begin
-            product.documents.attach(io: File.open(file_path), filename: row['filename'])
-            #puts "ファイルが正常に添付されました: #{file_path}"
-          rescue => e
-            puts "ファイルの添付に失敗しました: #{file_path}、エラー: #{e.message}"
-          end
-        else
-          puts "ファイルが見つかりません: #{file_path}"
-        end
-      else
-        puts 'CSVデータにファイル名が指定されていません。'
+        attach_file(product, file_path, row['filename'])
       end
 
       unless product.save
@@ -67,99 +55,92 @@ ActiveRecord::Base.transaction do
   end
 
   puts "処理完了。合計 #{$row_count} 行を処理しました。エラー数: #{$error_count}"
-
-  # ... (残りのコードは変更なし)
-
-  # 他のCSV処理も同様にこのトランザクション内に含めます
 end
-# ... (残りのコードは変更なし)
 
-# CSV.foreach('db/category.csv') do |row|
-#  Phase.create(:id => row[0], :name => row[1], :ancestry => row[2])
-# end
-
+# Phase データの更新
 CSV.foreach('db/category.csv') do |row|
   phase = Phase.find_or_initialize_by(id: row[0])
   phase.update(name: row[1], ancestry: row[2])
 end
 
-# 既存のデータを上書きする:
-# 既存のデータを上書きしたい場合は、find_or_create_byやfind_or_initialize_byを使用して、
-# 該当のIDのデータが存在するかどうかをチェックし、
-# 存在しない場合は新たに作成、存在する場合は更新を行うことができます。
-
-
+# User データの更新
 CSV.foreach('db/record/login.csv') do |row|
   user = User.find_or_initialize_by(id: row[0])
-  user.update(email: row[1], password: row[2], name: row[3], role: row[4], owner: row[5], auditor: row[6])
+  user.update(
+    email: row[1],
+    password: row[2],
+    name: row[3],
+    role: row[4],
+    owner: row[5],
+    auditor: row[6]
+  )
 end
 
+# Measurementequipment データの作成
 CSV.foreach('db/record/measurement_equipment.csv') do |row|
-  measurementequipment = Measurementequipment.new
-  measurementequipment.categories = row[0]
-  measurementequipment.scope_of_internal_testing_laboratories = row[1]
-  measurementequipment.product_measurement_item = row[2]
-  measurementequipment.measuring_range = row[3]
-  measurementequipment.measuring_instrument_test_equipment = row[4]
-  measurementequipment.manufacturer = row[5]
-  measurementequipment.equipment_model_name = row[6]
-  measurementequipment.control_no = row[7]
-  measurementequipment.measurement_accuracy = row[8]
-  measurementequipment.reference_document_no = row[9]
-  measurementequipment.calibration_in_house_external = row[10]
-  measurementequipment.laboratory_environmental_conditions = row[11]
-  measurementequipment.external_calibration_laboratory = row[12]
-  measurementequipment.remarks = row[13]
-  measurementequipment.save
+  equipment = Measurementequipment.new
+  attributes = {
+    categories: row[0],
+    scope_of_internal_testing_laboratories: row[1],
+    product_measurement_item: row[2],
+    measuring_range: row[3],
+    measuring_instrument_test_equipment: row[4],
+    manufacturer: row[5],
+    equipment_model_name: row[6],
+    control_no: row[7],
+    measurement_accuracy: row[8],
+    reference_document_no: row[9],
+    calibration_in_house_external: row[10],
+    laboratory_environmental_conditions: row[11],
+    external_calibration_laboratory: row[12],
+    remarks: row[13]
+  }
+  
+  equipment.assign_attributes(attributes)
+  equipment.save
 end
 
+# Supplier データの作成と更新
 CSV.foreach(Rails.root.join('db/record/suppliers.csv'), headers: true) do |row|
   supplier = Supplier.new
-  supplier.no = row[0]
-  supplier.supplier_name = row[1]
-  supplier.manufacturer_name = row[2]
-  supplier.iso_existence = row[3]
-  supplier.target = row[4]
-  supplier.qms = row[5]
-  supplier.second_party_audit = row[6]
-  supplier.supplier_development = row[7]
-  supplier.automotive_related = row[8]
-  supplier.departments = row[9]
-  supplier.transaction_details = row[10]
-  supplier.address1 = row[11]
-  supplier.address2 = row[12]
-  supplier.postal_code = row[13]
-  supplier.tel = row[14]
-  supplier.fax = row[15]
-  supplier.filename = row[16]
-  supplier.document_name = row[17]
-  supplier.issue_date = row[18]
-  supplier.feedback_date = row[19]
+  
+  # 基本属性の設定
+  supplier_attributes = %w[
+    no supplier_name manufacturer_name iso_existence target qms
+    second_party_audit supplier_development automotive_related departments
+    transaction_details address1 address2 postal_code tel fax
+    filename document_name issue_date feedback_date
+  ]
+  
+  supplier_attributes.each do |attr|
+    supplier.send("#{attr}=", row[attr])
+  end
+  
   supplier.save
+  
+  # ファイル添付処理
   if row['filename'].present? && row['document_name'].present?
-    # Split the filenames and document_names by comma and remove any leading/trailing white space
     filenames = row['filename'].split(',').map(&:strip)
     document_names = row['document_name'].split(',').map(&:strip)
 
-    # Create and attach a blob for each filename
     filenames.zip(document_names).each do |filename, document_name|
       file_path = Rails.root.join("db/documents/#{filename}")
       if File.file?(file_path)
-        blob = ActiveStorage::Blob.create_and_upload!(io: File.open(file_path), filename:)
-        supplier.documents.attach(blob)
-        supplier.document_name = document_name # Update the supplier's document_name
+        File.open(file_path) do |file|
+          blob = ActiveStorage::Blob.create_and_upload!(io: file, filename: filename)
+          supplier.documents.attach(blob)
+          supplier.document_name = document_name
+        end
       else
         Rails.logger.info "ファイルが見つかりません: #{file_path}"
       end
     end
-  else
-    Rails.logger.info 'Supplier_File_name is empty' if row['filename'].blank?
-    Rails.logger.info 'Supplier_Document_name is empty' if row['document_name'].blank?
   end
-
+  
   supplier.save
 end
 
+# Iatf データの作成
 CSV.foreach('db/record/iatf_request_list.csv') do |row|
   Iatf.create(
     no: row[0],
@@ -179,6 +160,7 @@ CSV.foreach('db/record/iatf_request_list.csv') do |row|
   )
 end
 
+# その他のデータ作成
 CSV.foreach('db/record/mek_csr_list.csv') do |row|
   Csr.create(csr_number: row[0], csr_content: row[1])
 end
@@ -191,6 +173,7 @@ CSV.foreach('db/record/iatf_kajyou_list.csv') do |row|
   Iatflist.create(iatf_number: row[0], iatf_content: row[1])
 end
 
+# テスト問題データの作成
 Dir.glob('db/record/bing/kajyou*.csv') do |file|
   CSV.foreach(file) do |row|
     Testmondai.create(

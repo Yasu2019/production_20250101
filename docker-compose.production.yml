@@ -8,6 +8,10 @@ services:
     ports:
       - '1880:1880'
     command: ["node-red"]
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
 
   db:
     image: postgres:16.0
@@ -17,7 +21,12 @@ services:
     volumes:
       - postgresql-data:/var/lib/postgresql/data
     environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}  # .envファイルから読み込む
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    shm_size: '2gb'  # PostgreSQLのパフォーマンス向上のため
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     tty: true
     stdin_open: true
 
@@ -25,6 +34,11 @@ services:
     image: redis:latest
     ports:
       - '6379:6379'
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
 
   web:
     build:
@@ -39,15 +53,32 @@ services:
       - RAILS_ENV=production
       - RACK_ENV=production
       - RAILS_SERVE_STATIC_FILES=1
+      - RAILS_MAX_THREADS=5
+      - WEB_CONCURRENCY=2
+      - MALLOC_ARENA_MAX=2
     volumes:
       - .:/myapp:delegated
       - shared_data:/myapp/db/record
       - /myapp/node_modules
+      - tmp-data:/myapp/tmp  # 一時ファイル用のボリューム
+    tmpfs:
+      - /myapp/tmp/pids
+      - /myapp/tmp/cache
     ports:
       - '3000:3000'
     depends_on:
       - db
       - redis
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
   
   sidekiq:
     build:
@@ -56,6 +87,7 @@ services:
     command: bundle exec sidekiq
     volumes:
       - .:/myapp
+      - shared_data:/myapp/db/record
     depends_on:
       - db
       - redis
@@ -63,8 +95,21 @@ services:
     environment:
       - RAILS_ENV=production
       - RACK_ENV=production
+      - MALLOC_ARENA_MAX=2
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
 
 volumes:
   shared_data:
   postgresql-data:
+    driver: local
+  tmp-data:  # 一時ファイル用のボリューム
     driver: local

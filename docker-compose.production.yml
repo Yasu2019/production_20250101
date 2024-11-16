@@ -4,112 +4,112 @@ services:
       context: .
       dockerfile: Dockerfile.nodered
     volumes:
-      - shared_data:/myapp/db/record
+      - shared_data:/myapp/db/record  # データを共有するためのボリューム
     ports:
-      - '1880:1880'
-    command: ["node-red"]
+      - '1880:1880'  # Node-REDのポート
+    command: ["node-red"]  # Node-REDを起動するコマンド
     ulimits:
       nofile:
-        soft: 65536
-        hard: 65536
+        soft: 65536  # ソフトリミット
+        hard: 65536  # ハードリミット
 
   db:
-    image: postgres:16.0
-    env_file: .env
+    image: postgres:16.0  # PostgreSQLのDockerイメージ
+    env_file: .env  # 環境変数を.envファイルから読み込む
     ports:
-      - '5432:5432'
+      - '5432:5432'  # PostgreSQLのポート
     volumes:
-      - postgresql-data:/var/lib/postgresql/data
+      - postgresql-data:/var/lib/postgresql/data  # データを永続化するためのボリューム
     environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    shm_size: '2gb'  # PostgreSQLのパフォーマンス向上のため
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}  # 環境変数からパスワードを設定
+    shm_size: '2gb'  # PostgreSQLのパフォーマンス向上のための共有メモリサイズ
     ulimits:
       nofile:
-        soft: 65536
-        hard: 65536
-    tty: true
-    stdin_open: true
+        soft: 65536  # ソフトリミット
+        hard: 65536  # ハードリミット
+    tty: true  # 仮想端末を有効にする
+    stdin_open: true  # 標準入力をオープンにする
 
   redis:
-    image: redis:latest
+    image: redis:latest  # Redisの最新のDockerイメージ
     ports:
-      - '6379:6379'
+      - '6379:6379'  # Redisのポート
     ulimits:
       nofile:
-        soft: 65536
-        hard: 65536
-    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+        soft: 65536  # ソフトリミット
+        hard: 65536  # ハードリミット
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru  # Redisのメモリ制限とポリシー
 
   web:
     build:
       context: .
-      dockerfile: Dockerfile.production.web
-    command: bash -c "rm -f tmp/pids/server.pid && bundle exec chmod +x bin/rails && npm run build:css && bundle exec bin/rails s -p 3000 -b '0.0.0.0'"
-    tty: true
-    stdin_open: true
-    env_file: .env
+      dockerfile: Dockerfile.production.web  # WebアプリケーションのDockerfile
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec chmod +x bin/rails && npm run build:css && bundle exec bin/rails s -p 3000 -b '0.0.0.0'"  # サーバー起動前の準備と起動コマンド
+    tty: true  # 仮想端末を有効にする
+    stdin_open: true  # 標準入力をオープンにする
+    env_file: .env  # 環境変数を.envファイルから読み込む
     environment:
-      - KEY_DERIVATION_SALT=${KEY_DERIVATION_SALT}
-      - RAILS_ENV=production
-      - RACK_ENV=production
-      - RAILS_SERVE_STATIC_FILES=1
-      - RAILS_MAX_THREADS=5
-      - WEB_CONCURRENCY=2
-      - MALLOC_ARENA_MAX=2
+      - KEY_DERIVATION_SALT=${KEY_DERIVATION_SALT}  # 環境変数の設定
+      - RAILS_ENV=production  # Railsの環境をproductionに設定
+      - RACK_ENV=production  # Rackの環境をproductionに設定
+      - RAILS_SERVE_STATIC_FILES=1  # 静的ファイルをサーブする設定
+      - RAILS_MAX_THREADS=5  # 最大スレッド数
+      - WEB_CONCURRENCY=2  # Webプロセスの数
+      - MALLOC_ARENA_MAX=2  # メモリアリーナの最大数
     volumes:
-      - .:/myapp:delegated
-      - shared_data:/myapp/db/record
-      - /myapp/node_modules
+      - .:/myapp:delegated  # アプリケーションコードをマウント
+      - shared_data:/myapp/db/record  # データを共有するためのボリューム
+      - /myapp/node_modules  # node_modulesをマウント
       - tmp-data:/myapp/tmp  # 一時ファイル用のボリューム
     tmpfs:
-      - /myapp/tmp/pids
-      - /myapp/tmp/cache
+      - /myapp/tmp/pids  # 一時ファイルシステムを使用
+      - /myapp/tmp/cache  # 一時ファイルシステムを使用
     ports:
-      - '3000:3000'
+      - '3000:3000'  # Webアプリケーションのポート
     depends_on:
-      - db
-      - redis
+      - db  # dbサービスに依存
+      - redis  # redisサービスに依存
     ulimits:
       nofile:
-        soft: 65536
-        hard: 65536
+        soft: 65536  # ソフトリミット
+        hard: 65536  # ハードリミット
     deploy:
       resources:
         limits:
-          memory: 2G
+          memory: 2G  # メモリ制限
         reservations:
-          memory: 1G
-  
+          memory: 1G  # メモリ予約
+
   sidekiq:
     build:
       context: .
-      dockerfile: Dockerfile.production.web
-    command: bundle exec sidekiq
+      dockerfile: Dockerfile.production.web  # SidekiqのDockerfile
+    command: bundle exec sidekiq  # Sidekiqを起動するコマンド
     volumes:
-      - .:/myapp
-      - shared_data:/myapp/db/record
+      - .:/myapp  # アプリケーションコードをマウント
+      - shared_data:/myapp/db/record  # データを共有するためのボリューム
     depends_on:
-      - db
-      - redis
-    env_file: .env
+      - db  # dbサービスに依存
+      - redis  # redisサービスに依存
+    env_file: .env  # 環境変数を.envファイルから読み込む
     environment:
-      - RAILS_ENV=production
-      - RACK_ENV=production
-      - MALLOC_ARENA_MAX=2
+      - RAILS_ENV=production  # Railsの環境をproductionに設定
+      - RACK_ENV=production  # Rackの環境をproductionに設定
+      - MALLOC_ARENA_MAX=2  # メモリアリーナの最大数
     ulimits:
       nofile:
-        soft: 65536
-        hard: 65536
+        soft: 65536  # ソフトリミット
+        hard: 65536  # ハードリミット
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 1G  # メモリ制限
         reservations:
-          memory: 512M
+          memory: 512M  # メモリ予約
 
 volumes:
-  shared_data:
-  postgresql-data:
+  shared_data:  # 共有データ用のボリューム
+  postgresql-data:  # PostgreSQLデータ用のボリューム
     driver: local
   tmp-data:  # 一時ファイル用のボリューム
     driver: local

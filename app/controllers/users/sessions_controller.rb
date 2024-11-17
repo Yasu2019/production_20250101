@@ -9,6 +9,7 @@ module Users
 
     rescue_from ActionController::InvalidAuthenticityToken, with: :handle_invalid_token
 
+    # 既存のnewメソッドは変更なし
     def new
       Rails.logger.debug "New session requested"
       self.resource = resource_class.new
@@ -17,19 +18,18 @@ module Users
       respond_with(resource, serialize_options(resource))
     end
 
+    # 既存のcreateメソッドは変更なし
     def create
       Rails.logger.debug "Create session requested"
       Rails.logger.debug "Params: #{params.inspect}"
       @user = User.find_by(email: params[:user][:email])
 
-      # デバッグ用のログ出力を追加
       Rails.logger.debug "IP: #{request.remote_ip}, Email: #{params[:user][:email]}"
       Rails.logger.debug "IP allowed: #{ip_allowed?}, Email allowed: #{ALLOWED_EMAILS.include?(params[:user][:email].downcase)}"
       Rails.logger.debug "User found: #{@user.inspect}"
       Rails.logger.debug "Password provided: #{params[:user][:password].present?}"
       Rails.logger.debug "Password valid: #{@user&.valid_password?(params[:user][:password])}"
 
-      # 条件文を修正：IPアドレスまたはメールアドレスが許可リストにある場合にログインを許可
       unless ip_allowed? || ALLOWED_EMAILS.include?(params[:user][:email].downcase)
         Rails.logger.debug "Access denied due to IP or Email restrictions"
         flash.now[:alert] = '管理者以外はミツイ精密社外からログインできません'
@@ -73,17 +73,34 @@ module Users
 
     def restore_database(backup_file_path)
       Rails.logger.info "Attempting to restore database from #{backup_file_path}"
-      # Open3を使用してシェルコマンドを実行
-      Open3.popen3('/root/restore_latest_backup.sh', backup_file_path) do |_stdin, _stdout, stderr, wait_thr|
-        exit_status = wait_thr.value
-        unless exit_status.success?
-          # エラー処理
-          error_message = "データベースのリストアに失敗しました: #{stderr.read}"
-          Rails.logger.error error_message
-          raise error_message
-        end
+      script_path = Rails.root.join('bin', 'restore_latest_backup.sh')
+      
+      unless File.exist?(script_path)
+        Rails.logger.error "Restore script not found at #{script_path}"
+        raise "リストアスクリプトが見つかりません"
       end
-      Rails.logger.info "Database restoration completed successfully"
+
+      result = ActiveRecord::Base.connection.execute("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = current_database() AND pid <> pg_backend_pid()")
+      
+      begin
+        conn = ActiveRecord::Base.connection.raw_connection
+        conn.exec("DROP DATABASE IF EXISTS #{db_config['database']}_temp")
+        conn.exec("CREATE DATABASE #{db_config['database']}_temp")
+        
+        restore_command = "psql -h #{db_config['host']} -U #{db_config['username']} -d #{db_config['database']}_temp -f #{backup_file_path}"
+        conn.exec(restore_command)
+        
+        conn.exec("ALTER DATABASE #{db_config['database']} RENAME TO #{db_config['database']}_old")
+        conn.exec("ALTER DATABASE #{db_config['database']}_temp RENAME TO #{db_config['database']}")
+        conn.exec("DROP DATABASE IF EXISTS #{db_config['database']}_old")
+        
+        Rails.logger.info "Database restoration completed successfully"
+      rescue => e
+        Rails.logger.error "Database restoration failed: #{e.message}"
+        raise "データベースのリストアに失敗しました: #{e.message}"
+      ensure
+        conn&.close
+      end
     end
 
     def backup_postgresql
@@ -93,22 +110,32 @@ module Users
 
       db_config = Rails.configuration.database_configuration[Rails.env]
       timestamp = Time.zone.now.strftime('%Y%m%d%H%M%S')
-      backup_file_name = "backup_#{timestamp}.sql"
-      backup_file = File.join(backup_dir, backup_file_name)
+      backup_file = File.join(backup_dir, "backup_#{timestamp}.sql")
 
-      # pg_dumpコマンドを使用してバックアップを作成
-      command = "PGPASSWORD=#{db_config['password']} pg_dump -h #{db_config['host']} -U #{db_config['username']} -d #{db_config['database']} -f #{backup_file}"
-      Rails.logger.debug "Executing backup command: #{command}"
-      
-      system(command)
+      begin
+        conn = ActiveRecord::Base.connection.raw_connection
+        File.open(backup_file, 'w') do |file|
+          conn.copy_data "COPY (SELECT pg_dump_all()) TO STDOUT" do |copy_data|
+            while chunk = copy_data.gets
+              file.write(chunk)
+            end
+          end
+        end
 
-      if $?.success?
         Rails.logger.info "Backup created successfully: #{backup_file}"
-      else
-        Rails.logger.error "Backup creation failed"
+        backup_file
+      rescue => e
+        Rails.logger.error "Backup creation failed: #{e.message}"
+        raise "バックアップの作成に失敗しました: #{e.message}"
+      ensure
+        conn&.close if conn
       end
+    end
 
-      backup_file
+    private
+
+    def db_config
+      @db_config ||= Rails.configuration.database_configuration[Rails.env]
     end
   end
 end

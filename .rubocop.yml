@@ -1,10 +1,7 @@
-require: rubocop-rails
+inherit_mode:
+  merge:
+    - Exclude
 
-# すべてのCopsを無効化
 AllCops:
-  Enabled: false
+  DisabledByDefault: true  # Enabled: false の代わりにこちらを使用
   NewCops: disable
-
-# Rails関連のCopsも明示的に無効化
-Rails:
-  Enabled: false

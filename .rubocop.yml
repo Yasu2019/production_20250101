@@ -1,3 +1,5 @@
+require: rubocop-rails
+
 # すべてのCopsを無効化
 AllCops:
   Enabled: false

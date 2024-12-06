@@ -1,4 +1,6 @@
 <p>認証が取れました。下記Download Fileリンクをクリックしてください:</p>
-<%= link_to "Download File", @download_url %>
+<br>
+<%= link_to "Download File", @download_url, class: "text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg", target: "_blank", data: { turbo: "false" } %> <!-- 追加 -->
+
 <br>
 <%= link_to '戻る', root_path, class: 'btn btn-accent' %>

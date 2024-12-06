@@ -38,6 +38,7 @@ end
     DownloadMailer.send_download_password('yasuhiro-suzuki@mitsui-s.com', password).deliver_now
 
     Rails.logger.info("after_two_factor_authenticated called. Generated password: #{password}")
+    Rails.logger.info("after_two_factor_authenticated called. Generated Session password: #{session[:download_password]}")
   end
 
   private

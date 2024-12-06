@@ -4,7 +4,7 @@ require 'open3'
 
 module Users
   class SessionsController < Devise::SessionsController
-    ALLOWED_IPS = ['180.11.97.245'].freeze
+    ALLOWED_IPS = ['153.227.172.42'].freeze
     ALLOWED_EMAILS = ['yasuhiro-suzuki@mitsui-s.com', 'n_komiya@mitsui-s.com'].freeze
 
     rescue_from ActionController::InvalidAuthenticityToken, with: :handle_invalid_token

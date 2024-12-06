@@ -802,6 +802,10 @@ end
 
     allowed_emails = ['yasuhiro-suzuki@mitsui-s.com', 'n_komiya@mitsui-s.com']
 
+    # セッションパスワードをログに記録
+    Rails.logger.info "MainPage_index_Session download_password: #{session[:download_password]}"
+
+
     # Add user IP to allowed list if user's email is allowed
     if Rails.env.development? && current_user&.email&.in?(allowed_emails)
       user_ip = request.remote_ip

@@ -11,8 +11,8 @@ Rails.application.configure do
   # config.web_console.allow_authorized_ips = %w(0.0.0.0/0 ::/0)
 
   # ミツイ精密社内からだけのアクセスを許可する場合
-  config.web_console.permissions = '180.11.97.245'
-
+  config.web_console.permissions = '153.227.172.42'
+  
   # 自宅からだけのアクセスを許可する場合
 
   # ミツイ精密および、個人pcからのアクセスを許可する場合

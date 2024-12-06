@@ -81,6 +81,22 @@ class TwoStepVerificationsController < ApplicationController
 
     session[:download_password] = password
 
+    Rails.logger.info("Generated password: #{password}")
+    Rails.logger.info("Session download_password: #{session[:download_password]}")
+
+    # パスワードをvolumeフォルダのpass_word.txtに保存
+    file_path = Rails.root.join('volume', 'pass_word.txt')
+
+    # 既存のファイルが存在する場合は削除
+    File.delete(file_path) if File.exist?(file_path)
+
+    # 新しいパスワードをファイルに書き込む
+    File.open(file_path, 'a') do |file|
+      file.puts(password)
+    end
+
+  
+
     # トークンをメールに含めるようにDownloadMailerを更新します
     DownloadMailer.send_download_password(@user.email, password, token).deliver_now
 

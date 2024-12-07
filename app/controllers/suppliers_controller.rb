@@ -1,13 +1,12 @@
+# app/controllers/suppliers_controller.rb
 # frozen_string_literal: true
 
 class SuppliersController < ApplicationController
-  before_action :set_supplier, only: %i[show edit update destroy]
+  before_action :set_supplier, only: %i[show edit update destroy verify_password]
 
   # GET /suppliers
   def index
-    # @suppliers = Supplier.all
     @suppliers = Supplier.includes(documents_attachments: :blob).all
-    # @suppliers = Supplier.includes(documents_attachments: :blob).page(params[:page]).per(12)
   end
 
   # GET /suppliers/1
@@ -45,6 +44,12 @@ class SuppliersController < ApplicationController
   def destroy
     @supplier.destroy
     redirect_to suppliers_url, notice: 'Supplier was successfully destroyed.'
+  end
+
+  # GET /suppliers/1/verify_password/:blob_id
+  def verify_password
+    # ここにパスワード確認のロジックを追加します
+    # 例: @supplier.verify_password(params[:blob_id])
   end
 
   private

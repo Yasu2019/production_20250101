@@ -457,7 +457,7 @@ $(document).ready(function(){
                     <%= button_to "APQP総括・承認書", "#", id: "apqp_approved_submit-button", class: "btn btn-primary" %>
 
 　　　　　<br>
-        
+
 <div class="bg-indigo-300 p-4 mt-4">
   <% if @pdf_links.present? && @days_since_published.present? && @publish_dates.present? %>
     <h2 class="text-lg font-bold underline mb-4 text-center">IATF SIs FQAs Links</h2>
@@ -465,7 +465,11 @@ $(document).ready(function(){
       <div class="text-center">
         <% if @pdf_links[0].present? && @pdf_links[0].include?('SIs') %>
           <%= link_to 'SIs Link', @pdf_links[0], class: "btn btn-accent mb-2", target: "_blank" %>
-          <p class="text-sm">発行日: <%= I18n.l(@publish_dates[0], format: :year_month) %></p>
+          <% if @publish_dates[0].present? %>
+            <p class="text-sm">発行日: <%= I18n.l(@publish_dates[0], format: :year_month) %></p>
+          <% else %>
+            <p class="text-sm">発行日: 不明</p>
+          <% end %>
           <p class="text-sm">発行後<%= @days_since_published[0] %>日</p>
         <% else %>
           <p class="text-sm font-semibold">SIs PDFが見つかりません</p>
@@ -474,7 +478,11 @@ $(document).ready(function(){
       <div class="text-center">
         <% if @pdf_links[1].present? && @pdf_links[1].include?('FAQs') %>
           <%= link_to 'FAQs Link', @pdf_links[1], class: "btn btn-accent mb-2", target: "_blank" %>
-          <p class="text-sm">発行日: <%= I18n.l(@publish_dates[1], format: :year_month) %></p>
+          <% if @publish_dates[1].present? %>
+            <p class="text-sm">発行日: <%= I18n.l(@publish_dates[1], format: :year_month) %></p>
+          <% else %>
+            <p class="text-sm">発行日: 不明</p>
+          <% end %>
           <p class="text-sm">発行後<%= @days_since_published[1] %>日</p>
         <% else %>
           <p class="text-sm font-semibold">FAQs PDFが見つかりません</p>
@@ -485,6 +493,8 @@ $(document).ready(function(){
     <p class="text-center text-sm font-semibold">IATF SIs FQAs情報が利用できません</p>
   <% end %>
 </div>
+        
+
         
 
                     

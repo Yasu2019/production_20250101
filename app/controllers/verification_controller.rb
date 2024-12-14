@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 # app/controllers/verification_controller.rb
-class VerificationController < ApplicationController
-  skip_before_action :authenticate_user!, only: [:verify]
+class VerificationController < ActionController::Base
+  protect_from_forgery with: :exception
+  include Devise::Controllers::Helpers
 
   def verify
     user = User.find_by(verification_token: params[:token])
@@ -38,9 +39,9 @@ class VerificationController < ApplicationController
 
     if user.token_expiry > Time.current
       # トークンをリセット
-      # user.update(verification_token: nil, token_expiry: nil)
+      user.update(verification_token: nil, token_expiry: nil)
       sign_in(user)
-      redirect_to root_path
+      redirect_to root_path, notice: 'ログインしました。'
     else
       redirect_to new_user_session_path, alert: 'トークンが無効です。'
     end

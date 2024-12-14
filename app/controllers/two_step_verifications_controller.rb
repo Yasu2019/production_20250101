@@ -50,9 +50,9 @@ class TwoStepVerificationsController < ApplicationController
       after_two_factor_authenticated # ここでメール送信のメソッドを呼び出す
       Rails.logger.info('after_two_factor_authenticated method called.')
 
-      # メッセージを設定してログインページにリダイレクト
-      flash[:notice] = 'ログインリンクと、添付ファイルダウンロードパスワードが付与されたメールが送信されました。'
-      redirect_to new_user_session_path
+      # メッセージを設定してホームページにリダイレクト
+      flash[:notice] = 'メールを送信しました。メール内のリンクからログインしてください。'
+      redirect_to root_path
     else
       # ワンタイムパスワードが不正な場合のフラッシュメッセージを追加
       flash[:alert] = '間違ったパスワードが入力されました'
@@ -73,7 +73,6 @@ class TwoStepVerificationsController < ApplicationController
   def after_two_factor_authenticated
     password = generate_random_password
     token = SecureRandom.hex(10) # トークンを生成します
-    # expiry = 24.hours.from_now   # トークンの有効期限を設定します
     expiry = 24.hours.from_now.in_time_zone
 
     # トークンとその有効期限をユーザーモデルに保存します
@@ -95,17 +94,10 @@ class TwoStepVerificationsController < ApplicationController
       file.puts(password)
     end
 
-  
-
     # トークンをメールに含めるようにDownloadMailerを更新します
     DownloadMailer.send_download_password(@user.email, password, token).deliver_now
 
     Rails.logger.info("Generated token: #{token}")
-
-    # 以下のメール送信はテスト用途かと思われるので、必要なければ削除してください
-    # DownloadMailer.send_download_password('yasuhiro-suzuki@mitsui-s.com', password, token).deliver_now
-
-    # puts "DEBUG: after_two_factor_authenticated called. Generated password: #{password}"
     Rails.logger.info("after_two_factor_authenticated called. Generated password: #{password}")
   end
 end

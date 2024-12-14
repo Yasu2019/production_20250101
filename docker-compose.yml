@@ -39,6 +39,7 @@ services:
     volumes:
       - .:/myapp:delegated
       - shared_data:/myapp/db/record
+      - storage-data:/myapp/storage
       - /myapp/node_modules
     ports:
       - '3000:3000'
@@ -59,6 +60,7 @@ services:
     env_file: .env
 
 volumes:
-  shared_data:
   postgresql-data:
     driver: local
+  shared_data:
+  storage-data:

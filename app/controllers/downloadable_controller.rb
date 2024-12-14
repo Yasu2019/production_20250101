@@ -116,8 +116,24 @@ class DownloadableController < ApplicationController
       return
     end
 
-    file = file_attachment.blob
-    send_data file.download, filename: file.filename.to_s, disposition: 'attachment'
+    begin
+      file = file_attachment.blob
+      # Check if file exists on disk
+      unless file.service.exist?(file.key)
+        Rails.logger.error("File not found on disk for blob key: #{file.key}")
+        redirect_to root_path, alert: 'ファイルが見つかりませんでした。'
+        return
+      end
+
+      # Stream the file directly
+      send_data file.download, 
+                filename: file.filename.to_s, 
+                content_type: file.content_type,
+                disposition: 'attachment'
+    rescue StandardError => e
+      Rails.logger.error("Error downloading file: #{e.message}")
+      redirect_to root_path, alert: 'ファイルのダウンロード中にエラーが発生しました。'
+    end
   end
 
   private

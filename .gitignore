@@ -39,11 +39,6 @@
 /config/master.key
 /config/credentials.yml.enc
 
-# Ignore environment files
-.env
-.env.*
-!.env.example
-
 # Ignore database configuration
 /config/database.yml
 

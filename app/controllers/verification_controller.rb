@@ -41,7 +41,7 @@ class VerificationController < ActionController::Base
       # トークンをリセット
       user.update(verification_token: nil, token_expiry: nil)
       sign_in(user)
-      redirect_to root_path, notice: 'ログインしました。'
+      redirect_to new_user_session_path, notice: 'ユーザー登録いただいたメールアドレスに、ログインリンクと、ファイルダウンロードパスワードを付与したメールをお送りしました。'
     else
       redirect_to new_user_session_path, alert: 'トークンが無効です。'
     end

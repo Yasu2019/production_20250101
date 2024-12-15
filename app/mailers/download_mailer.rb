@@ -7,6 +7,7 @@ class DownloadMailer < ApplicationMailer
   def send_download_password(email, password, token = nil)
     @password = password
     @token = token
+    @user = User.find_by(email: email)  # ユーザー情報を取得
     
     # デバッグ用のログ出力
     if @token

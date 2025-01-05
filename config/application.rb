@@ -8,7 +8,7 @@ require 'active_job/railtie'
 require 'active_record/railtie'
 require 'active_storage/engine'
 require 'action_controller/railtie'
-# require "action_mailer/railtie"
+require "action_mailer/railtie"
 # require "action_mailbox/engine"
 require 'action_text/engine'
 require 'action_view/railtie'
@@ -41,6 +41,13 @@ module Myapp
     config.active_record.default_timezone = :local
     config.active_record.encryption.key_derivation_salt = ENV.fetch('KEY_DERIVATION_SALT', nil)
     config.active_record.encryption.primary_key = ENV.fetch('PRIMARY_KEY', nil)
+
+    # メールのタイムゾーン設定
+    config.action_mailer.default_options = { 
+      from: 'mitsui.seimitsu.iatf16949@gmail.com',
+      charset: 'UTF-8',
+      time_zone: 'Tokyo'
+    }
 
     # Don't generate system test files.
     config.generators.system_tests = nil

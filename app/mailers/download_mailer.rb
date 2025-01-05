@@ -15,6 +15,8 @@ class DownloadMailer < ApplicationMailer
       Rails.logger.info("Generated verify_token_url: #{verify_token_url(token: @token, host: 'nys-web.net', protocol: 'https')}")
     end
     
+    headers['Date'] = Time.current.in_time_zone('Asia/Tokyo').rfc2822
+    
     mail(
       to: email,
       subject: 'Welcome to IATFシステム'

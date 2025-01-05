@@ -1,5 +1,22 @@
 # frozen_string_literal: true
 
+# データベースのクリーンアップ
+puts "Cleaning up database..."
+
+# ActiveStorageのアタッチメントを削除
+ActiveStorage::Attachment.destroy_all
+ActiveStorage::Blob.destroy_all
+
+# 各モデルのデータを削除
+Product.destroy_all
+Phase.destroy_all
+User.destroy_all
+Measurementequipment.destroy_all
+Supplier.destroy_all
+Mitsui.destroy_all
+
+puts "Database cleaned successfully!"
+
 require 'csv'
 require 'active_storage'
 

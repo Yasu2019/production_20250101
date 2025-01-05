@@ -1112,6 +1112,18 @@ end
     @grr_check = '☐'
     @feasibility_check = '☐'
     @kataken_check = '☐'
+    @visual_inspection_tejyunsho_check = '☐'
+    @visual_inspection_youryousho_check = '☐'
+    @stamping_instruction_check = '☐'
+    @process_inspection_record_check = '☐'
+    @drawing_check = '☐'
+    @specifications_check = '☐'
+    @parts_inspection_report_check = '☐'
+    @material_specification_check = '☐'
+    @shoki_check = '☐'
+    @controlplan_check = '☐'
+    @processflow_inspection_check = '☐'
+    @processflow_mold_check = '☐'
 
     @products.each do |pro|
       @partnumber = pro.partnumber
@@ -1122,24 +1134,269 @@ end
       Rails.logger.info "pro.stage(number)= #{pro.stage}"
 
       if stage == 'プロセスフロー図' || stage == 'プロセスフロー図(Phase3)'
-        @processflow_yotei = pro.deadline_at.strftime('%y/%m/%d')
-        @processflow_kanryou = pro.end_at.strftime('%y/%m/%d')
-        if pro.documents.attached?
-          @processflow_check = '?'
-          @processflow_filename = pro.documents.first.filename.to_s
+        
+        @processflow_check = if pro.documents.attached?
+          '☑'
+           
+          begin
+            # プレスファイルの確認
+            press_file_found = false
+            mold_file_found = false
+            
+            # 最初にプレスファイルを探す
+            pro.documents.each do |doc|
+              filename = doc.filename.to_s
+              if filename.include?('プロセスフロー') && filename.include?('プレス')
+                press_file_found = true
+                begin
+                  temp_file = Tempfile.new(['temp', File.extname(filename)])
+                  temp_file.binmode
+                  temp_file.write(doc.download)
+                  temp_file.rewind
+
+                  workbook = case File.extname(filename).downcase
+                            when '.xlsx' then Roo::Excelx.new(temp_file.path)
+                            when '.xls'  then Roo::Excel.new(temp_file.path)
+                            else
+                              next
+                            end
+
+                  Rails.logger.info "=== ワークシート情報 ==="
+                  Rails.logger.info "利用可能なシート: #{workbook.sheets.inspect}"
+                  
+                  # 適切なシートを探す
+                  target_sheet = nil
+                  workbook.sheets.each do |sheet_name|
+                    workbook.default_sheet = sheet_name
+                    Rails.logger.info "シート '#{sheet_name}' をチェック中..."
+                    
+                    # セル(2,21)とセル(2,22)の値を確認
+                    cell_2_21 = workbook.cell(2, 21)
+                    cell_2_22 = workbook.cell(2, 22)
+                    
+                    Rails.logger.info "シート '#{sheet_name}' - セル(2,21): #{cell_2_21.inspect}"
+                    Rails.logger.info "シート '#{sheet_name}' - セル(2,22): #{cell_2_22.inspect}"
+                    
+                    if cell_2_21.present? || cell_2_22.present?
+                      target_sheet = sheet_name
+                      Rails.logger.info "適切なシートが見つかりました: #{sheet_name}"
+                      break
+                    end
+                  end
+
+                  unless target_sheet
+                    Rails.logger.warn "必要なデータを含むシートが見つかりませんでした"
+                    next
+                  end
+
+                  workbook.default_sheet = target_sheet
+                  Rails.logger.info "選択したシート: #{target_sheet}"
+                  Rails.logger.info "最終行: #{workbook.last_row}"
+                  Rails.logger.info "最終列: #{workbook.last_column}"
+
+                  # セルの値を文字列として取得し、デバッグ情報を出力
+                  @processflow_stamping_person_in_charge = workbook.cell(2, 21).to_s.strip
+                  @processflow_stamping_dept = workbook.cell(4, 13).to_s.strip
+                  @processflow_stamping_yotei = pro.deadline_at.strftime('%y/%m/%d')
+                  @processflow_stamping_check = '☑'
+
+                  Rails.logger.info "=== セルの値確認 ==="
+                  Rails.logger.info "セル(2,21)の生の値: #{workbook.cell(2, 21).inspect}"
+                  Rails.logger.info "セル(2,21)の変換後の値: \#{?processflow_stamping_person_in_charge.inspect}"
+                  Rails.logger.info "セル(4,13)の生の値: #{workbook.cell(4, 13).inspect}"
+                  Rails.logger.info "セル(4,13)の変換後の値: \#{?processflow_stamping_dept.inspect}"
+
+                  Rails.logger.info "プレス承認者: \#{?processflow_stamping_person_in_charge}"
+                  Rails.logger.info "プレス部署: \#{?processflow_stamping_dept}"
+                rescue StandardError => e
+                  Rails.logger.error "プレスファイル処理エラー: #{e.message}"
+                ensure
+                  workbook&.close if defined?(workbook) && workbook
+                  temp_file.close
+                  temp_file.unlink
+                end
+                break
+              end
+            end
+
+            # プレスファイルがない場合は成形ファイルを探す
+            unless press_file_found
+              pro.documents.each do |doc|
+                filename = doc.filename.to_s
+                if filename.include?('プロセスフロー') && filename.include?('成形')
+                  mold_file_found = true
+                  begin
+                    temp_file = Tempfile.new(['temp', File.extname(filename)])
+                    temp_file.binmode
+                    temp_file.write(doc.download)
+                    temp_file.rewind
+
+                    workbook = case File.extname(filename).downcase
+                              when '.xlsx' then Roo::Excelx.new(temp_file.path)
+                              when '.xls'  then Roo::Excel.new(temp_file.path)
+                              else
+                                next
+                              end
+
+                    Rails.logger.info "=== ワークシート情報 ==="
+                    Rails.logger.info "利用可能なシート: #{workbook.sheets.inspect}"
+                    
+                    # 適切なシートを探す
+                    target_sheet = nil
+                    workbook.sheets.each do |sheet_name|
+                      workbook.default_sheet = sheet_name
+                      Rails.logger.info "シート '#{sheet_name}' をチェック中..."
+                      
+                      # セル(2,21)とセル(2,22)の値を確認
+                      cell_2_21 = workbook.cell(2, 21)
+                      cell_2_22 = workbook.cell(2, 22)
+                      
+                      Rails.logger.info "シート '#{sheet_name}' - セル(2,21): #{cell_2_21.inspect}"
+                      Rails.logger.info "シート '#{sheet_name}' - セル(2,22): #{cell_2_22.inspect}"
+                      
+                      if cell_2_21.present? || cell_2_22.present?
+                        target_sheet = sheet_name
+                        Rails.logger.info "適切なシートが見つかりました: #{sheet_name}"
+                        break
+                      end
+                    end
+
+                    unless target_sheet
+                      Rails.logger.warn "必要なデータを含むシートが見つかりませんでした"
+                      next
+                    end
+
+                    workbook.default_sheet = target_sheet
+                    Rails.logger.info "選択したシート: #{target_sheet}"
+                    Rails.logger.info "最終行: #{workbook.last_row}"
+                    Rails.logger.info "最終列: #{workbook.last_column}"
+
+                    # セルの値を文字列として取得し、デバッグ情報を出力
+                    @processflow_mold_person_in_charge = workbook.cell(2, 21).to_s.strip
+                    @processflow_mold_dept = workbook.cell(4, 13).to_s.strip
+                    @processflow_mold_yotei = pro.deadline_at.strftime('%y/%m/%d')
+                    @processflow_mold_kanryou = pro.end_at.strftime('%y/%m/%d')
+                    @processflow_mold_check = '☑'
+
+                    Rails.logger.info "=== セルの値確認 ==="
+                    Rails.logger.info "セル(2,21)の生の値: #{workbook.cell(2, 21).inspect}"
+                    Rails.logger.info "セル(2,21)の変換後の値: \#{?processflow_mold_person_in_charge.inspect}"
+                    Rails.logger.info "セル(4,13)の生の値: #{workbook.cell(4, 13).inspect}"
+                    Rails.logger.info "セル(4,13)の変換後の値: \#{?processflow_mold_dept.inspect}"
+
+                    Rails.logger.info "成形承認者: \#{?processflow_mold_person_in_charge}"
+                  rescue StandardError => e
+                    Rails.logger.error "成形ファイル処理エラー: #{e.message}"
+                  ensure
+                    workbook&.close if defined?(workbook) && workbook
+                    temp_file.close
+                    temp_file.unlink
+                  end
+                  break
+                end
+              end
+            end
+
+            # 営業、工程設計、検査のファイルは毎回確認
+            pro.documents.each do |doc|
+              filename = doc.filename.to_s
+              next unless filename.include?('プロセスフロー')
+
+              begin
+                temp_file = Tempfile.new(['temp', File.extname(filename)])
+                temp_file.binmode
+                temp_file.write(doc.download)
+                temp_file.rewind
+
+                workbook = case File.extname(filename).downcase
+                          when '.xlsx' then Roo::Excelx.new(temp_file.path)
+                          when '.xls'  then Roo::Excel.new(temp_file.path)
+                          else
+                            next
+                          end
+
+                Rails.logger.info "=== ワークシート情報 ==="
+                Rails.logger.info "利用可能なシート: #{workbook.sheets.inspect}"
+                
+                # 適切なシートを探す
+                target_sheet = nil
+                workbook.sheets.each do |sheet_name|
+                  workbook.default_sheet = sheet_name
+                  Rails.logger.info "シート '#{sheet_name}' をチェック中..."
+                  
+                  # セル(2,21)とセル(2,22)の値を確認
+                  cell_2_21 = workbook.cell(2, 21)
+                  cell_2_22 = workbook.cell(2, 22)
+                  
+                  Rails.logger.info "シート '#{sheet_name}' - セル(2,21): #{cell_2_21.inspect}"
+                  Rails.logger.info "シート '#{sheet_name}' - セル(2,22): #{cell_2_22.inspect}"
+                  
+                  if cell_2_21.present? || cell_2_22.present?
+                    target_sheet = sheet_name
+                    Rails.logger.info "適切なシートが見つかりました: #{sheet_name}"
+                    break
+                  end
+                end
+
+                unless target_sheet
+                  Rails.logger.warn "必要なデータを含むシートが見つかりませんでした"
+                  next
+                end
+
+                workbook.default_sheet = target_sheet
+                Rails.logger.info "選択したシート: #{target_sheet}"
+                Rails.logger.info "最終行: #{workbook.last_row}"
+                Rails.logger.info "最終列: #{workbook.last_column}"
+
+                # セルの値を文字列として取得し、デバッグ情報を出力
+                if filename.include?('営業')
+                  @processflow_sales_person_in_charge = workbook.cell(2, 21).to_s.strip
+                  @processflow_sales_dept = workbook.cell(4, 13).to_s.strip
+                  @processflow_sales_yotei = pro.deadline_at.strftime('%y/%m/%d')
+                  @processflow_sales_kanryou = pro.end_at.strftime('%y/%m/%d')
+                  @processflow_sales_check='☑'
+                  Rails.logger.info "営業承認者: \#{?processflow_sales_person_in_charge}"
+                elsif filename.include?('工程設計')
+                  @processflow_design_person_in_charge = workbook.cell(2, 21).to_s.strip
+                  @processflow_design_dept = workbook.cell(4, 13).to_s.strip
+                  @processflow_design_yotei = pro.deadline_at.strftime('%y/%m/%d')
+                  @processflow_design_kanryou = pro.end_at.strftime('%y/%m/%d')
+                  @processflow_design_check='☑'
+                  Rails.logger.info "工程設計承認者: \#{?processflow_design_person_in_charge}"
+                elsif filename.include?('検査')
+                  @processflow_inspection_person_in_charge = workbook.cell(2, 21).to_s.strip
+                  @processflow_inspection_dept = workbook.cell(4, 13).to_s.strip
+                  @processflow_inspection_yotei = pro.deadline_at.strftime('%y/%m/%d')
+                  @processflow_inspection_kanryou = pro.end_at.strftime('%y/%m/%d')
+                  @processflow_inspection_check='☑'
+                  Rails.logger.info "検査引渡し承認者: \#{?processflow_inspection_person_in_charge}"
+                end
+              rescue StandardError => e
+                Rails.logger.error "その他ファイル処理エラー: #{e.message}"
+              ensure
+                workbook&.close if defined?(workbook) && workbook
+                temp_file.close
+                temp_file.unlink
+              end
+            end
+
+          rescue StandardError => e
+            Rails.logger.error "ファイル処理エラー: #{e.message}"
+          end
         else
-          #@processflow_check = '?'
+          '☐'
         end
       end
 
       if stage == 'フロアプランレイアウト'
         @floor_plan_layout_yotei = pro.deadline_at.strftime('%y/%m/%d')
         @floor_plan_layout_kanryou = pro.end_at.strftime('%y/%m/%d')
-        if pro.documents.attached?
-          @floor_plan_layout_check = '?'
-          @floor_plan_layout_filename = pro.documents.first.filename.to_s
+        @floor_plan_layout_person_in_charge = "鈴木"
+        @floor_plan_layout_check = if pro.documents.attached?
+
+          '☑'
         else
-          #@floor_plan_layout_check = '?'
+          '☐'
         end
       end
 
@@ -1151,6 +1408,18 @@ end
                     else
                       '☐'
                     end
+      end
+
+      if stage == '特性マトリクス'
+        @special_characteristics_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @special_characteristics_kanryou = pro.end_at.strftime('%y/%m/%d')
+        @special_characteristics_person_in_charge = "鈴木"
+        @special_characteristics_check = if pro.documents.attached?
+
+          '☑'
+        else
+          '☐'
+        end
       end
 
       if stage == '妥当性確認記録_金型設計'
@@ -1207,6 +1476,91 @@ end
                      end
       end
 
+      if stage == '梱包規格・仕様書'
+        @packing_instruction_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @packing_instruction_kanryou = pro.end_at.strftime('%y/%m/%d')
+        @packing_instruction_check = if pro.documents.attached?
+          '☑'
+        else
+          '☐'
+        end
+      end
+
+      if stage == '部品検査成績書'
+        @parts_inspection_report_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @parts_inspection_report_kanryou = pro.end_at.strftime('%y/%m/%d')
+        @parts_inspection_report_check = if pro.documents.attached?
+                       '☑'
+                     else
+                       '☐'
+                     end
+      end
+
+      if stage == '技術仕様書'
+        @specifications_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @specifications_kanryou = pro.end_at.strftime('%y/%m/%d')
+        @specifications_check = if pro.documents.attached?
+                       '☑'
+                     else
+                       '☐'
+                     end
+      end
+
+      if stage == '図面（数学的データを含む）' || stage == '図面・仕様書の変更'
+        @drawing_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @drawing_kanryou = pro.end_at.strftime('%y/%m/%d')
+        @drawing_check = if pro.documents.attached?
+                       '☑'
+                     else
+                       '☐'
+                     end
+      end
+
+      if stage == 'プレス作業手順書'
+        @stamping_instruction_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @stamping_instruction_kanryou = pro.end_at.strftime('%y/%m/%d')
+        @stamping_instruction_check = if pro.documents.attached?
+                       '☑'
+                     else
+                       '☐'
+                     end
+      end
+
+      if stage == '工程検査記録票'
+        @process_inspection_record_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @process_inspection_record_kanryou = pro.end_at.strftime('%y/%m/%d')
+        @process_inspection_record_check = if pro.documents.attached?
+                       '☑'
+                     else
+                       '☐'
+                     end
+      end
+
+
+
+      if stage == '外観検査要領書'
+        @visual_inspection_youryousho_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @visual_inspection_youryousho_kanryou = pro.end_at.strftime('%y/%m/%d')
+        @visual_inspection_youryousho_check = if pro.documents.attached?
+                       '☑'
+                     else
+                       '☐'
+                     end
+      end
+
+      if stage == '検査手順書'
+        @visual_inspection_tejyunsho_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @visual_inspection_tejyunsho_kanryou = pro.end_at.strftime('%y/%m/%d')
+        @visual_inspection_tejyunsho_check = if pro.documents.attached?
+                       '☑'
+                     else
+                       '☐'
+                     end
+      end
+      
+
+
+
       if stage == '製造実現可能性検討書'
         @scr_yotei = pro.deadline_at.strftime('%y/%m/%d')
         @scr_kanryou = pro.end_at.strftime('%y/%m/%d')
@@ -1217,15 +1571,56 @@ end
                              end
       end
 
-      if stage == 'プロセスFMEA' || stage == 'プロセス故障モード影響解析（PFMEA）'
-        @pfmea_yotei = pro.deadline_at.strftime('%y/%m/%d')
-        @pfmea_kanryou = pro.end_at.strftime('%y/%m/%d')
-        @pfmea_check = if pro.documents.attached?
-                         '☑'
-                       else
-                         '☐'
-                       end
+      
+if stage == 'プロセスFMEA' || stage == 'プロセス故障モード影響解析（PFMEA）'
+  @pfmea_yotei = pro.deadline_at.strftime('%y/%m/%d')
+  @pfmea_kanryou = pro.end_at.strftime('%y/%m/%d')
+  
+  if pro.documents.attached?
+    begin
+      # 変数の設定
+      partnumber = pro.partnumber # ここには実際の値を設定してください
+      # パスとファイル名のパターンを作成（プロジェクトルートからの相対パス）
+      pattern = Rails.root.join('db', 'documents', "*#{partnumber}*PFMEA*").to_s
+      Rails.logger.info "PFMEA検索パス: #{pattern}"
+
+      files = Dir.glob(pattern)
+      files.each do |file|
+        begin
+          workbook = case File.extname(file).downcase
+                    when '.xlsx'
+                      Roo::Excelx.new(file)
+                    when '.xls'
+                      Roo::Excel.new(file)
+                    else
+                      next
+                    end
+
+          worksheet = workbook.sheet(0)
+          @pfmea_check = '☑'
+          #@pfmea_person_in_charge = worksheet.cell(6, 13)
+          cell_value = worksheet.cell(6, 13)
+          Rails.logger.info "PFMEA担当者セル(M6)の値: #{cell_value.inspect}"
+          @pfmea_person_in_charge = cell_value
+          
+          Rails.logger.info "PFMEA処理中"
+          Rails.logger.info "品番: #{partnumber}"
+          Rails.logger.info "担当者: \#{?pfmea_person_in_charge}"
+          
+        rescue StandardError => e
+          Rails.logger.error "PFMEAファイル(#{file})の処理中にエラーが発生: #{e.message}"
+          Rails.logger.error e.backtrace.join("\n")
+        end
       end
+    rescue StandardError => e
+      Rails.logger.error "PFMEA処理全体でエラーが発生: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+    end
+  end
+  
+  # ファイルが添付されていない、またはエラーが発生した場合のデフォルト値
+  @pfmea_check ||= '☐'
+end
 
       if stage == 'DR会議議事録_金型設計'
         @dr_yotei = pro.deadline_at.strftime('%y/%m/%d')
@@ -1796,6 +2191,14 @@ end
       if stage == '初期流動検査記録'
         @shoki_yotei = pro.deadline_at.strftime('%y/%m/%d')
         @shoki_kanryou = pro.end_at.strftime('%y/%m/%d')
+        @shoki_check = '☑'
+        @shoki_person_in_charge = '石栗'
+      end
+
+      if stage == '材料仕様書'
+        @material_specification_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @material_specification_kanryou = pro.end_at.strftime('%y/%m/%d')
+        @material_specification_check = '☑'
       end
 
       if stage == 'プロセス指示書'
@@ -1850,6 +2253,7 @@ end
               @kanagata_kanryou      = row[10]
               @kanagata_katagouzou   = row[8]
               @kanagata_remark       = row[12]
+              
               # @partnumber が見つかったので、ループを終了
               throw :found
             end
@@ -1858,65 +2262,66 @@ end
       end
     end
 
+
+    #治具管理台帳の読み込み
+
+    @all_products ||= []
+    @dropdownlist ||= {}
+
     catch :found do
       @all_products.each do |all|
-        stage = @dropdownlist[all.stage.to_i]
-        Rails.logger.info "JIGU Sub Stage= #{stage}"
+        begin
+          stage = @dropdownlist[all.stage.to_i]
+          next unless stage.present? && stage == '台帳'
 
-        next unless stage == '台帳'
+          next unless all.documents&.attached?
 
-        Rails.logger.info 'プレス台帳'
-        next unless all.documents.attached?
+          pattern = '/myapp/db/documents/**/*.{xls,xlsx}'
+          Dir.glob(pattern) do |file|
+            next unless file.include?('治具管理台帳')
 
-        pattern = '/myapp/db/documents/**/*.{xls,xlsx}'
-        Rails.logger.info "Path= #{pattern}"
-        # ディレクトリ内のExcelファイルを走査
-        Dir.glob(pattern) do |file|
-          # '治具管理台帳'を含むファイルだけを対象に
-          next unless file.include?('治具管理台帳')
+            begin
+              workbook = case File.extname(file)
+                        when '.xlsx'
+                          Roo::Excelx.new(file)
+                        when '.xls'
+                          Roo::Excel.new(file)
+                        else
+                          next
+                        end
 
-          Rails.logger.info '治具管理台帳ファイル検出_読み込み'
-          # ファイル形式に応じて適切なRooクラスを使用
-          workbook = case File.extname(file)
-                     when '.xlsx'
-                       Roo::Excelx.new(file)
-                     when '.xls'
-                       Roo::Excel.new(file)
-                     end
+              worksheet = workbook.sheet(0)
+              (6..100).each do |row_number|
+                cell_value = worksheet.cell(row_number, 9)
+                next unless cell_value.present?
 
-          worksheet = workbook.sheet(1) # 最初のワークシートを選択
+                values = cell_value.include?(',') ? cell_value.split(',') : [cell_value]
+                Rails.logger.info("Row #{row_number}: Processing values: #{values.inspect}")
 
-          # J6 から J100 までのセルを読み込む
-          (6..100).each do |row_number|
-            cell_value = worksheet.cell(row_number, 10) # J 列は 10 列目になる
+                values.each do |value|
+                  next unless value.strip == @partnumber
 
-            # セルの値が "," を含む場合、それを分割して個々の値を処理
-
-            values = if cell_value.present? && cell_value.include?(',')
-                       cell_value.split(',')
-                     else
-                       (cell_value.present? ? [cell_value] : [])
-                     end
-
-            values.each do |value|
-              Rails.logger.info "@partnumber #{@partnumber}"
-              Rails.logger.info "value #{value}"
-
-              next unless value.strip == @partnumber # セルの値が partnumber と一致するかチェック
-
-              # 一致する場合、その行の他のセルの値をインスタンス変数に代入
-              @jigu_kanribangou = worksheet.cell(row_number, 1) # A 列
-              @jigu_name = worksheet.cell(row_number, 2) # B 列
-              @jigu_produced_date = worksheet.cell(row_number, 5) # E 列
-              @jigu_start_useage_date = worksheet.cell(row_number, 7) # G 列
-              @jigu_tantou = worksheet.cell(row_number, 12)      # L 列
-              @jigu_approved = worksheet.cell(row_number, 11)    # K 列
-              break # pro.partnumber に一致する値を見つけたら、ループを抜ける
+                  @jigu_kanribangou = worksheet.cell(row_number, 1)
+                  @jigu_name = worksheet.cell(row_number, 2)
+                  @jigu_produced_date = worksheet.cell(row_number, 5)
+                  @jigu_seizou_dept = worksheet.cell(row_number, 6)
+                  @jigu_start_useage_date = worksheet.cell(row_number, 7)                  
+                  @jigu_tantou = worksheet.cell(row_number, 8)
+                  @jigu_approved = worksheet.cell(row_number, 11)
+                  throw :found
+                end
+              end
+            rescue StandardError => e
+              Rails.logger.error("Error processing file #{file}: #{e.message}")
             end
           end
+        rescue StandardError => e
+          Rails.logger.error("Error processing product #{all}: #{e.message}")
         end
       end
     end
+
+
   end
 
   def insert_rows_to_excel_template_msa
@@ -2252,7 +2657,8 @@ end
     @process_layout_check = '☐'
     @crosstab_check = '☐'
     @kataken_check = '☐'
-
+    @inspection_fixtures_mold_check = '☐'
+    @inspection_fixtures_stamping_check = '☐'
 
     @products.each do |pro|
       @partnumber = pro.partnumber
@@ -2262,6 +2668,26 @@ end
       stage = @dropdownlist[pro.stage.to_i]
       Rails.logger.info "pro.stage(number)= #{pro.stage}"
       Rails.logger.info "stage= #{stage}"
+
+      if stage == '検査補助具'
+        if pro.documents.attached?
+          filename = pro.documents.first.filename.to_s
+          if filename.include?("成形")
+          @inspection_fixtures_mold_filename = filename
+          @inspection_fixtures_mold_yotei = pro.deadline_at.strftime('%y/%m/%d')
+          @inspection_fixtures_mold_kanryou = pro.end_at.strftime('%y/%m/%d')  
+          @inspection_fixtures_mold_check = '☑'
+          else
+          @inspection_fixtures_stamping_filename = filename
+          @inspection_fixtures_stamping_yotei = pro.deadline_at.strftime('%y/%m/%d')
+          @inspection_fixtures_stamping_kanryou = pro.end_at.strftime('%y/%m/%d')  
+          @inspection_fixtures_stamping_check = '☑'
+          end
+        else
+          @inspection_fixtures_mold_check = '☐'
+          @inspection_fixtures_stamping_check = '☐'
+        end
+      end
 
       if stage == '量産コントロールプラン' || stage == '試作コントロールプラン' || stage == "先行生産（Pre-launch,量産試作）コントロールプラン"
         @controlplan_yotei = pro.deadline_at.strftime('%y/%m/%d')
@@ -2273,6 +2699,30 @@ end
           #@cp_check = '☐'
         end
       end
+
+      if stage == '測定システム解析（MSA)' # GRR
+        @grr_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @grr_kanryou = pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @grr_check = '☑'
+          @grr_filename = pro.documents.first.filename.to_s
+        else
+          @grr_check = '☐'
+        end
+      end
+
+      if stage == '有資格試験所文書'
+        @documented_information_of_qualified_laboratories_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @documented_information_of_qualified_laboratories_kanryou = pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @documented_information_of_qualified_laboratories_check = '☑'
+          @documented_information_of_qualified_laboratories_filename = pro.documents.first.filename.to_s
+        else
+          @documented_information_of_qualified_laboratories_check = '☐'
+        end
+      end
+
+
 
       if stage == '妥当性確認記録_金型設計'
         @datou_yotei = pro.deadline_at.strftime('%y/%m/%d')
@@ -2334,16 +2784,299 @@ end
         end
       end
 
+
+
+
+
+
+      #if stage == 'プロセスフロー図' || stage == 'プロセスフロー図(Phase3)'
+      #  @processflow_yotei = pro.deadline_at.strftime('%y/%m/%d')
+      #  @processflow_kanryou = pro.end_at.strftime('%y/%m/%d')
+      #  if pro.documents.attached?
+      #    @processflow_check = '☑'
+      #    @processflow_filename = pro.documents.first.filename.to_s
+      #  else
+      #    #@processflow_check = '☐'
+      #  end
+      #end
+
+      
+
+
       if stage == 'プロセスフロー図' || stage == 'プロセスフロー図(Phase3)'
-        @processflow_yotei = pro.deadline_at.strftime('%y/%m/%d')
-        @processflow_kanryou = pro.end_at.strftime('%y/%m/%d')
-        if pro.documents.attached?
-          @processflow_check = '☑'
-          @processflow_filename = pro.documents.first.filename.to_s
+        
+        @processflow_check = if pro.documents.attached?
+          '☑'
+           
+          begin
+            # プレスファイルの確認
+            press_file_found = false
+            mold_file_found = false
+            
+            # 最初にプレスファイルを探す
+            pro.documents.each do |doc|
+              filename = doc.filename.to_s
+              if filename.include?('プロセスフロー') && filename.include?('プレス')
+                press_file_found = true
+                begin
+                  temp_file = Tempfile.new(['temp', File.extname(filename)])
+                  temp_file.binmode
+                  temp_file.write(doc.download)
+                  temp_file.rewind
+
+                  workbook = case File.extname(filename).downcase
+                            when '.xlsx' then Roo::Excelx.new(temp_file.path)
+                            when '.xls'  then Roo::Excel.new(temp_file.path)
+                            else
+                              next
+                            end
+
+                  Rails.logger.info "=== ワークシート情報 ==="
+                  Rails.logger.info "利用可能なシート: #{workbook.sheets.inspect}"
+                  
+                  # 適切なシートを探す
+                  target_sheet = nil
+                  workbook.sheets.each do |sheet_name|
+                    workbook.default_sheet = sheet_name
+                    Rails.logger.info "シート '#{sheet_name}' をチェック中..."
+                    
+                    # セル(2,21)とセル(2,22)の値を確認
+                    cell_2_21 = workbook.cell(2, 21)
+                    cell_2_22 = workbook.cell(2, 22)
+                    
+                    Rails.logger.info "シート '#{sheet_name}' - セル(2,21): #{cell_2_21.inspect}"
+                    Rails.logger.info "シート '#{sheet_name}' - セル(2,22): #{cell_2_22.inspect}"
+                    
+                    if cell_2_21.present? || cell_2_22.present?
+                      target_sheet = sheet_name
+                      Rails.logger.info "適切なシートが見つかりました: #{sheet_name}"
+                      break
+                    end
+                  end
+
+                  unless target_sheet
+                    Rails.logger.warn "必要なデータを含むシートが見つかりませんでした"
+                    next
+                  end
+
+                  workbook.default_sheet = target_sheet
+                  Rails.logger.info "選択したシート: #{target_sheet}"
+                  Rails.logger.info "最終行: #{workbook.last_row}"
+                  Rails.logger.info "最終列: #{workbook.last_column}"
+
+                  # セルの値を文字列として取得し、デバッグ情報を出力
+                  @processflow_stamping_person_in_charge = workbook.cell(2, 21).to_s.strip
+                  @processflow_stamping_dept = workbook.cell(4, 13).to_s.strip
+                  @processflow_stamping_yotei = pro.deadline_at.strftime('%y/%m/%d')
+                  @processflow_stamping_check = '☑'
+                  @processflow_filename_stamping = pro.documents.first.filename.to_s
+
+                  Rails.logger.info "=== セルの値確認 ==="
+                  Rails.logger.info "セル(2,21)の生の値: #{workbook.cell(2, 21).inspect}"
+                  Rails.logger.info "セル(2,21)の変換後の値: \#{?processflow_stamping_person_in_charge.inspect}"
+                  Rails.logger.info "セル(4,13)の生の値: #{workbook.cell(4, 13).inspect}"
+                  Rails.logger.info "セル(4,13)の変換後の値: \#{?processflow_stamping_dept.inspect}"
+
+                  Rails.logger.info "プレス承認者: \#{?processflow_stamping_person_in_charge}"
+                  Rails.logger.info "プレス部署: \#{?processflow_stamping_dept}"
+                rescue StandardError => e
+                  Rails.logger.error "プレスファイル処理エラー: #{e.message}"
+                ensure
+                  workbook&.close if defined?(workbook) && workbook
+                  temp_file.close
+                  temp_file.unlink
+                end
+                break
+              end
+            end
+
+            # プレスファイルがない場合は成形ファイルを探す
+            unless press_file_found
+              pro.documents.each do |doc|
+                filename = doc.filename.to_s
+                if filename.include?('プロセスフロー') && filename.include?('成形')
+                  mold_file_found = true
+                  begin
+                    temp_file = Tempfile.new(['temp', File.extname(filename)])
+                    temp_file.binmode
+                    temp_file.write(doc.download)
+                    temp_file.rewind
+
+                    workbook = case File.extname(filename).downcase
+                              when '.xlsx' then Roo::Excelx.new(temp_file.path)
+                              when '.xls'  then Roo::Excel.new(temp_file.path)
+                              else
+                                next
+                              end
+
+                    Rails.logger.info "=== ワークシート情報 ==="
+                    Rails.logger.info "利用可能なシート: #{workbook.sheets.inspect}"
+                    
+                    # 適切なシートを探す
+                    target_sheet = nil
+                    workbook.sheets.each do |sheet_name|
+                      workbook.default_sheet = sheet_name
+                      Rails.logger.info "シート '#{sheet_name}' をチェック中..."
+                      
+                      # セル(2,21)とセル(2,22)の値を確認
+                      cell_2_21 = workbook.cell(2, 21)
+                      cell_2_22 = workbook.cell(2, 22)
+                      
+                      Rails.logger.info "シート '#{sheet_name}' - セル(2,21): #{cell_2_21.inspect}"
+                      Rails.logger.info "シート '#{sheet_name}' - セル(2,22): #{cell_2_22.inspect}"
+                      
+                      if cell_2_21.present? || cell_2_22.present?
+                        target_sheet = sheet_name
+                        Rails.logger.info "適切なシートが見つかりました: #{sheet_name}"
+                        break
+                      end
+                    end
+
+                    unless target_sheet
+                      Rails.logger.warn "必要なデータを含むシートが見つかりませんでした"
+                      next
+                    end
+
+                    workbook.default_sheet = target_sheet
+                    Rails.logger.info "選択したシート: #{target_sheet}"
+                    Rails.logger.info "最終行: #{workbook.last_row}"
+                    Rails.logger.info "最終列: #{workbook.last_column}"
+
+                    # セルの値を文字列として取得し、デバッグ情報を出力
+                    @processflow_mold_person_in_charge = workbook.cell(2, 21).to_s.strip
+                    @processflow_mold_dept = workbook.cell(4, 13).to_s.strip
+                    @processflow_mold_yotei = pro.deadline_at.strftime('%y/%m/%d')
+                    @processflow_mold_kanryou = pro.end_at.strftime('%y/%m/%d')
+                    @processflow_mold_check = '☑'
+                    @processflow_filename_mold = pro.documents.first.filename.to_s
+
+                    Rails.logger.info "=== セルの値確認 ==="
+                    Rails.logger.info "セル(2,21)の生の値: #{workbook.cell(2, 21).inspect}"
+                    Rails.logger.info "セル(2,21)の変換後の値: \#{?processflow_mold_person_in_charge.inspect}"
+                    Rails.logger.info "セル(4,13)の生の値: #{workbook.cell(4, 13).inspect}"
+                    Rails.logger.info "セル(4,13)の変換後の値: \#{?processflow_mold_dept.inspect}"
+
+                    Rails.logger.info "成形承認者: \#{?processflow_mold_person_in_charge}"
+                  rescue StandardError => e
+                    Rails.logger.error "成形ファイル処理エラー: #{e.message}"
+                  ensure
+                    workbook&.close if defined?(workbook) && workbook
+                    temp_file.close
+                    temp_file.unlink
+                  end
+                  break
+                end
+              end
+            end
+
+            # 営業、工程設計、検査のファイルは毎回確認
+            pro.documents.each do |doc|
+              filename = doc.filename.to_s
+              next unless filename.include?('プロセスフロー')
+
+              begin
+                temp_file = Tempfile.new(['temp', File.extname(filename)])
+                temp_file.binmode
+                temp_file.write(doc.download)
+                temp_file.rewind
+
+                workbook = case File.extname(filename).downcase
+                          when '.xlsx' then Roo::Excelx.new(temp_file.path)
+                          when '.xls'  then Roo::Excel.new(temp_file.path)
+                          else
+                            next
+                          end
+
+                Rails.logger.info "=== ワークシート情報 ==="
+                Rails.logger.info "利用可能なシート: #{workbook.sheets.inspect}"
+                
+                # 適切なシートを探す
+                target_sheet = nil
+                workbook.sheets.each do |sheet_name|
+                  workbook.default_sheet = sheet_name
+                  Rails.logger.info "シート '#{sheet_name}' をチェック中..."
+                  
+                  # セル(2,21)とセル(2,22)の値を確認
+                  cell_2_21 = workbook.cell(2, 21)
+                  cell_2_22 = workbook.cell(2, 22)
+                  
+                  Rails.logger.info "シート '#{sheet_name}' - セル(2,21): #{cell_2_21.inspect}"
+                  Rails.logger.info "シート '#{sheet_name}' - セル(2,22): #{cell_2_22.inspect}"
+                  
+                  if cell_2_21.present? || cell_2_22.present?
+                    target_sheet = sheet_name
+                    Rails.logger.info "適切なシートが見つかりました: #{sheet_name}"
+                    break
+                  end
+                end
+
+                unless target_sheet
+                  Rails.logger.warn "必要なデータを含むシートが見つかりませんでした"
+                  next
+                end
+
+                workbook.default_sheet = target_sheet
+                Rails.logger.info "選択したシート: #{target_sheet}"
+                Rails.logger.info "最終行: #{workbook.last_row}"
+                Rails.logger.info "最終列: #{workbook.last_column}"
+
+                # セルの値を文字列として取得し、デバッグ情報を出力
+                if filename.include?('営業')
+                  @processflow_sales_person_in_charge = workbook.cell(2, 21).to_s.strip
+                  @processflow_sales_dept = workbook.cell(4, 13).to_s.strip
+                  @processflow_sales_yotei = pro.deadline_at.strftime('%y/%m/%d')
+                  @processflow_sales_kanryou = pro.end_at.strftime('%y/%m/%d')
+                  @processflow_sales_check='☑'
+                  @processflow_filename_sales = pro.documents.first.filename.to_s
+                  Rails.logger.info "営業承認者: \#{?processflow_sales_person_in_charge}"
+                elsif filename.include?('工程設計')
+                  @processflow_design_person_in_charge = workbook.cell(2, 21).to_s.strip
+                  @processflow_design_dept = workbook.cell(4, 13).to_s.strip
+                  @processflow_design_yotei = pro.deadline_at.strftime('%y/%m/%d')
+                  @processflow_design_kanryou = pro.end_at.strftime('%y/%m/%d')
+                  @processflow_design_check='☑'
+                  @processflow_filename_design = pro.documents.first.filename.to_s
+                  Rails.logger.info "工程設計承認者: \#{?processflow_design_person_in_charge}"
+                elsif filename.include?('検査')
+                  @processflow_inspection_person_in_charge = workbook.cell(2, 21).to_s.strip
+                  @processflow_inspection_dept = workbook.cell(4, 13).to_s.strip
+                  @processflow_inspection_yotei = pro.deadline_at.strftime('%y/%m/%d')
+                  @processflow_inspection_kanryou = pro.end_at.strftime('%y/%m/%d')
+                  @processflow_inspection_check='☑'
+                  @processflow_filename_inspection = pro.documents.first.filename.to_s
+                  Rails.logger.info "検査引渡し承認者: \#{?processflow_inspection_person_in_charge}"
+                end
+              rescue StandardError => e
+                Rails.logger.error "その他ファイル処理エラー: #{e.message}"
+              ensure
+                workbook&.close if defined?(workbook) && workbook
+                temp_file.close
+                temp_file.unlink
+              end
+            end
+
+          rescue StandardError => e
+            Rails.logger.error "ファイル処理エラー: #{e.message}"
+          end
         else
-          #@processflow_check = '☐'
+          '☐'
         end
       end
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       if stage == '測定システム解析（MSA)' # クロスタブ
         @crosstab_yotei = pro.deadline_at.strftime('%y/%m/%d')
@@ -2440,7 +3173,7 @@ end
           @pf_check = '☑'
           @pf_filename = pro.documents.first.filename.to_s
         else
-          #@pf_check = '☐'
+          @pf_check = '☐'
         end
       end
 
@@ -2845,18 +3578,28 @@ end
     Rails.logger.info "insert_row_number= #{insert_row_number}" # 追加
     Rails.logger.info "count= #{count}" # 追加
 
-    # @msa_crosstab_countの数だけ38行目と39行目の間に内容を挿入
     count.times do |i|
       row_number = insert_row_number + i # 正しい行番号を計算
       worksheet.insert_row(row_number)
-
+      Rails.logger.info "row_number= #{row_number}" # 追加
+    
       # 新しく追加された行に、生技（#{?dr_setsubi_designer_#{i+2}}）を設定
       worksheet[row_number][12].change_contents("報告書名：\#{?dr_setsubi_filename_#{i + 2}}")
-
-      # H列、I列、J列を結合
+    
+      # 横方向の結合のみループ内で実行
       worksheet.merge_cells(row_number, 12, row_number, 19)
-      worksheet.merge_cells(row_number - count, 5, row_number, 11)
-      worksheet.merge_cells(row_number - count, 4, row_number, 4)
+    end
+    
+    # ループ終了後に縦方向の結合を実行
+    if count > 0
+      # 開始行は最初に挿入した行、終了行は最後に挿入した行
+      start_row = insert_row_number
+      end_row = insert_row_number + count - 1
+      
+      # 5列目から11列目の結合
+      worksheet.merge_cells(start_row-1, 5, end_row, 11)
+      # 4列目の結合
+      worksheet.merge_cells(start_row-1, 4, end_row, 4)
     end
 
     # worksheet.merge_cells メソッドは、セルの範囲を結合するために使用されます。
@@ -2910,38 +3653,50 @@ end
     @pf_process_design_check = '☐'
     @pf_check = '☐'
     @process_layout_check = '☐'
+    @processflow_inspection_ckeck = '☐'
+    @processflow_mold_ckeck = '☐'
+    @inspection_fixtures_mold_check = '☐'
+    @inspection_fixtures_stamping_check = '☐'
+    @processflow_design_check = '☐'
+    @processflow_stamping_check = '☐'
+    @processflow_inspection_check = '☐'
+    @processflow_mold_check = '☐'
+    @processflow_sales_check = '☐'
+    @processflow_design_check = '☐'
+    
 
-    catch :found do
-      @all_products.each do |all|
-        stage = @dropdownlist[all.stage.to_i]
-        Rails.logger.info "Stage: #{stage}, all.stage: #{all.stage.to_i},Documents attached: #{all.documents.attached?}"
 
-        Rails.logger.info "Current stage: #{stage}"
-        case stage
-        when '営業プロセスフロー'
-          Rails.logger.info 'Inside the condition for 営業プロセスフロー'
-          @pf_sales_check = all.documents.attached? ? '☑' : '☐'
-          Rails.logger.info "@pf_sales_check: #{@pf_sales_check}"
-        when '製造工程設計プロセスフロー'
-          @pf_process_design_check = all.documents.attached? ? '☑' : '☐'
+#    catch :found do
+#      @all_products.each do |all|
+#        stage = @dropdownlist[all.stage.to_i]
+#        Rails.logger.info "Stage: #{stage}, all.stage: #{all.stage.to_i},Documents attached: #{all.documents.attached?}"
 
-        when '製造プロセスフロー'
-          @pf_production_check = all.documents.attached? ? '☑' : '☐'
+#        Rails.logger.info "Current stage: #{stage}"
+#        case stage
+#        when '営業プロセスフロー'
+#          Rails.logger.info 'Inside the condition for 営業プロセスフロー'
+#          @pf_sales_check = all.documents.attached? ? '☑' : '☐'
+#          Rails.logger.info "@pf_sales_check: #{@pf_sales_check}"
+#        when '製造工程設計プロセスフロー'
+#          @pf_process_design_check = all.documents.attached? ? '☑' : '☐'
 
-        when '製品検査プロセスフロー'
-          @pf_inspectoin_check = all.documents.attached? ? '☑' : '☐'
+#        when '製造プロセスフロー'
+#          @pf_production_check = all.documents.attached? ? '☑' : '☐'
 
-        when '引渡しプロセスフロー'
-          @pf_release_check = all.documents.attached? ? '☑' : '☐'
+#        when '製品検査プロセスフロー'
+#          @pf_inspectoin_check = all.documents.attached? ? '☑' : '☐'
 
-        end
+#        when '引渡しプロセスフロー'
+#          @pf_release_check = all.documents.attached? ? '☑' : '☐'
 
-        if @pf_sales_check && @pf_process_design_check && @pf_production_check && @pf_inspectoin_check && @pf_release_check
-          Rails.logger.info 'All checks completed.'
-          # throw :found
-        end
-      end
-    end
+#        end
+
+#        if @pf_sales_check && @pf_process_design_check && @pf_production_check && @pf_inspectoin_check && @pf_release_check
+#          Rails.logger.info 'All checks completed.'
+#          # throw :found
+#        end
+#      end
+#    end
 
     @products.each do |pro|
       @partnumber = pro.partnumber
@@ -2950,6 +3705,283 @@ end
       Rails.logger.info "@pro.stage= #{@dropdownlist[pro.stage.to_i]}"
       stage = @dropdownlist[pro.stage.to_i]
       Rails.logger.info "pro.stage(number)= #{pro.stage}"
+
+
+
+
+      if %w[プレス作業標準書].include?(stage)
+        @stamping_standard_procedure_yotei = pro.deadline_at.strftime('%y/%m/%d')
+        @stamping_standard_procedure_kanryou = pro.end_at.strftime('%y/%m/%d')
+        if pro.documents.attached?
+          @stamping_standard_procedure_check = '☑'
+          @stamping_standard_procedure_filename = pro.documents.first.filename.to_s
+        else
+          @stamping_standard_procedure_check = '☐'
+        end
+      end
+
+
+
+      
+      if stage == 'プロセスフロー図' || stage == 'プロセスフロー図(Phase3)'
+        
+        @processflow_check = if pro.documents.attached?
+          '☑'
+           
+          begin
+            # プレスファイルの確認
+            press_file_found = false
+            mold_file_found = false
+            
+            # 最初にプレスファイルを探す
+            pro.documents.each do |doc|
+              filename = doc.filename.to_s
+              if filename.include?('プロセスフロー') && filename.include?('プレス')
+                press_file_found = true
+                begin
+                  temp_file = Tempfile.new(['temp', File.extname(filename)])
+                  temp_file.binmode
+                  temp_file.write(doc.download)
+                  temp_file.rewind
+
+                  workbook = case File.extname(filename).downcase
+                            when '.xlsx' then Roo::Excelx.new(temp_file.path)
+                            when '.xls'  then Roo::Excel.new(temp_file.path)
+                            else
+                              next
+                            end
+
+                  Rails.logger.info "=== ワークシート情報 ==="
+                  Rails.logger.info "利用可能なシート: #{workbook.sheets.inspect}"
+                  
+                  # 適切なシートを探す
+                  target_sheet = nil
+                  workbook.sheets.each do |sheet_name|
+                    workbook.default_sheet = sheet_name
+                    Rails.logger.info "シート '#{sheet_name}' をチェック中..."
+                    
+                    # セル(2,21)とセル(2,22)の値を確認
+                    cell_2_21 = workbook.cell(2, 21)
+                    cell_2_22 = workbook.cell(2, 22)
+                    
+                    Rails.logger.info "シート '#{sheet_name}' - セル(2,21): #{cell_2_21.inspect}"
+                    Rails.logger.info "シート '#{sheet_name}' - セル(2,22): #{cell_2_22.inspect}"
+                    
+                    if cell_2_21.present? || cell_2_22.present?
+                      target_sheet = sheet_name
+                      Rails.logger.info "適切なシートが見つかりました: #{sheet_name}"
+                      break
+                    end
+                  end
+
+                  unless target_sheet
+                    Rails.logger.warn "必要なデータを含むシートが見つかりませんでした"
+                    next
+                  end
+
+                  workbook.default_sheet = target_sheet
+                  Rails.logger.info "選択したシート: #{target_sheet}"
+                  Rails.logger.info "最終行: #{workbook.last_row}"
+                  Rails.logger.info "最終列: #{workbook.last_column}"
+
+                  # セルの値を文字列として取得し、デバッグ情報を出力
+                  @processflow_stamping_person_in_charge = workbook.cell(2, 21).to_s.strip
+                  @processflow_stamping_dept = workbook.cell(4, 13).to_s.strip
+                  @processflow_stamping_yotei = pro.deadline_at.strftime('%y/%m/%d')
+                  @processflow_stamping_check = '☑'
+
+                  Rails.logger.info "=== セルの値確認 ==="
+                  Rails.logger.info "セル(2,21)の生の値: #{workbook.cell(2, 21).inspect}"
+                  Rails.logger.info "セル(2,21)の変換後の値: \#{?processflow_stamping_person_in_charge.inspect}"
+                  Rails.logger.info "セル(4,13)の生の値: #{workbook.cell(4, 13).inspect}"
+                  Rails.logger.info "セル(4,13)の変換後の値: \#{?processflow_stamping_dept.inspect}"
+
+                  Rails.logger.info "プレス承認者: \#{?processflow_stamping_person_in_charge}"
+                  Rails.logger.info "プレス部署: \#{?processflow_stamping_dept}"
+                rescue StandardError => e
+                  Rails.logger.error "プレスファイル処理エラー: #{e.message}"
+                ensure
+                  workbook&.close if defined?(workbook) && workbook
+                  temp_file.close
+                  temp_file.unlink
+                end
+                break
+              end
+            end
+
+            # プレスファイルがない場合は成形ファイルを探す
+            unless press_file_found
+              pro.documents.each do |doc|
+                filename = doc.filename.to_s
+                if filename.include?('プロセスフロー') && filename.include?('成形')
+                  mold_file_found = true
+                  begin
+                    temp_file = Tempfile.new(['temp', File.extname(filename)])
+                    temp_file.binmode
+                    temp_file.write(doc.download)
+                    temp_file.rewind
+
+                    workbook = case File.extname(filename).downcase
+                              when '.xlsx' then Roo::Excelx.new(temp_file.path)
+                              when '.xls'  then Roo::Excel.new(temp_file.path)
+                              else
+                                next
+                              end
+
+                    Rails.logger.info "=== ワークシート情報 ==="
+                    Rails.logger.info "利用可能なシート: #{workbook.sheets.inspect}"
+                    
+                    # 適切なシートを探す
+                    target_sheet = nil
+                    workbook.sheets.each do |sheet_name|
+                      workbook.default_sheet = sheet_name
+                      Rails.logger.info "シート '#{sheet_name}' をチェック中..."
+                      
+                      # セル(2,21)とセル(2,22)の値を確認
+                      cell_2_21 = workbook.cell(2, 21)
+                      cell_2_22 = workbook.cell(2, 22)
+                      
+                      Rails.logger.info "シート '#{sheet_name}' - セル(2,21): #{cell_2_21.inspect}"
+                      Rails.logger.info "シート '#{sheet_name}' - セル(2,22): #{cell_2_22.inspect}"
+                      
+                      if cell_2_21.present? || cell_2_22.present?
+                        target_sheet = sheet_name
+                        Rails.logger.info "適切なシートが見つかりました: #{sheet_name}"
+                        break
+                      end
+                    end
+
+                    unless target_sheet
+                      Rails.logger.warn "必要なデータを含むシートが見つかりませんでした"
+                      next
+                    end
+
+                    workbook.default_sheet = target_sheet
+                    Rails.logger.info "選択したシート: #{target_sheet}"
+                    Rails.logger.info "最終行: #{workbook.last_row}"
+                    Rails.logger.info "最終列: #{workbook.last_column}"
+
+                    # セルの値を文字列として取得し、デバッグ情報を出力
+                    @processflow_mold_person_in_charge = workbook.cell(2, 21).to_s.strip
+                    @processflow_mold_dept = workbook.cell(4, 13).to_s.strip
+                    @processflow_mold_yotei = pro.deadline_at.strftime('%y/%m/%d')
+                    @processflow_mold_kanryou = pro.end_at.strftime('%y/%m/%d')
+                    @processflow_mold_check = '☑'
+
+                    Rails.logger.info "=== セルの値確認 ==="
+                    Rails.logger.info "セル(2,21)の生の値: #{workbook.cell(2, 21).inspect}"
+                    Rails.logger.info "セル(2,21)の変換後の値: \#{?processflow_mold_person_in_charge.inspect}"
+                    Rails.logger.info "セル(4,13)の生の値: #{workbook.cell(4, 13).inspect}"
+                    Rails.logger.info "セル(4,13)の変換後の値: \#{?processflow_mold_dept.inspect}"
+
+                    Rails.logger.info "成形承認者: \#{?processflow_mold_person_in_charge}"
+                  rescue StandardError => e
+                    Rails.logger.error "成形ファイル処理エラー: #{e.message}"
+                  ensure
+                    workbook&.close if defined?(workbook) && workbook
+                    temp_file.close
+                    temp_file.unlink
+                  end
+                  break
+                end
+              end
+            end
+
+            # 営業、工程設計、検査のファイルは毎回確認
+            pro.documents.each do |doc|
+              filename = doc.filename.to_s
+              next unless filename.include?('プロセスフロー')
+
+              begin
+                temp_file = Tempfile.new(['temp', File.extname(filename)])
+                temp_file.binmode
+                temp_file.write(doc.download)
+                temp_file.rewind
+
+                workbook = case File.extname(filename).downcase
+                          when '.xlsx' then Roo::Excelx.new(temp_file.path)
+                          when '.xls'  then Roo::Excel.new(temp_file.path)
+                          else
+                            next
+                          end
+
+                Rails.logger.info "=== ワークシート情報 ==="
+                Rails.logger.info "利用可能なシート: #{workbook.sheets.inspect}"
+                
+                # 適切なシートを探す
+                target_sheet = nil
+                workbook.sheets.each do |sheet_name|
+                  workbook.default_sheet = sheet_name
+                  Rails.logger.info "シート '#{sheet_name}' をチェック中..."
+                  
+                  # セル(2,21)とセル(2,22)の値を確認
+                  cell_2_21 = workbook.cell(2, 21)
+                  cell_2_22 = workbook.cell(2, 22)
+                  
+                  Rails.logger.info "シート '#{sheet_name}' - セル(2,21): #{cell_2_21.inspect}"
+                  Rails.logger.info "シート '#{sheet_name}' - セル(2,22): #{cell_2_22.inspect}"
+                  
+                  if cell_2_21.present? || cell_2_22.present?
+                    target_sheet = sheet_name
+                    Rails.logger.info "適切なシートが見つかりました: #{sheet_name}"
+                    break
+                  end
+                end
+
+                unless target_sheet
+                  Rails.logger.warn "必要なデータを含むシートが見つかりませんでした"
+                  next
+                end
+
+                workbook.default_sheet = target_sheet
+                Rails.logger.info "選択したシート: #{target_sheet}"
+                Rails.logger.info "最終行: #{workbook.last_row}"
+                Rails.logger.info "最終列: #{workbook.last_column}"
+
+                # セルの値を文字列として取得し、デバッグ情報を出力
+                if filename.include?('営業')
+                  @processflow_sales_person_in_charge = workbook.cell(2, 21).to_s.strip
+                  @processflow_sales_dept = workbook.cell(4, 13).to_s.strip
+                  @processflow_sales_yotei = pro.deadline_at.strftime('%y/%m/%d')
+                  @processflow_sales_kanryou = pro.end_at.strftime('%y/%m/%d')
+                  @processflow_sales_check='☑'
+                  Rails.logger.info "営業承認者: \#{?processflow_sales_person_in_charge}"
+                elsif filename.include?('工程設計')
+                  @processflow_design_person_in_charge = workbook.cell(2, 21).to_s.strip
+                  @processflow_design_dept = workbook.cell(4, 13).to_s.strip
+                  @processflow_design_yotei = pro.deadline_at.strftime('%y/%m/%d')
+                  @processflow_design_kanryou = pro.end_at.strftime('%y/%m/%d')
+                  @processflow_design_check='☑'
+                  Rails.logger.info "工程設計承認者: \#{?processflow_design_person_in_charge}"
+                elsif filename.include?('検査')
+                  @processflow_inspection_person_in_charge = workbook.cell(2, 21).to_s.strip
+                  @processflow_inspection_dept = workbook.cell(4, 13).to_s.strip
+                  @processflow_inspection_yotei = pro.deadline_at.strftime('%y/%m/%d')
+                  @processflow_inspection_kanryou = pro.end_at.strftime('%y/%m/%d')
+                  @processflow_inspection_check='☑'
+                  Rails.logger.info "検査引渡し承認者: \#{?processflow_inspection_person_in_charge}"
+                end
+              rescue StandardError => e
+                Rails.logger.error "その他ファイル処理エラー: #{e.message}"
+              ensure
+                workbook&.close if defined?(workbook) && workbook
+                temp_file.close
+                temp_file.unlink
+              end
+            end
+
+          rescue StandardError => e
+            Rails.logger.error "ファイル処理エラー: #{e.message}"
+          end
+        else
+          '☐'
+        end
+      end
+
+
+
+
+
 
       if stage == '初期工程調査結果'
         @cpk_yotei = pro.deadline_at.strftime('%y/%m/%d')

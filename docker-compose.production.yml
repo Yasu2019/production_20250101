@@ -1,124 +1,137 @@
+version: "3.7"
 services:
   nodered:
     build:
       context: .
       dockerfile: Dockerfile.nodered
     volumes:
-      - shared_data:/myapp/db/record  # データを共有するためのボリューム
+      - shared_data:/myapp/db/record
     ports:
-      - '127.0.0.1:1880:1880'  # Node-REDのポート
-    command: ["node-red"]  # Node-REDを起動するコマンド
+      - '127.0.0.1:1880:1880'
+    command: ["node-red"]
     ulimits:
       nofile:
-        soft: 65536  # ソフトリミット
-        hard: 65536  # ハードリミット
+        soft: 65536
+        hard: 65536
 
   db:
     image: postgres:14.2
-    env_file: .env.production  # 環境変数を.env.productionファイルから読み込む
+    env_file: .env.production
     ports:
-      - '127.0.0.1:5432:5432'  # PostgreSQLのポート
+      - '127.0.0.1:5432:5432'
     volumes:
-      - postgresql-data:/var/lib/postgresql/data  # データを永続化するためのボリューム
+      - postgresql-data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}  # 環境変数からパスワードを設定
-    shm_size: '2gb'  # PostgreSQLのパフォーマンス向上のための共有メモリサイズ
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    shm_size: '2gb'
     ulimits:
       nofile:
-        soft: 65536  # ソフトリミット
-        hard: 65536  # ハードリミット
-    tty: true  # 仮想端末を有効にする
-    stdin_open: true  # 標準入力をオープンにする
+        soft: 65536
+        hard: 65536
+    tty: true
+    stdin_open: true
     networks:
       - app_network
 
   redis:
-    image: redis:latest  # Redisの最新のDockerイメージ
-    command: redis-server --appendonly yes  # データの永続化を有効にする
+    image: redis:latest
+    command: redis-server --appendonly yes
     volumes:
-      - redis-data:/data  # データを永続化するためのボリューム
+      - redis-data:/data
     networks:
       - app_network
     ulimits:
       nofile:
-        soft: 65536  # ソフトリミット
-        hard: 65536  # ハードリミット
+        soft: 65536
+        hard: 65536
 
   web:
     build:
       context: .
-      dockerfile: Dockerfile.production.web  # WebアプリケーションのDockerfile
-    command: bash -c "rm -f tmp/pids/server.pid && bundle exec chmod +x bin/rails && npm run build:css && bundle exec rails s -p 3000 -b '0.0.0.0' -e production"  # サーバー起動前の準備と起動コマンド
-    tty: true  # 仮想端末を有効にする
-    stdin_open: true  # 標準入力をオープンにする
-    env_file: .env.production  # 環境変数を.env.productionファイルから読み込む
+      dockerfile: Dockerfile.production.web
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec chmod +x bin/rails && npm run build:css && bundle exec rails s -p 3000 -b '0.0.0.0' -e production"
+    tty: true
+    stdin_open: true
+    env_file: .env.production
     environment:
-      - KEY_DERIVATION_SALT=${KEY_DERIVATION_SALT}  # 環境変数の設定
-      - RAILS_SERVE_STATIC_FILES=true  # 静的ファイルをサーブする設定
-      - RAILS_LOG_TO_STDOUT=true  # ログを標準出力に設定
+      - KEY_DERIVATION_SALT=${KEY_DERIVATION_SALT}
+      - RAILS_SERVE_STATIC_FILES=true
+      - RAILS_LOG_TO_STDOUT=true
     volumes:
-      - .:/myapp:delegated  # アプリケーションコードをマウント
-      - shared_data:/myapp/db/record  # データを共有するためのボリューム
-      - storage-data:/myapp/storage  # ストレージデータを共有するためのボリューム
-      - /myapp/node_modules  # node_modulesをマウント
-      - /myapp/public/assets  # 公開アセットをマウント
-      - /myapp/tmp  # 一時ファイル用のボリューム
+      - .:/myapp:delegated
+      - shared_data:/myapp/db/record
+      - storage-data:/myapp/storage
+      - /myapp/node_modules
+      - /myapp/public/assets
+      - /myapp/tmp
     networks:
       - app_network
     expose:
       - '3000'
     depends_on:
-      - db  # dbサービスに依存
-      - redis  # redisサービスに依存
+      - db
+      - redis
 
   sidekiq:
     build:
       context: .
-      dockerfile: Dockerfile.production.web  # WebアプリケーションのDockerfile
-    command: bundle exec sidekiq -e production  # Sidekiqの起動コマンド
-    tty: true  # 仮想端末を有効にする
-    stdin_open: true  # 標準入力をオープンにする
-    env_file: .env.production  # 環境変数を.env.productionファイルから読み込む
+      dockerfile: Dockerfile.production.web
+    command: bundle exec sidekiq -e production
+    tty: true
+    stdin_open: true
+    env_file: .env.production
     environment:
-      - KEY_DERIVATION_SALT=${KEY_DERIVATION_SALT}  # 環境変数の設定
-      - RAILS_LOG_TO_STDOUT=true  # ログを標準出力に設定
+      - KEY_DERIVATION_SALT=${KEY_DERIVATION_SALT}
+      - RAILS_LOG_TO_STDOUT=true
     volumes:
-      - .:/myapp:delegated  # アプリケーションコードをマウント
-      - shared_data:/myapp/db/record  # データを共有するためのボリューム
-      - storage-data:/myapp/storage  # ストレージデータを共有するためのボリューム
-      - /myapp/node_modules  # node_modulesをマウント
-      - /myapp/public/assets  # 公開アセットをマウント
-      - /myapp/tmp  # 一時ファイル用のボリューム
+      - .:/myapp:delegated
+      - shared_data:/myapp/db/record
+      - storage-data:/myapp/storage
+      - /myapp/node_modules
+      - /myapp/public/assets
+      - /myapp/tmp
     networks:
       - app_network
     depends_on:
-      - db  # dbサービスに依存
-      - redis  # redisサービスに依存
+      - db
+      - redis
 
   nginx:
     image: nginx:latest
-    volumes:
-      - /etc/nginx/sites-enabled/default:/etc/nginx/conf.d/default.conf
-      - /etc/letsencrypt:/etc/letsencrypt
     ports:
       - "80:80"
       - "443:443"
+    volumes:
+      ./nginx/conf.d:/etc/nginx/conf.d  # ホスト側の設定ファイルをマウント
+      letsencrypt_data:/etc/letsencrypt  # 証明書保存用ボリューム
     networks:
       - app_network
     depends_on:
       - web
 
+  certbot:
+    image: certbot/certbot
+    volumes:
+      letsencrypt_data:/etc/letsencrypt
+      ./nginx/conf.d:/config  # Nginx設定ファイルへのアクセス
+    depends_on:
+      - nginx
+    entrypoint: "/bin/sh -c 'trap exit TERM && while :; do sleep 12h & wait; certbot renew --nginx --non-interactive --agree-tos -d nys-web.net; nginx -s reload; done'"
+    networks:
+      - app_network
+
 volumes:
-  postgresql-data:  # PostgreSQLデータ用のボリューム
-  shared_data:  # 共有データ用のボリューム
-  storage-data:  # ストレージデータ用のボリューム
-  redis-data:  # Redisデータ用のボリューム
+  postgresql-data:
+  shared_data:
+  storage-data:
+  redis-data:
+  letsencrypt_data: # Certbot用ボリュームを追加
 
 networks:
   app_network:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.21.0.0/16  # Using a different subnet range
+        - subnet: 172.21.0.0/16
   default:
     driver: bridge

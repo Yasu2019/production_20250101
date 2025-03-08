@@ -23,6 +23,9 @@ port ENV.fetch('PORT', 3000)
 #
 environment ENV.fetch('RAILS_ENV', 'development')
 
+# SSL設定を無効化
+ssl_bind_enabled = false
+
 # Specifies the `pidfile` that Puma will use.
 pidfile ENV.fetch('PIDFILE', 'tmp/pids/server.pid')
 

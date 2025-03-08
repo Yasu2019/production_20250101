@@ -59,6 +59,17 @@ services:
       - redis
     env_file: .env
 
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - web
+    profiles:
+      - minipc
+
 volumes:
   postgresql-data:
     driver: local

@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
+  # ActionCable WebSocket接続のマウント
+  mount ActionCable.server => '/cable'
+  
   Rails.logger.debug "ルーティングが読み込まれました"
   get '/favicon.ico', to: 'public#favicon'
   get '/robots.:format' => 'public#robots'
@@ -75,9 +78,9 @@ Rails.application.routes.draw do
     collection do 
       post :import
       get 'export_phases_to_excel'
-      get 'audit_correction_report'  # この行を追加
-      get 'audit_improvement_opportunity'  # この行を追加
-      get 'in_process_nonconforming_product_control_form'  # この行を追加
+      get 'audit_correction_report'  
+      get 'audit_improvement_opportunity'  
+      get 'in_process_nonconforming_product_control_form'  
     end
     member do
       get 'verify_password/:blob_id', to: 'downloadable#verify_password', as: :product_verify_password
@@ -97,4 +100,11 @@ Rails.application.routes.draw do
     collection { post :import_test }
     collection { post :import_kaitou }
   end
+
+  resources :documents
+  resources :document_categories
+  resources :document_types
+  resources :document_histories
+  resources :document_files
+  resources :document_file_histories
 end

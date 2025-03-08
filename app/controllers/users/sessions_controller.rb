@@ -38,9 +38,16 @@ module Users
       end
 
       if @user&.valid_password?(params[:user][:password])
-        Rails.logger.debug "Password is valid, proceeding to two-step verification"
-        session[:otp_user_id] = @user.id
-        redirect_to new_two_step_verification_path and return
+        Rails.logger.debug "Password is valid"
+        if ENV['minipc'] == 'true'
+          Rails.logger.debug "Skipping 2FA due to minipc=true"
+          sign_in(@user)
+          redirect_to products_path and return
+        else
+          Rails.logger.debug "Proceeding to two-step verification"
+          session[:otp_user_id] = @user.id
+          redirect_to new_two_step_verification_path and return
+        end
       else
         Rails.logger.debug "Invalid email or password"
         self.resource = resource_class.new(sign_in_params)

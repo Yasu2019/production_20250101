@@ -32,6 +32,16 @@ module Myapp
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.0
 
+    # SSL設定を完全に無効化
+    config.ssl_options = { hsts: false, secure_cookies: false }
+    config.force_ssl = false
+    config.action_controller.default_url_options = { protocol: 'http' }
+
+    # ActionCable設定
+    config.action_cable.mount_path = '/cable'
+    config.action_cable.disable_request_forgery_protection = true
+    config.action_cable.allowed_request_origins = [/http:\/\/*/, /https:\/\/*/]
+
     # caxlsxを自動ロードパスに追加
     config.autoload_paths += %W(#{config.root}/lib)
 

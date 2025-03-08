@@ -2,10 +2,10 @@
 
 # Pin npm packages by running ./bin/importmap
 
-pin 'application', preload: true
-pin '@hotwired/turbo-rails', to: 'turbo.min.js', preload: true
-pin '@hotwired/stimulus', to: 'stimulus.min.js', preload: true
-pin '@hotwired/stimulus-loading', to: 'stimulus-loading.js', preload: true
+pin 'application'
+pin '@hotwired/turbo-rails', to: 'turbo.min.js'
+pin '@hotwired/stimulus', to: 'stimulus.min.js'
+pin '@hotwired/stimulus-loading', to: 'stimulus-loading.js'
 pin_all_from 'app/javascript/controllers', under: 'controllers'
 
 # 【rails】chartkick導入ガイド
@@ -15,4 +15,10 @@ pin 'Chart.bundle', to: 'Chart.bundle.js'
 
 pin 'sortablejs', to: 'https://ga.jspm.io/npm:sortablejs@1.14.0/modular/sortable.esm.js'
 
-pin 'tailwind', to: 'tailwind.css'
+# Action Cable
+pin "@rails/actioncable", to: "https://ga.jspm.io/npm:@rails/actioncable@7.1.3/app/assets/javascripts/actioncable.esm.js"
+
+# Channels
+pin "channels/consumer", to: "channels/consumer.js", preload: true
+pin "channels/document_notifications_channel", to: "channels/document_notifications_channel.js", preload: true
+pin "channels/index", to: "channels/index.js", preload: true

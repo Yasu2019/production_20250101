@@ -6,8 +6,26 @@ class DownloadableController < ApplicationController
   # メール送信しなければ動くコード
   def verify_password_post
     Rails.logger.info("Session download_password at downloadable_controller: #{session[:download_password]}")
+    Rails.logger.debug { "minipc environment: #{ENV['minipc']}" }
     blob_id = params[:blob_id]
     entered_password = params[:password]
+
+    # minipc環境変数がtrueの場合、パスワード確認をスキップ
+    if ENV['minipc'] == 'true'
+      Rails.logger.info("minipc environment detected, bypassing password verification")
+      @document = ActiveStorage::Attachment.find_by(blob_id:)
+
+      if @document
+        file = @document.blob
+        @download_url = rails_blob_url(file)
+        render :download_page
+      else
+        Rails.logger.warn("No attachment found for blob ID: #{blob_id}")
+        flash[:alert] = 'ファイルが見つかりませんでした。'
+        render :verify_password
+      end
+      return
+    end
 
     if entered_password == session[:download_password]
       @document = ActiveStorage::Attachment.find_by(blob_id:)
@@ -46,6 +64,23 @@ class DownloadableController < ApplicationController
     Rails.logger.debug { "session[:download_blob_id]: #{session[:download_blob_id]}" }
     Rails.logger.debug { "Entered password: #{params[:password]}" }
     Rails.logger.debug { "Session password: #{session[:download_password]}" }
+    Rails.logger.debug { "minipc environment: #{ENV['minipc']}" }
+
+    # minipc環境変数がtrueの場合、パスワード確認をスキップ
+    if ENV['minipc'] == 'true'
+      Rails.logger.info("minipc environment detected, bypassing password verification")
+      @document = ActiveStorage::Attachment.find_by(blob_id: params[:blob_id])
+      
+      if @document
+        file = @document.blob
+        @download_url = rails_blob_url(file)
+        render :download_page and return
+      else
+        Rails.logger.warn("No attachment found for blob ID: #{params[:blob_id]}")
+        flash[:alert] = 'ファイルが見つかりませんでした。'
+        render :verify_password and return
+      end
+    end
   
     # セッションパスワードが設定されているか確認
     if session[:download_password].blank?

@@ -1,11 +1,80 @@
 # frozen_string_literal: true
 
 require 'active_support/core_ext/integer/time'
-require 'caxlsx'  # この行を追加
+require 'caxlsx'  
 
 Rails.application.configure do
-  # ログレベルをデバッグに設定
-  config.log_level = :debug
+  # Settings specified here will take precedence over those in config/application.rb.
+
+  # In the development environment your application's code is reloaded any time
+  # it changes. This slows down response time but is perfect for development
+  # since you don't have to restart the web server when you make code changes.
+  config.cache_classes = false
+
+  # Do not eager load code on boot.
+  config.eager_load = false
+
+  # Show full error reports.
+  config.consider_all_requests_local = true
+
+  # Enable server timing
+  config.server_timing = true
+
+  # Enable/disable caching. By default caching is disabled.
+  # Run rails dev:cache to toggle caching.
+  if Rails.root.join("tmp/caching-dev.txt").exist?
+    config.action_controller.perform_caching = true
+    config.action_controller.enable_fragment_cache_logging = true
+
+    config.cache_store = :memory_store
+    config.public_file_server.headers = {
+      "Cache-Control" => "public, max-age=#{2.days.to_i}"
+    }
+  else
+    config.action_controller.perform_caching = false
+
+    config.cache_store = :null_store
+  end
+
+  # Store uploaded files on the local file system (see config/storage.yml for options).
+  config.active_storage.service = :local
+
+  # Don't care if the mailer can't send.
+  config.action_mailer.raise_delivery_errors = false
+
+  config.action_mailer.perform_caching = false
+
+  # Print deprecation notices to the Rails logger.
+  config.active_support.deprecation = :log
+
+  # Raise exceptions for disallowed deprecations.
+  config.active_support.disallowed_deprecation = :raise
+
+  # Tell Active Support which deprecation messages to disallow.
+  config.active_support.disallowed_deprecation_warnings = []
+
+  # Raise an error on page load if there are pending migrations.
+  config.active_record.migration_error = :page_load
+
+  # Highlight code that triggered database queries in logs.
+  config.active_record.verbose_query_logs = true
+
+  # Suppress logger output for asset requests.
+  config.assets.quiet = true
+
+  # Enable detailed logging for ActionCable
+  config.action_cable.logger = ActiveSupport::Logger.new(STDOUT)
+  config.action_cable.logger.level = :debug
+  config.action_cable.disable_request_forgery_protection = true
+  config.action_cable.allowed_request_origins = [/http:\/\/*/, /https:\/\/*/]
+  config.action_cable.mount_path = '/cable'
+  config.action_cable.url = ENV['MINIPC'] == 'true' ? 'ws://localhost:3000/cable' : 'wss://nys-web.net/cable'
+
+  # HTTPSとSSLの設定を無効化
+  config.force_ssl = false
+  config.ssl_options = { hsts: false, secure_cookies: false }
+  config.action_controller.default_url_options = { protocol: 'http' }
+  config.action_mailer.default_url_options = { host: 'localhost', port: 3000, protocol: 'http' }
 
   # 全てのIPからのアクセスを許可する場合
   # config.web_console.allow_authorized_ips = %w(0.0.0.0/0 ::/0)
@@ -66,7 +135,7 @@ Rails.application.configure do
     # :user_name => "mitsui.seimitsu.iatf16949@gmail.com",
     # :password => "aodwtnulqohgdgvf",
     authentication: 'plain',
-    openssl_verify_mode: 'none' # この行を追加します
+    openssl_verify_mode: 'none' 
 
   }
 
@@ -74,58 +143,26 @@ Rails.application.configure do
 
   config.hosts << 'nys-web.net'
 
-  # Settings specified here will take precedence over those in config/application.rb.
+  # ActionCable設定
+  # config.action_cable.url = "ws://localhost:3000/cable"
+  # config.action_cable.allowed_request_origins = [
+  #   "http://localhost:3000",
+  #   "http://127.0.0.1:3000",
+  #   /http:\/\/localhost:.*/,
+  #   /http:\/\/127\.0\.0\.1:.*/
+  # ]
+  # config.action_cable.disable_request_forgery_protection = true
+  # config.action_cable.mount_path = '/cable'
 
-  # In the development environment your application's code is reloaded any time
-  # it changes. This slows down response time but is perfect for development
-  # since you don't have to restart the web server when you make code changes.
-  config.cache_classes = false
+  # ActionCableのログを有効化
+  # config.action_cable.logger = Logger.new(STDOUT)
+  # config.action_cable.logger.level = :debug
 
-  # Do not eager load code on boot.
-  config.eager_load = false
+  # ログレベルをデバッグに設定
+  config.log_level = :debug
 
-  # Show full error reports.
-  config.consider_all_requests_local = true
-
-  # Enable server timing
-  config.server_timing = true
-
-  # Enable/disable caching. By default caching is disabled.
-  # Run rails dev:cache to toggle caching.
-  if Rails.root.join('tmp/caching-dev.txt').exist?
-    config.action_controller.perform_caching = true
-    config.action_controller.enable_fragment_cache_logging = true
-
-    config.cache_store = :memory_store
-    config.public_file_server.headers = {
-      'Cache-Control' => "public, max-age=#{2.days.to_i}"
-    }
-  else
-    config.action_controller.perform_caching = false
-
-    config.cache_store = :null_store
-  end
-
-  # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
-
-  # Print deprecation notices to the Rails logger.
-  config.active_support.deprecation = :log
-
-  # Raise exceptions for disallowed deprecations.
-  config.active_support.disallowed_deprecation = :raise
-
-  # Tell Active Support which deprecation messages to disallow.
-  config.active_support.disallowed_deprecation_warnings = []
-
-  # Raise an error on page load if there are pending migrations.
-  config.active_record.migration_error = :page_load
-
-  # Highlight code that triggered database queries in logs.
-  config.active_record.verbose_query_logs = true
-
-  # Suppress logger output for asset requests.
-  config.assets.quiet = true
+  # Debug mode disables concatenation and preprocessing of assets.
+  config.assets.debug = true
 
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true
